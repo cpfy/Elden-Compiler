@@ -1,0 +1,16 @@
+
+FUNC int main()
+	<LABLE1 in>
+VAR x = 5
+~t1 = 5 <= x
+if ~t1 == 0 then goto jump3
+GOTO jump2
+		<JUMPDST jump3>
+GOTO jump1
+		<JUMPDST jump2>
+	<LABLE2 in>
+PRINT "123"
+	<LABLE2 out>
+		<JUMPDST jump1>
+RET 0
+	<LABLE1 out>
