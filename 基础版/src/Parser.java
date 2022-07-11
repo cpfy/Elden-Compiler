@@ -55,19 +55,26 @@ public class Parser {
         return rawWords.get(point + 2);
     }
 
-    //CompUnit → {Decl} {FuncDef} MainFuncDef
+    //CompUnit → [ CompUnit ] ( Decl | FuncDef )
+    //todo changed
     private CompUnit getCompUnit() {
         ArrayList<Decl> decls = new ArrayList<>();
         ArrayList<FuncDef> funcDefs = new ArrayList<>();
         MainFuncDef mainFuncDef = null;
-
-        while (seeNextWord().getType() == WordType.CONSTTK
-                || (seeNextWord().getType() == WordType.INTTK && seeThirdWord().getType() != WordType.LPARENT)) {
-            decls.add(getDecl());
-        }
-        while (seeNextWord().getType() == WordType.VOIDTK
-                || (seeNextWord().getType() == WordType.INTTK && seeSecondWord().getType() != WordType.MAINTK && seeThirdWord().getType() == WordType.LPARENT)) {
-            funcDefs.add(getFuncDef());
+        while (true) {
+           if (seeNextWord().getType() == WordType.CONSTTK
+                    || (seeNextWord().getType() == WordType.INTTK && seeThirdWord().getType() != WordType.LPARENT)
+                    || (seeNextWord().getType() == WordType.FLOATTK && seeThirdWord().getType() != WordType.LPARENT)) {
+               decls.add(getDecl());
+           }
+           else if (seeNextWord().getType() == WordType.VOIDTK
+                    || (seeNextWord().getType() == WordType.INTTK && seeSecondWord().getType() != WordType.MAINTK && seeThirdWord().getType() == WordType.LPARENT)
+                    || (seeNextWord().getType() == WordType.FLOATTK && seeSecondWord().getType() != WordType.MAINTK && seeThirdWord().getType() == WordType.LPARENT)) {
+               funcDefs.add(getFuncDef());
+           }
+           else {
+               break;
+           }
         }
         mainFuncDef = getMainFuncDef();
         outputs.add("<CompUnit>");
@@ -80,7 +87,8 @@ public class Parser {
         if (seeNextWord().getType() == WordType.CONSTTK) {
             decl = getConstDecl();
         }
-        else if (seeNextWord().getType() == WordType.INTTK) {
+        else if (seeNextWord().getType() == WordType.INTTK
+                || seeNextWord().getType() == WordType.FLOATTK) {
             decl = getVarDecl();
         }
         else {
@@ -114,11 +122,16 @@ public class Parser {
         return new ConstDecl(type, constDefs);
     }
 
-    //BType → 'int'
+    //BType → 'int' | 'float'
     private String getBType() {
         String type = null;
-        if (getNextWord().getType() == WordType.INTTK) {
+        if (seeNextWord().getType() == WordType.INTTK) {
+            getNextWord();
             type = "int";
+        }
+        else if (seeNextWord().getType() == WordType.FLOATTK) {
+            getNextWord();
+            type = "float";
         }
         else {
             error();
@@ -317,6 +330,10 @@ public class Parser {
             getNextWord();
             type = "int";
         }
+        else if (seeNextWord().getType() == WordType.FLOATTK) {
+            getNextWord();
+            type = "float";
+        }
         else {
             error();
         }
@@ -383,7 +400,8 @@ public class Parser {
     private BlockItem getBlockItem() {
         BlockItem blockItem = null;
         if (seeNextWord().getType() == WordType.CONSTTK
-                || seeNextWord().getType() == WordType.INTTK) {
+                || seeNextWord().getType() == WordType.INTTK
+                || seeNextWord().getType() == WordType.FLOATTK) {
             blockItem = getDecl();
         }
         else {
@@ -405,7 +423,6 @@ public class Parser {
     //    | 'printf' '('FormatString {',' Exp} ')'';' // 1.有Exp 2.无Exp
     private Stmt getStmt() {
         Stmt stmt = null;
-        //todo 分支跳转
         //'if' '(' Cond ')' Stmt [ 'else' Stmt ]
         if (seeNextWord().getType() == WordType.IFTK) {
             Cond cond = null;
@@ -504,6 +521,7 @@ public class Parser {
             stmt = new StmtExp(null);
         }
         else if (seeNextWord().getType() == WordType.INTCON
+                || seeNextWord().getType() == WordType.FLOATCON
                 || seeNextWord().getType() == WordType.PLUS
                 || seeNextWord().getType() == WordType.MINU
                 || seeNextWord().getType() == WordType.NOT
@@ -516,7 +534,6 @@ public class Parser {
             }
             stmt = new StmtExp(exp);
         }
-        //todo
         else {
             LVal lVal = null;
             lVal = getLVal();
@@ -605,7 +622,8 @@ public class Parser {
                 error();
             }
         }
-        else if (seeNextWord().getType() == WordType.INTCON) {
+        else if (seeNextWord().getType() == WordType.INTCON
+                || seeNextWord().getType() == WordType.FLOATCON) {
             exp = getNumber();
         }
         else {
@@ -616,10 +634,13 @@ public class Parser {
     }
 
     //Number → IntConst
-    private ConstInt getNumber() {
-        ConstInt number = null;
+    private MyNumber getNumber() {
+        MyNumber number = null;
         if (seeNextWord().getType() == WordType.INTCON) {
             number = new ConstInt(Integer.parseInt(getNextWord().getName()));
+        }
+        else if (seeNextWord().getType() == WordType.FLOATCON) {
+            number = new ConstFloat(Float.parseFloat(getNextWord().getName()));
         }
         else {
             error();

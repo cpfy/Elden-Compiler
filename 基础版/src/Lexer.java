@@ -63,6 +63,7 @@ public class Lexer {
         reservedWords.put("printf", WordType.PRINTFTK);
         reservedWords.put("return", WordType.RETURNTK);
         reservedWords.put("void", WordType.VOIDTK);
+        reservedWords.put("float", WordType.FLOATTK);
     }
 
     private void clearToken() {
@@ -77,6 +78,10 @@ public class Lexer {
 
     private boolean isDigit(char digit) {
         return digit >= '0' && digit <= '9';
+    }
+
+    private boolean isDot(char dot) {
+        return dot == '.';
     }
 
     public void getSys(String sourceCode) {
@@ -136,11 +141,20 @@ public class Lexer {
         }
 
         if (isDigit(ch)) {
-            while (isDigit(sourceCode.charAt(headPoint))) {
+            boolean isInt = true;
+            while (isDigit(sourceCode.charAt(headPoint)) || isDot(sourceCode.charAt(headPoint))) {
+                if (isDot(sourceCode.charAt(headPoint))) {
+                    isInt = false;
+                }
                 token += sourceCode.charAt(headPoint);
                 headPoint++;
             }
-            rawWords.add(new RawWord(token, WordType.INTCON, line));
+            if (isInt) {
+                rawWords.add(new RawWord(token, WordType.INTCON, line));
+            }
+            else {
+                rawWords.add(new RawWord(token, WordType.FLOATCON, line));
+            }
             return;
         }
 

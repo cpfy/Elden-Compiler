@@ -1,6 +1,6 @@
 package AST;
 
-public class ConstInt extends ExpPrimary {
+public class ConstInt extends MyNumber {
     private int constInt;
 
     public ConstInt(int constInt) {
