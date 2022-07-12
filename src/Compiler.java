@@ -7,8 +7,8 @@ import java.io.PrintStream;
 public class Compiler {
     public static void main(String[] args) {
         try {
-            PrintStream printStream = new PrintStream("output.txt");
-            Lexer lexer = new Lexer("testfile.txt");
+            PrintStream printStream = new PrintStream("/output.txt");
+            Lexer lexer = new Lexer("../txt/testfile.txt");
 //            PrintStream printStream2 = new PrintStream("error.txt");
 //            PrintStream printStream3 = new PrintStream("mips.txt");
 //
