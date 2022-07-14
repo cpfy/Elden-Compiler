@@ -390,6 +390,7 @@ z = a[x][y]; // 假设总大小为a[4][2]
 ```
 
 #### 
+
 * 数组赋值
 ```plain
 a[x][y] = z; // a[4][2]
@@ -440,6 +441,16 @@ LLVM IR中的最小可执行单位，每一条指令都单占一行
 |store|store <ty> <value>, <ty>* <pointer>|写内存|
 |br|br i1 <cond>, label <iftrue>, label <iffalse> br label <dest>|改变控制流|
 |ret|ret <type> <value> ,ret void|退出当前函数，并返回值（可选）|
+
+### 其余关键词
+
+| llvm ir       | usage | intro |
+| :------------ | :---- | :---- |
+| getelementptr |       | /     |
+| memset        |       | /     |
+| define        |       | /     |
+| global        |       | /     |
+| i32           |       | /     |
 
 
 
