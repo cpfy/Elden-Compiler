@@ -47,10 +47,10 @@ public class IRDictionary {
         KEYWORDS_LIST.add("sge");
         KEYWORDS_LIST.add("slt");
         KEYWORDS_LIST.add("sle");
-        KEYWORDS_LIST.add("");
-        KEYWORDS_LIST.add("");
-        KEYWORDS_LIST.add("");
-        KEYWORDS_LIST.add("");
+//        KEYWORDS_LIST.add("");
+//        KEYWORDS_LIST.add("");
+//        KEYWORDS_LIST.add("");
+//        KEYWORDS_LIST.add("");
     }
 
     static {
@@ -70,14 +70,16 @@ public class IRDictionary {
         OPERATORS_DICT.put("-", "MINU");
         OPERATORS_DICT.put("*", "MULT");
         OPERATORS_DICT.put("/", "DIV");
-        OPERATORS_DICT.put("%", "");
-        OPERATORS_DICT.put("@", "");
+        OPERATORS_DICT.put("%", "PERC");    // 取percent意
+        OPERATORS_DICT.put("@", "AT");
+
 //        OPERATORS_DICT.put("<", "LSS");
 //        OPERATORS_DICT.put("<=", "LEQ");
 //        OPERATORS_DICT.put(">", "GRE");
 //        OPERATORS_DICT.put(">=", "GEQ");
 //        OPERATORS_DICT.put("==", "EQL");
 //        OPERATORS_DICT.put("!=", "NEQ");
+        
         OPERATORS_DICT.put("=", "ASSIGN");
         OPERATORS_DICT.put(";", "SEMICN");
         OPERATORS_DICT.put(",", "COMMA");

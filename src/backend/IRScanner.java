@@ -104,17 +104,8 @@ public class IRScanner {
                 curToken += c;
                 break;
             case OPERATOR:
-//                if (readingMultiComments) {
-//                    if (curToken.equals("*") && c == '/') {
-//                        readingMultiComments = false;
-//                        curToken = "";
-//                    } else {
-//                        curToken = "";
-//                        curToken += c;
-//                    }
-//                    break;
-//                } else
                 if (readingComments) {
+                    curToken = "";
                     break;
                 } else if (readingFormatString && c != '"') {
                     curToken += c;
@@ -169,6 +160,10 @@ public class IRScanner {
                 }
                 break;
             case SPACE:
+                if(c == '\n'){  //newline, \n居然算SPACE
+                    curRows++;
+                    resetStatus();
+                }
                 if (readingComments) {
                     curToken = "";
                     break;
@@ -188,8 +183,9 @@ public class IRScanner {
                     readingNumber = false;
 
                 } else {
-                    //curToken = endOfWord();
-                    //newline
+
+//                    curToken = endOfWord();
+
                     if (c == Character.toChars(10)[0]) {
                         curRows++;
                         resetStatus();
@@ -200,12 +196,13 @@ public class IRScanner {
                 if (readingFormatString) {
                     curToken += c;
                 }
+
                 break;
             default:
                 System.err.println("Unhandled char scanned!");
         }
 
-        System.out.println(c);
+        // System.out.println(c);
     }
 
     private String endOfWord() {
@@ -233,8 +230,8 @@ public class IRScanner {
     private String handleOperator(char c) {
         if (c == ';') {
             curToken = endOfWord();
-            curToken = ";";
-            createToken(tokenDictionary.queryOpCode(String.valueOf(c)));
+            readingComments = true;
+            curToken += c;
 
         } else if (c == '"') {
             if (!readingFormatString) {
