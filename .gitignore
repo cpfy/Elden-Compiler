@@ -28,4 +28,5 @@ replay_pid*
 /bin/
 
 Elden Compiler.iml
-txt\output.txt
+txt/
+ll_test/
