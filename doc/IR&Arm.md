@@ -158,28 +158,148 @@ BasicBlockList
 ```
 BasicBlock
 	: OptLabelIdent Instructions Terminator
+```
 
+#### Instruction
+
+##### Instructions
+
+```
+Instructions
+	: empty
+	| InstructionList
+```
+
+##### InstructionList
+
+```
+InstructionList
+	: Instruction
+	| InstructionList Instruction
+```
+
+##### Instruction
+
+```
+Instruction
+	// Instructions not producing values.
+	: StoreInst
+	| FenceInst
+	| CmpXchgInst
+	| AtomicRMWInst
+	// Instructions producing values.
+	| LocalIdent "=" ValueInstruction
+	| ValueInstruction
+```
+
+##### ValueInstruction
+
+```
+ValueInstruction
+	// Binary instructions
+	: AddInst
+	| FAddInst
+	| SubInst
+	| FSubInst
+	| MulInst
+	| FMulInst
+	| UDivInst
+	| SDivInst
+	| FDivInst
+	| URemInst
+	| SRemInst
+	| FRemInst
+	// Bitwise instructions
+	| ShlInst
+	| LShrInst
+	| AShrInst
+	| AndInst
+	| OrInst
+	| XorInst
+	// Vector instructions
+	| ExtractElementInst
+	| InsertElementInst
+	| ShuffleVectorInst
+	// Aggregate instructions
+	| ExtractValueInst
+	| InsertValueInst
+	// Memory instructions
+	| AllocaInst
+	| LoadInst
+	| GetElementPtrInst
+	// Conversion instructions
+	| TruncInst
+	| ZExtInst
+	| SExtInst
+	| FPTruncInst
+	| FPExtInst
+	| FPToUIInst
+	| FPToSIInst
+	| UIToFPInst
+	| SIToFPInst
+	| PtrToIntInst
+	| IntToPtrInst
+	| BitCastInst
+	| AddrSpaceCastInst
+	// Other instructions
+	| ICmpInst
+	| FCmpInst
+	| PhiInst
+	| SelectInst
+	| CallInst
+	| VAArgInst
+	| LandingPadInst
+	| CatchPadInst
+	| CleanupPadInst
+```
+
+##### StoreInst
+
+```
+StoreInst
+	: "store" OptVolatile Type Value "," Type Value OptCommaSepMetadataAttachmentList
+	| "store" OptVolatile Type Value "," Type Value "," Alignment OptCommaSepMetadataAttachmentList
+	| "store" "atomic" OptVolatile Type Value "," Type Value OptSyncScope AtomicOrdering OptCommaSepMetadataAttachmentList
+	| "store" "atomic" OptVolatile Type Value "," Type Value OptSyncScope AtomicOrdering "," Alignment OptCommaSepMetadataAttachmentList
+;
 ```
 
 
 
 
 
+#### Float
 
+##### float_lit
 
+```
+float_lit
+	: _frac_lit
+	| _sci_lit
+	| _float_hex_lit
+```
 
+##### _frac_lit
 
+```
+_frac_lit
+	: [ _sign ] _decimals '.' { _decimal_digit }
+```
 
+##### _sci_lit
 
+```
+_sci_lit
+	: _frac_lit ( 'e' | 'E' ) [ _sign ] _decimals
+```
 
+##### _float_hex_lit
 
-
-
-
-
-
-
-
+```
+_float_hex_lit
+	:  '0' 'x'      _hex_digit { _hex_digit }
+	|  '0' 'x' 'K'  _hex_digit _hex_digit _hex_digit _hex_digit _hex_digit _hex_digit _hex_digit _hex_digit _hex_digit _hex_digit _hex_digit _hex_digit _hex_digit _hex_digit _hex_digit _hex_digit _hex_digit _hex_digit _hex_digit 
+```
 
 
 
