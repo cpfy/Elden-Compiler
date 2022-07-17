@@ -13,8 +13,10 @@ public class VarDecl extends Decl {
 
     @Override
     public void addMidCode() {
+        setDeclType(type);
         for (VarDef varDef: varDefs) {
             varDef.addMidCode();
         }
+        
     }
 }

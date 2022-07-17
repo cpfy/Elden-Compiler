@@ -1,7 +1,5 @@
 package AST;
 
-import midCode.MidCodeType;
-
 public class StmtIf extends Stmt {
     private Cond cond;
     private Stmt stmt1;
@@ -15,28 +13,25 @@ public class StmtIf extends Stmt {
 
     @Override
     public void addMidCode() {
-        if (stmt2 == null) {
-            String jump1 = "jump" + newJumpDst();
-            String jump2 = "jump" + newJumpDst();
-            cond.addMidCode(jump2);
-            midCodeList.addMidCodeItem(MidCodeType.GOTO, null, null, jump1);
-            midCodeList.addMidCodeItem(MidCodeType.JUMP, null, null, jump2);
-            stmt1.addMidCode();
-            midCodeList.addMidCodeItem(MidCodeType.JUMP, null, null, jump1);
-        }
-        else {
-            String jump1 = "jump" + newJumpDst();
-            String jump2 = "jump" + newJumpDst();
-            String jump3 = "jump" + newJumpDst();
-            cond.addMidCode(jump2);
-            midCodeList.addMidCodeItem(MidCodeType.GOTO, null, null, jump1);
-            midCodeList.addMidCodeItem(MidCodeType.JUMP, null, null, jump2);
-            stmt1.addMidCode();
-            midCodeList.addMidCodeItem(MidCodeType.GOTO, null, null, jump3);
-            midCodeList.addMidCodeItem(MidCodeType.JUMP, null, null, jump1);
+        addCode("\n");
+
+        String jump2cond2 = newReload();
+        String end = newReload();
+        cond.addMidCode(jump2cond2);
+        stmt1.addMidCode();
+        addCode("br label %" + end + "\n");
+
+
+        if (stmt2 != null) {
+            String label = newLable();
+            addReload(jump2cond2, label);
+            addCode(label + ":\n");
             stmt2.addMidCode();
-            midCodeList.addMidCodeItem(MidCodeType.JUMP, null, null, jump3);
+            addCode("br label %" + end + "\n");
         }
 
+        String label2 = newLable();
+        addReload(end, label2);
+        addCode(label2 + ":\n");
     }
 }

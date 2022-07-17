@@ -66,9 +66,9 @@ SEMICN ;
 <VarDecl>
 IFTK if
 LPARENT (
-INTCON 5
-<Number>
-<PrimaryExp>
+IDENFR f
+LPARENT (
+RPARENT )
 <UnaryExp>
 <MulExp>
 <AddExp>
@@ -87,12 +87,6 @@ IDENFR x
 <Cond>
 RPARENT )
 LBRACE {
-PRINTFTK printf
-LPARENT (
-STRCON "123"
-RPARENT )
-SEMICN ;
-<Stmt>
 RBRACE }
 <Block>
 <Stmt>

@@ -2,15 +2,15 @@ package symbolTable.items;
 
 import java.util.ArrayList;
 
-public class IntegerItem extends TableItem {
+public class FloatItem extends TableItem {
     private String tempName;
     private String name;
     private boolean isConst;
     private ArrayList<Integer> dims = new ArrayList<>();
-    private ArrayList<Integer> values = new ArrayList<>();
+    private ArrayList<Float> values = new ArrayList<>();
     private boolean isGlobal = false;
 
-    public IntegerItem(String name, boolean isConst, ArrayList<Integer> dims, ArrayList<Integer> values, String tempName) {
+    public FloatItem(String name, boolean isConst, ArrayList<Integer> dims, ArrayList<Float> values, String tempName) {
         this.name = name;
         this.isConst = isConst;
         this.dims = dims;
@@ -43,16 +43,16 @@ public class IntegerItem extends TableItem {
         return dims;
     }
 
-    public int getValue(int i) {
+    public float getValue(int i) {
         return values.get(i);
     }
 
-    public void setValue(int i, int value) {
+    public void setValue(int i, float value) {
         values.set(i, value);
     }
 
     @Override
     public String getVarType() {
-        return "i32";
+        return "float";
     }
 }

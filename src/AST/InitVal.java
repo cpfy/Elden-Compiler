@@ -15,6 +15,7 @@ public class InitVal extends Node {
         for (Exp exp: exps) {
             exp.addMidCode();
         }
+        
     }
 
     public ArrayList<Exp> getInit() {

@@ -7,8 +7,7 @@ int f() {
 int b = 2;
 int main() {
 	int x = 5;
-	if (5 <= x) {
-	    printf("123");
+	if (f() <= x) {
 	}
 	return 0;
 }

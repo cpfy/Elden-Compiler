@@ -12,5 +12,6 @@ public class StmtExp extends Stmt {
         if (exp != null) {
             exp.addMidCode();
         }
+        
     }
 }

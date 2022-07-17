@@ -18,9 +18,11 @@ public class CompUnit extends Node {
         for (Decl decl: decls) {
             decl.addMidCode();
         }
+        isGlobal = false;
         for (FuncDef funcDef: funcDefs) {
             funcDef.addMidCode();
         }
         mainFuncDef.addMidCode();
+        
     }
 }

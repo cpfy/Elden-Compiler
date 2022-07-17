@@ -4,7 +4,13 @@ public class ConstFloat extends MyNumber {
     private float constFloat;
 
     public ConstFloat(float constFloat) {
+        setType("float");
         this.constFloat = constFloat;
+    }
+
+    @Override
+    public String addCodePre() {
+        return "";
     }
 
     @Override
@@ -15,7 +21,7 @@ public class ConstFloat extends MyNumber {
     @Override
     public void calculate() {
         //todo!!!!!
-        value = (int) constFloat;
+        valueF = constFloat;
     }
 
     @Override

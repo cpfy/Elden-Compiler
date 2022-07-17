@@ -1,0 +1,23 @@
+@a = dso_local global i32 0
+@b = dso_local global i32 2
+
+define dso_local i32 @f() {
+ret i32 123
+}
+
+define dso_local i32 @main() {
+%1 = alloca i32
+store i32 5, i32* %1
+
+%2 = call i32 @f()
+%3 = load i32, i32* %1
+%4 = icmp sle i32 %2, %3
+%5 = zext i1 %4 to i32
+%6 = icmp ne i32 %5, 0
+br i1 %6, label %7, label %&1
+7:
+br label %8
+8:
+ret i32 0
+}
+

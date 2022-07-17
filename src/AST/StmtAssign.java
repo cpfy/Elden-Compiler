@@ -1,7 +1,5 @@
 package AST;
 
-import midCode.MidCodeType;
-
 public class StmtAssign extends Stmt {
     private LVal lVal;
     private Exp exp;
@@ -14,13 +12,28 @@ public class StmtAssign extends Stmt {
     @Override
     public void addMidCode() {
         lVal.setAssign(true);
-        lVal.addMidCode();
         exp.addMidCode();
-        if (!lVal.isArray()) {
-            midCodeList.addMidCodeItem(MidCodeType.ASSIGNOP, exp.getTemp(), null, lVal.getTemp());
+        lVal.addMidCode();
+        String tempExp = exp.getTemp();
+        String tempLVal = lVal.getTemp();
+        if (exp.getType().equals("i32") && lVal.getType().equals("float")) {
+            String newTemp = newTemp();
+            addCode(newTemp + " = sitofp i32 " + tempExp + " to float\n");
+            tempExp = newTemp;
         }
-        else {
-            midCodeList.addMidCodeItem(MidCodeType.PUTARRAY, exp.getTemp(), lVal.getTemp(), lVal.getId().getRawWord().getName());
+        else if (exp.getType().equals("float") && lVal.getType().equals("i32")) {
+            String newTemp = newTemp();
+            addCode(newTemp + " = fptosi float " + tempExp + " to i32\n");
+            tempExp = newTemp;
         }
+        addCode("store " + lVal.getType() + " " + tempExp + ", "
+                + lVal.getType() + "* " + tempLVal + "\n");
+        
+//        if (!lVal.isArray()) {
+//            midCodeList.addMidCodeItem(MidCodeType.ASSIGNOP, exp.getTemp(), null, lVal.getTemp());
+//        }
+//        else {
+//            midCodeList.addMidCodeItem(MidCodeType.PUTARRAY, exp.getTemp(), lVal.getTemp(), lVal.getId().getRawWord().getName());
+//        }
     }
 }

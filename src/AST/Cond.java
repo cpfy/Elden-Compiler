@@ -11,6 +11,7 @@ public class Cond extends Node {
 
     public void addMidCode(String jump) {
         lOrExps.addMidCode(jump);
+        
     }
 
     @Override

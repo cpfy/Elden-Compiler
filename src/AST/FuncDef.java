@@ -1,8 +1,6 @@
 package AST;
 
-import midCode.MidCodeType;
 import symbolTable.items.FunctionItem;
-import word.RawWord;
 
 import java.util.ArrayList;
 
@@ -21,17 +19,30 @@ public class FuncDef extends Def {
 
     @Override
     public void addMidCode() {
+        addCode("\n");
         table.addFunc(new FunctionItem(id.getRawWord().getName(), funcType, null));
         table.newFunc();
-        midCodeList.addMidCodeItem(MidCodeType.FUNC, funcType, null, id.getRawWord().getName());
+        labels = 0;
+        addCode("define dso_local " + funcType + " @" + id.getRawWord().getName() + "(");
+        for (int i = 0; i < funcFParams.size(); i++) {
+            if (i > 0) {
+                addCode(", ");
+            }
+            funcFParams.get(i).addMidCode();
+        }
+        addCode(") {\n");
+        newLable();
         for (FuncFParam funcFParam: funcFParams) {
-            funcFParam.addMidCode();
+            funcFParam.copyValue();
         }
         block.addMidCode();
+        if (funcType.equals("void")) {
+            addCode("ret void\n");
+        }
+        addCode("}\n");
     }
 
-    @Override
-    void tableInsert() {
+    void tableInsert(String tempName) {
 
     }
 }

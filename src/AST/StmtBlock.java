@@ -1,7 +1,5 @@
 package AST;
 
-import midCode.MidCodeType;
-
 import java.util.ArrayList;
 
 public class StmtBlock extends Stmt {
@@ -13,13 +11,19 @@ public class StmtBlock extends Stmt {
 
     @Override
     public void addMidCode() {
-        int l = newLable();
-        midCodeList.addMidCodeItem(MidCodeType.LABEL, String.valueOf(l), "in", null);
         table.newBlock();
         for (BlockItem blockItem: blockItems) {
             blockItem.addMidCode();
         }
         table.deleteBlock();
-        midCodeList.addMidCodeItem(MidCodeType.LABEL, String.valueOf(l), "out", null);
+        
+//        int l = newLable();
+//        midCodeList.addMidCodeItem(MidCodeType.LABEL, String.valueOf(l), "in", null);
+//        table.newBlock();
+//        for (BlockItem blockItem: blockItems) {
+//            blockItem.addMidCode();
+//        }
+//        table.deleteBlock();
+//        midCodeList.addMidCodeItem(MidCodeType.LABEL, String.valueOf(l), "out", null);
     }
 }

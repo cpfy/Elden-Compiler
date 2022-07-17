@@ -1,27 +1,23 @@
 package symbolTable;
 
+import symbolTable.items.FloatItem;
 import symbolTable.items.FunctionItem;
 import symbolTable.items.IntegerItem;
-import symbolTable.items.ParamItem;
-
-import java.util.ArrayList;
+import symbolTable.items.TableItem;
 
 public class Table {
-    private IntegerTable tableNow;
+    private NumberTable tableNow;
     private FuncTable funcTable;
-    private IntegerTable globalTable;
     private FunctionItem functionNow = null;
     private boolean funcFlag = false;
-    private int addr = 0;
 
     public Table() {
-        tableNow = new IntegerTable(null);
-        globalTable = tableNow;
+        tableNow = new NumberTable(null);
         funcTable = new FuncTable();
     }
 
     public void newFunc() {
-        tableNow = new IntegerTable(tableNow);
+        tableNow = new NumberTable(tableNow);
         funcFlag = true;
     }
 
@@ -30,28 +26,15 @@ public class Table {
             funcFlag = false;
             return;
         }
-        tableNow = new IntegerTable(tableNow);
+        tableNow = new NumberTable(tableNow);
     }
 
     public void deleteBlock() {
-        tableNow.setMaxaddr(addr); //  <
         tableNow = tableNow.getParent();
-    }
-
-    public int getFuncLen(String name) {
-        return funcTable.searchFunc(name).getLen();
-    }
-
-    public void endMain() {
-        functionNow.setLen(addr);
     }
 
     public boolean addFunc(FunctionItem functionItem) {
         if (true) {
-            if (functionNow != null) {
-                functionNow.setLen(addr);
-                addr = 0;
-            }
             functionNow = functionItem;
             funcTable.addFunc(functionItem);
             return true;
@@ -59,57 +42,48 @@ public class Table {
         return false;
     }
 
+    public FunctionItem getFunctionNow() {
+        return functionNow;
+    }
+
+    //通过变量名获取变量类型
+    public String getVarType(String name) {
+        return tableNow.searchAllNumber(name).getVarType();
+    }
+
     public boolean addInteger(IntegerItem integerItem) {
-        if (tableNow.searchInteger(integerItem.getName()) == null) {
+        if (tableNow.searchNumber(integerItem.getName()) == null) {
             tableNow.addInteger(integerItem);
-            integerItem.setAddr(addr);
-            ArrayList<Integer> dims = integerItem.getDims();
-            if (dims.size() == 0 || integerItem.isPointer()) {
-                addr++;
-            }
-            else if (dims.size() == 1) {
-                addr += dims.get(0);
-            }
-            else if (dims.size() == 2) {
-                addr += dims.get(0) * dims.get(1);
-            }
             return true;
         }
         return false;
+    }
+
+    public boolean addFloat(FloatItem floatItem) {
+        if (tableNow.searchNumber(floatItem.getName()) == null) {
+            tableNow.addFloat(floatItem);
+            return true;
+        }
+        return false;
+    }
+
+    public void addParam(TableItem param) {
+        functionNow.addParam(param);
+    }
+
+    public String getVarTempName(String name) {
+        return tableNow.searchAllNumber(name).getTempName();
     }
 
     public String getFuncType(String name) {
         return funcTable.searchFunc(name).getRetType();
     }
 
-    public int getValue(String name, int index) {
-        return tableNow.searchAllInteger(name).getValue(index);
+    public TableItem getValue(String name) {
+        return tableNow.searchAllNumber(name);
     }
 
-    public int getDimNum(String name) {
-        return tableNow.searchAllInteger(name).getDims().size();
+    public FunctionItem getFunction(String name) {
+        return funcTable.searchFunc(name);
     }
-
-    public int getDim2(String name) {
-        return tableNow.searchAllInteger(name).getDim2();
-    }
-
-    public int getAddr(String name) {
-        if (tableNow.searchAllInteger(name) != null) {
-            return tableNow.searchAllInteger(name).getAddr();
-        }
-        return -1;
-    }
-
-    public int getParamNum(String name) {
-        return funcTable.searchFunc(name).getParamNum();
-    }
-
-    public boolean isPointer(String name) {
-        if (tableNow.searchAllInteger(name) == null) {
-            return false;
-        }
-        return tableNow.searchAllInteger(name).isPointer();
-    }
-
 }

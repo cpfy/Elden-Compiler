@@ -4,7 +4,13 @@ public class ConstInt extends MyNumber {
     private int constInt;
 
     public ConstInt(int constInt) {
+        setType("i32");
         this.constInt = constInt;
+    }
+
+    @Override
+    public String addCodePre() {
+        return "";
     }
 
     @Override

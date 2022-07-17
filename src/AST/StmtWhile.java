@@ -1,7 +1,5 @@
 package AST;
 
-import midCode.MidCodeType;
-
 public class StmtWhile extends Stmt {
 
     private Cond cond;
@@ -14,19 +12,36 @@ public class StmtWhile extends Stmt {
 
     @Override
     public void addMidCode() {
-        String jump1 = "jump" + newJumpDst();
-        String jump2 = "jump" + newJumpDst();
-        String jump3 = "jump" + newJumpDst();
-        jumps.add(0, jump1);
-        jumps.add(0, jump3);
-        midCodeList.addMidCodeItem(MidCodeType.JUMP, null, null, jump3);
-        cond.addMidCode(jump2);
-        midCodeList.addMidCodeItem(MidCodeType.GOTO, null, null, jump1);
-        midCodeList.addMidCodeItem(MidCodeType.JUMP, null, null, jump2);
+
+        String start = newLable();
+        String end = newReload();
+        addCode("br label %" + start + "\n");
+        jumps.add(start);
+        jumps.add(end);
+        addCode(start + ":\n");
+        cond.addMidCode(end);
         stmt.addMidCode();
-        midCodeList.addMidCodeItem(MidCodeType.GOTO, null, null, jump3);
-        midCodeList.addMidCodeItem(MidCodeType.JUMP, null, null, jump1);
-        jumps.remove(0);
-        jumps.remove(0);
+        addCode("br label %" + start + "\n");
+
+
+        String label2 = newLable();
+        addReload(end, label2);
+        addCode(label2 + ":\n");
+
+
+//        String jump1 = "jump" + newJumpDst();
+//        String jump2 = "jump" + newJumpDst();
+//        String jump3 = "jump" + newJumpDst();
+//        jumps.add(0, jump1);
+//        jumps.add(0, jump3);
+//        midCodeList.addMidCodeItem(MidCodeType.JUMP, null, null, jump3);
+//        cond.addMidCode(jump2);
+//        midCodeList.addMidCodeItem(MidCodeType.GOTO, null, null, jump1);
+//        midCodeList.addMidCodeItem(MidCodeType.JUMP, null, null, jump2);
+//        stmt.addMidCode();
+//        midCodeList.addMidCodeItem(MidCodeType.GOTO, null, null, jump3);
+//        midCodeList.addMidCodeItem(MidCodeType.JUMP, null, null, jump1);
+//        jumps.remove(0);
+//        jumps.remove(0);
     }
 }

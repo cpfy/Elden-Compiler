@@ -13,8 +13,10 @@ public class ConstDecl extends Decl {
 
     @Override
     public void addMidCode() {
+        setDeclType(type);
         for (ConstDef constDef: constDefs) {
             constDef.addMidCode();
         }
+        
     }
 }

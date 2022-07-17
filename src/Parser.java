@@ -1,5 +1,4 @@
 import AST.*;
-import midCode.MidCodeList;
 import word.RawWord;
 import word.WordType;
 
@@ -20,16 +19,14 @@ public class Parser {
         this.rawWords = rawWords;
         compUnit = getCompUnit();
         compUnit.addMidCode();
-        compUnit.getMidCodeList().output();
+        PrintStream printStream = new PrintStream("txt/LLVM IR.txt");
+        printStream.println(compUnit.getLLVMIR().toString());
     }
 
     public ArrayList<String> getStrings() {
         return compUnit.getStrings();
     }
 
-    public MidCodeList getMidCodeList() {
-        return compUnit.getMidCodeList();
-    }
 
     private void error() {
         System.out.println("error at line: " + rawWords.get(point - 1).getLine());
@@ -127,7 +124,7 @@ public class Parser {
         String type = null;
         if (seeNextWord().getType() == WordType.INTTK) {
             getNextWord();
-            type = "int";
+            type = "i32";
         }
         else if (seeNextWord().getType() == WordType.FLOATTK) {
             getNextWord();
@@ -328,7 +325,7 @@ public class Parser {
         }
         else if (seeNextWord().getType() == WordType.INTTK) {
             getNextWord();
-            type = "int";
+            type = "i32";
         }
         else if (seeNextWord().getType() == WordType.FLOATTK) {
             getNextWord();

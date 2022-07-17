@@ -1,12 +1,14 @@
 package AST;
 
-import midCode.MidCodeType;
-
 import java.util.ArrayList;
 
 public class LAndExp extends Node {
 
     private ArrayList<Exp> exps = new ArrayList<>();
+    private ArrayList<String> temps = new ArrayList<>();
+    private ArrayList<String> lables = new ArrayList<>();
+
+    private String preCode = "";
 
     public LAndExp(ArrayList<Exp> exps) {
         this.exps = exps;
@@ -17,10 +19,44 @@ public class LAndExp extends Node {
 
     }
 
-    public void addMidCode(String jump) {
+    public String getLastLable() {
+        return lables.get(lables.size() - 1);
+    }
+
+    public void addMidCode(String jump1, String jump2, boolean isLast) {
+        int i;
+        String out = lables.get(lables.size() - 1);
+        for (i = 0; i < exps.size(); i++) {
+            if (i == exps.size() - 1) {
+                if (isLast) {
+                    exps.get(i).getCodes().append("br i1 " + temps.get(i) + ", "
+                            + "label %" + jump1 + ", "
+                            + "label %" + jump2 + "\n");
+                }
+                else {
+                    exps.get(i).getCodes().append("br i1 " + temps.get(i) + ", "
+                            + "label %" + jump1 + ", "
+                            + "label %" + out + "\n");
+                }
+            }
+            else {
+                exps.get(i).getCodes().append("br i1 " + temps.get(i) + ", "
+                        + "label %" + lables.get(i) + ", "
+                        + "label %" + out + "\n");
+            }
+            exps.get(i).getCodes().append(lables.get(i) + ":\n");
+            exps.get(i).generate();
+        }
+    }
+
+    public void addMidCodePre() {
         for (Exp exp: exps) {
-            exp.addMidCode();
-            midCodeList.addMidCodeItem(MidCodeType.BZ, exp.getTemp(), null, jump);
+            exp.addCodePre();
+            String t = newTemp();
+            temps.add(t);
+            exp.getCodes().append(t + " = icmp ne i32 " + exp.getTemp() + ", 0\n");
+            lables.add(newLable());
+//            exp.generate();
         }
     }
 }

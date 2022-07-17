@@ -24,10 +24,10 @@ public class Lexer {
         StringBuilder str = new StringBuilder("");
         try {
             FileInputStream is = new FileInputStream(input);
-            InputStreamReader isr = new InputStreamReader(is);
+            InputStreamReader isr =  new InputStreamReader(is);
             BufferedReader in = new BufferedReader(isr);
             String line = null;
-            while ((line = in.readLine()) != null) {
+            while((line = in.readLine()) != null) {
                 str.append(line).append('\r').append('\n');
             }
             in.close();
@@ -74,6 +74,16 @@ public class Lexer {
         return letter >= 'a' && letter <= 'z'
                 || letter >= 'A' && letter <= 'Z'
                 || letter == '_';
+    }
+
+    private boolean isConstNum(char c) {
+        return isDigit(c) || isDot(c) || isEorP(c)
+                || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')
+                || c == 'x' || c == 'X';
+    }
+
+    private boolean isEorP(char c) {
+        return c == 'p' || c == 'P' || c == 'e' || c == 'E';
     }
 
     private boolean isDigit(char digit) {
@@ -140,18 +150,23 @@ public class Lexer {
             return;
         }
 
-        if (isDigit(ch)) {
+        if (isDigit(ch) || isDot(ch)) {
             boolean isInt = true;
-            while (isDigit(sourceCode.charAt(headPoint)) || isDot(sourceCode.charAt(headPoint))) {
-                if (isDot(sourceCode.charAt(headPoint))) {
+            while (isConstNum(sourceCode.charAt(headPoint))) {
+                if (isDot(sourceCode.charAt(headPoint)) || isEorP(sourceCode.charAt(headPoint))) {
                     isInt = false;
+                }
+                if (isEorP(sourceCode.charAt(headPoint))) {
+                    token += sourceCode.charAt(headPoint);
+                    headPoint++;
                 }
                 token += sourceCode.charAt(headPoint);
                 headPoint++;
             }
             if (isInt) {
                 rawWords.add(new RawWord(token, WordType.INTCON, line));
-            } else {
+            }
+            else {
                 rawWords.add(new RawWord(token, WordType.FLOATCON, line));
             }
             return;
@@ -256,7 +271,8 @@ public class Lexer {
                 token += sourceCode.charAt(headPoint);
                 headPoint++;
                 rawWords.add(new RawWord(token, WordType.LEQ, line));
-            } else {
+            }
+            else {
                 rawWords.add(new RawWord(token, WordType.LSS, line));
             }
             return;
@@ -269,7 +285,8 @@ public class Lexer {
                 token += sourceCode.charAt(headPoint);
                 headPoint++;
                 rawWords.add(new RawWord(token, WordType.GEQ, line));
-            } else {
+            }
+            else {
                 rawWords.add(new RawWord(token, WordType.GRE, line));
             }
             return;
@@ -282,7 +299,8 @@ public class Lexer {
                 token += sourceCode.charAt(headPoint);
                 headPoint++;
                 rawWords.add(new RawWord(token, WordType.EQL, line));
-            } else {
+            }
+            else {
                 rawWords.add(new RawWord(token, WordType.ASSIGN, line));
             }
             return;
@@ -295,7 +313,8 @@ public class Lexer {
                 token += sourceCode.charAt(headPoint);
                 headPoint++;
                 rawWords.add(new RawWord(token, WordType.NEQ, line));
-            } else {
+            }
+            else {
                 rawWords.add(new RawWord(token, WordType.NOT, line));
             }
             return;
@@ -308,7 +327,8 @@ public class Lexer {
                 token += sourceCode.charAt(headPoint);
                 headPoint++;
                 rawWords.add(new RawWord(token, WordType.AND, line));
-            } else {
+            }
+            else {
                 error();
             }
             return;
@@ -321,7 +341,8 @@ public class Lexer {
                 token += sourceCode.charAt(headPoint);
                 headPoint++;
                 rawWords.add(new RawWord(token, WordType.OR, line));
-            } else {
+            }
+            else {
                 error();
             }
             return;
@@ -333,10 +354,10 @@ public class Lexer {
     }
 
     public void output1(PrintStream printStream) {
-        for (RawWord rawWord : rawWords) {
+        for (RawWord rawWord: rawWords) {
             printStream.println(rawWord.output1());
         }
-        for (String s : errors) {
+        for (String s: errors) {
             printStream.println(s);
         }
     }
