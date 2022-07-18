@@ -210,6 +210,49 @@ ValueInstruction
 	| CleanupPadInst
 ```
 
+##### Binary类
+
+```
+AddInst
+	: "add" OverflowFlags Type Value "," Value OptCommaSepMetadataAttachmentList
+;
+
+FAddInst
+	: "fadd" FastMathFlags Type Value "," Value OptCommaSepMetadataAttachmentList
+;
+
+SubInst
+	: "sub" OverflowFlags Type Value "," Value OptCommaSepMetadataAttachmentList
+;
+
+FSubInst
+	: "fsub" FastMathFlags Type Value "," Value OptCommaSepMetadataAttachmentList
+;
+
+MulInst
+	: "mul" OverflowFlags Type Value "," Value OptCommaSepMetadataAttachmentList
+;
+
+FMulInst
+	: "fmul" FastMathFlags Type Value "," Value OptCommaSepMetadataAttachmentList
+;
+
+UDivInst（未用到）
+	: "udiv" OptExact Type Value "," Value OptCommaSepMetadataAttachmentList
+;
+
+SDivInst
+	: "sdiv" OptExact Type Value "," Value OptCommaSepMetadataAttachmentList
+;
+
+FDivInst
+	: "fdiv" FastMathFlags Type Value "," Value OptCommaSepMetadataAttachmentList
+;
+
+```
+
+
+
 ##### StoreInst
 
 ```
@@ -220,6 +263,20 @@ StoreInst
 	| "store" "atomic" OptVolatile Type Value "," Type Value OptSyncScope AtomicOrdering "," Alignment OptCommaSepMetadataAttachmentList
 ;
 ```
+
+##### LoadInst
+
+```
+LoadInst
+	// Load.
+	: "load" OptVolatile Type "," Type Value OptCommaSepMetadataAttachmentList
+	| "load" OptVolatile Type "," Type Value "," Alignment OptCommaSepMetadataAttachmentList
+	// Atomic load.
+	| "load" "atomic" OptVolatile Type "," Type Value OptSyncScope AtomicOrdering OptCommaSepMetadataAttachmentList
+	| "load" "atomic" OptVolatile Type "," Type Value OptSyncScope AtomicOrdering "," Alignment OptCommaSepMetadataAttachmentList
+```
+
+
 
 #### Float
 
