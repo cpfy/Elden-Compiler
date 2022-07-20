@@ -100,6 +100,29 @@ FunctionBody
 	: "{" BasicBlockList UseListOrders "}"
 ```
 
+##### Params系列
+
+```
+Params
+	: empty
+	| "..."
+	| ParamList
+	| ParamList "," "..."
+;
+
+ParamList
+	: Param
+	| ParamList "," Param
+;
+
+Param
+	: Type ParamAttrs
+	| Type ParamAttrs LocalIdent
+;
+```
+
+
+
 #### Block
 
 ##### BasicBlockList
@@ -274,6 +297,43 @@ LoadInst
 	// Atomic load.
 	| "load" "atomic" OptVolatile Type "," Type Value OptSyncScope AtomicOrdering OptCommaSepMetadataAttachmentList
 	| "load" "atomic" OptVolatile Type "," Type Value OptSyncScope AtomicOrdering "," Alignment OptCommaSepMetadataAttachmentList
+```
+
+#### Terminator
+
+```
+Terminator
+	: RetTerm
+	| BrTerm
+	| CondBrTerm
+	| SwitchTerm
+	| IndirectBrTerm
+	| InvokeTerm
+	| ResumeTerm
+	| CatchSwitchTerm
+	| CatchRetTerm
+	| CleanupRetTerm
+	| UnreachableTerm
+;
+```
+
+##### 各种Term
+
+```
+RetTerm
+	// Void return.
+	: "ret" VoidType OptCommaSepMetadataAttachmentList
+	// Value return.
+	| "ret" ConcreteType Value OptCommaSepMetadataAttachmentList
+;
+
+BrTerm
+	: "br" LabelType LocalIdent OptCommaSepMetadataAttachmentList
+;
+
+CondBrTerm
+	: "br" IntType Value "," LabelType LocalIdent "," LabelType LocalIdent OptCommaSepMetadataAttachmentList
+;
 ```
 
 
