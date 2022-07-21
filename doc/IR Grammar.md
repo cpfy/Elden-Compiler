@@ -336,7 +336,43 @@ CondBrTerm
 ;
 ```
 
+##### LabelType
 
+```
+LabelType
+	: "label"
+```
+
+##### Label
+
+```
+Label             [-a-zA-Z$._0-9]+
+```
+
+##### LocalIdent
+
+```
+LocalIdent
+	: local_ident
+;
+```
+
+##### local系列
+
+```
+local_ident
+	: _local_name
+	| _local_id
+;
+
+_local_name
+	: '%' ( _name | _quoted_name )
+;
+
+_local_id
+	: '%' _id
+;
+```
 
 #### Float
 
@@ -475,6 +511,18 @@ VoidType
 
 
 
+#### Value
+
+```
+Value
+	: Constant
+	// %42
+	// %foo
+	| LocalIdent
+	| InlineAsm
+;
+```
+
 #### Constants
 
 ##### Constant
@@ -499,7 +547,7 @@ Constant
 	| ConstantExpr
 ```
 
-##### Other
+##### const系列
 
 ```
 IntConst
@@ -512,5 +560,82 @@ IntLit
 
 FloatConst
 	: float_lit
+```
+
+##### lit系列
+
+```
+int_lit
+	: _decimal_lit
+;
+
+_decimal_lit
+	: [ '-' ] _decimals
+;
+
+_decimals
+	: _decimal_digit { _decimal_digit }
+
+float_lit
+	: _frac_lit
+	| _sci_lit
+	| _float_hex_lit
+;
+
+_frac_lit
+	: [ _sign ] _decimals '.' { _decimal_digit }
+;
+```
+
+
+
+#### id & name
+
+```
+_name
+	: _letter { _letter | _decimal_digit }
+;
+
+_escape_name
+	: _escape_letter { _escape_letter | _decimal_digit }
+;
+
+_quoted_name
+	: _quoted_string
+;
+
+_id
+	: _decimals
+;
+```
+
+#### digits & decimal
+
+```
+_letter
+	: _ascii_letter
+	| '$'
+	| '-'
+	| '.'
+	| '_'
+;
+
+_escape_letter
+	: _letter
+	| '\\'
+;
+
+_decimal_digit
+	: '0' - '9'
+;
+
+_hex_digit
+	: _decimal_digit
+	| 'A' - 'F'
+	| 'a' - 'f'
+;
+
+_decimals
+	: _decimal_digit { _decimal_digit }
 ```
 
