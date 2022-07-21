@@ -26,6 +26,9 @@ public class FuncCall extends ExpUnary {
         ArrayList<TableItem> funcFParams = table.getFunction(id.getRawWord().getName()).getParamItems();
         ArrayList<String> realParams = new ArrayList<>();
         for (int i = 0; i < funcFParams.size(); i++) {
+            if (funcFParams.get(i).getDims().size() > 0) {
+                setIsPoint(true);
+            }
             addCode(params.get(i).addCodePre());
             String paraTemp = params.get(i).getTemp();
             if (funcFParams.get(i).getVarType().equals("i32") && params.get(i).getType().equals("float")) {
@@ -39,6 +42,7 @@ public class FuncCall extends ExpUnary {
                 paraTemp = nt;
             }
             realParams.add(paraTemp);
+            setIsPoint(false);
         }
 
         if (!retType.equals("void")) {
@@ -51,7 +55,7 @@ public class FuncCall extends ExpUnary {
             if (i > 0) {
                 addCode(", ");
             }
-            addCode(funcFParams.get(i).getVarType() + " " + realParams.get(i));
+            addCode(funcFParams.get(i).getDetailType() + " " + realParams.get(i));
         }
 
         addCode(")\n");

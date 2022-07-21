@@ -4,6 +4,7 @@ import symbolTable.items.FloatItem;
 import symbolTable.items.IntegerItem;
 import symbolTable.items.TableItem;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class NumberTable {
@@ -38,7 +39,6 @@ public class NumberTable {
         }
         return parent.searchAllNumber(name);
     }
-
 
     public NumberTable getParent() {
         return parent;

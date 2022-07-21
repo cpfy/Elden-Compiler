@@ -53,7 +53,6 @@ public class Parser {
     }
 
     //CompUnit → [ CompUnit ] ( Decl | FuncDef )
-    //todo changed
     private CompUnit getCompUnit() {
         ArrayList<Decl> decls = new ArrayList<>();
         ArrayList<FuncDef> funcDefs = new ArrayList<>();
@@ -591,7 +590,6 @@ public class Parser {
 
     //LVal → Ident {'[' Exp ']'}
     private LVal getLVal() {
-        //todo
         ID id = null;
         ArrayList<Exp> dims = new ArrayList<>();
         if (seeNextWord().getType() != WordType.IDENFR) {
@@ -649,7 +647,6 @@ public class Parser {
     //UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')'
     //    | UnaryOp UnaryExp
     private Exp getUnaryExp() {
-        //todo
         Exp exp = null;
         if (seeNextWord().getType() == WordType.PLUS
                 || seeNextWord().getType() == WordType.MINU
@@ -818,7 +815,6 @@ public class Parser {
     }
 
     private Exp getConstExp() {
-        //todo
         Exp exp = null;
         exp = getAddExp();
         outputs.add("<ConstExp>");

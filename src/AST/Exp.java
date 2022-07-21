@@ -1,7 +1,7 @@
 package AST;
 
 public abstract class Exp extends Node {
-    String type = null;
+    String type;
     int value;
     float valueF;
     public boolean calculated = false;

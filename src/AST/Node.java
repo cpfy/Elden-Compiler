@@ -10,6 +10,16 @@ public abstract class Node {
 
     static int reloadNum = 0;
 
+    static boolean isPoint;
+
+    static void setIsPoint(boolean b) {
+        isPoint = b;
+    }
+
+    static boolean isPoint() {
+        return isPoint;
+    }
+
     static HashMap<String, String> reloadMap = new HashMap<>();
 
     public String newReload() {
@@ -71,6 +81,36 @@ public abstract class Node {
             IR = IR.replace(key, reloadMap.get(key));
         }
         return IR;
+    }
+
+    public String getArrayType(ArrayList<Exp> exps, String type) {
+        StringBuilder ans = new StringBuilder();
+        for (Exp exp: exps) {
+            ans.append("[").append(exp.getValue()).append(" x ");
+        }
+        ans.append(type);
+        for (Exp exp: exps) {
+            ans.append("]");
+        }
+        return ans.toString();
+    }
+
+    public String getArrayType(ArrayList<Integer> exps, String type, int n) {
+        StringBuilder ans = new StringBuilder();
+        int i = 0;
+        for (Integer exp: exps) {
+            if (i++ >= n) {
+                ans.append("[").append(exp).append(" x ");
+            }
+        }
+        ans.append(type);
+        i = 0;
+        for (Integer exp: exps) {
+            if (i++ >= n) {
+                ans.append("]");
+            }
+        }
+        return ans.toString();
     }
 
     public void addCode(String s) {

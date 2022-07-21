@@ -9,6 +9,7 @@ public class IntegerItem extends TableItem {
     private ArrayList<Integer> dims = new ArrayList<>();
     private ArrayList<Integer> values = new ArrayList<>();
     private boolean isGlobal = false;
+    private String detailType;
 
     public IntegerItem(String name, boolean isConst, ArrayList<Integer> dims, ArrayList<Integer> values, String tempName) {
         this.name = name;
@@ -16,6 +17,20 @@ public class IntegerItem extends TableItem {
         this.dims = dims;
         this.values = values;
         this.tempName = tempName;
+        this.detailType = "i32";
+    }
+
+    public IntegerItem(String name, boolean isConst, ArrayList<Integer> dims, ArrayList<Integer> values, String tempName, String detailType) {
+        this.name = name;
+        this.isConst = isConst;
+        this.dims = dims;
+        this.values = values;
+        this.tempName = tempName;
+        this.detailType = detailType;
+    }
+
+    public String getDetailType() {
+        return detailType;
     }
 
     @Override
@@ -37,6 +52,11 @@ public class IntegerItem extends TableItem {
 
     public boolean isConst() {
         return isConst;
+    }
+
+    @Override
+    public String getValueString() {
+        return String.valueOf(values.get(0));
     }
 
     public ArrayList<Integer> getDims() {

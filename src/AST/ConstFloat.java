@@ -20,7 +20,6 @@ public class ConstFloat extends MyNumber {
 
     @Override
     public void calculate() {
-        //todo!!!!!
         valueF = constFloat;
     }
 

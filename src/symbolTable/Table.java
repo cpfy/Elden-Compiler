@@ -5,6 +5,8 @@ import symbolTable.items.FunctionItem;
 import symbolTable.items.IntegerItem;
 import symbolTable.items.TableItem;
 
+import java.util.ArrayList;
+
 public class Table {
     private NumberTable tableNow;
     private FuncTable funcTable;
@@ -67,6 +69,10 @@ public class Table {
         return false;
     }
 
+    public ArrayList<Integer> getVarDimsByName(String name) {
+        return tableNow.searchAllNumber(name).getDims();
+    }
+
     public void addParam(TableItem param) {
         functionNow.addParam(param);
     }
@@ -81,6 +87,24 @@ public class Table {
 
     public TableItem getValue(String name) {
         return tableNow.searchAllNumber(name);
+    }
+
+    public int getIndex(String name, ArrayList<Integer> inputDims) {
+        ArrayList<Integer> dims = tableNow.searchAllNumber(name).getDims();
+        int index = 0;
+        int align = 1;
+        for (Integer integer: dims) {
+            align *= integer;
+        }
+        for (int i = 0; i < inputDims.size(); i++) {
+            align /= dims.get(i);
+            index += align * inputDims.get(i);
+        }
+        return index;
+    }
+
+    public boolean isConst(String name) {
+        return tableNow.searchAllNumber(name).isConst();
     }
 
     public FunctionItem getFunction(String name) {

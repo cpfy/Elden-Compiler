@@ -1,5 +1,7 @@
 package AST;
 
+import symbolTable.items.FloatItem;
+import symbolTable.items.IntegerItem;
 import word.WordType;
 
 import java.util.ArrayList;
@@ -7,7 +9,7 @@ import java.util.ArrayList;
 public class LVal extends ExpPrimary {
     private ID id;
     private ArrayList<Exp> dims = new ArrayList<>();
-    private String temp = null;
+    private String temp;
     private boolean isAssign = false;
 
     public LVal(ID id, ArrayList<Exp> dims) {;
@@ -33,47 +35,6 @@ public class LVal extends ExpPrimary {
             addNotAsAssign();
         }
         return getCodes().toString();
-//        if (isAssign) {
-//            if (dims.size() == 2) {
-//                String temp1 = newTemp();
-//                dims.get(0).addMidCode();
-//                dims.get(1).addMidCode();
-//                midCodeList.addMidCodeItem(MidCodeType.MULTOP, dims.get(0).getTemp(),
-//                        String.valueOf(table.getDim2(id.getRawWord().getName())), temp1);
-//                temp = newTemp();
-//                midCodeList.addMidCodeItem(MidCodeType.PLUSOP, temp1, dims.get(1).getTemp(), temp);
-//            } else if (dims.size() == 1) {
-//                dims.get(0).addMidCode();
-//                temp = dims.get(0).getTemp();
-//            } else {
-//
-//            }
-//        }
-//        else {
-//            if (dims.size() == 2) {
-//                String temp1 = newTemp();
-//                String temp2 = newTemp();
-//                dims.get(0).addMidCode();
-//                dims.get(1).addMidCode();
-//                midCodeList.addMidCodeItem(MidCodeType.MULTOP, dims.get(0).getTemp(),
-//                        String.valueOf(table.getDim2(id.getRawWord().getName())), temp1);
-//                midCodeList.addMidCodeItem(MidCodeType.PLUSOP, temp1, dims.get(1).getTemp(), temp2);
-//                temp = newTemp();
-//                midCodeList.addMidCodeItem(MidCodeType.GETARRAY, temp2, id.getRawWord().getName(), temp);
-//            } else if (dims.size() == 1) {
-//                if (table.getDimNum(id.getRawWord().getName()) == 1) {
-//                    dims.get(0).addMidCode();
-//                    temp = newTemp();
-//                    midCodeList.addMidCodeItem(MidCodeType.GETARRAY, dims.get(0).getTemp(), id.getRawWord().getName(), temp);
-//                }
-//                else {
-//                    dims.get(0).addMidCode();
-//                    temp = id.getRawWord().getName() + "@" + dims.get(0).getTemp();
-//                }
-//            } else {
-//
-//            }
-//        }
     }
 
     @Override
@@ -83,30 +44,106 @@ public class LVal extends ExpPrimary {
 
     @Override
     public void calculate() {
-        //todo
-        int index = 0;
-//        if (dims.size() == 1) {
-//            index = dims.get(0).getValue();
-//        }
-//        else if (dims.size() == 2){
-//            index = dims.get(0).getValue() * table.getDim2(id.getRawWord().getName()) + dims.get(1).getValue();
-//        }
-        //value = table.getValue(id.getRawWord().getName(), index);
+        setType(table.getVarType(id.getRawWord().getName()));
+        ArrayList<Integer> myDims = new ArrayList<>();
+        for (Exp exp: dims) {
+            myDims.add(exp.getValue());
+        }
+        int index = table.getIndex(id.getRawWord().getName(), myDims);
+        if (type.equals("i32")) {
+            value = ((IntegerItem) table.getValue(id.getRawWord().getName())).getValue(index);
+            valueF = value;
+        }
+        else if (type.equals("float")) {
+            valueF = ((FloatItem) table.getValue(id.getRawWord().getName())).getValue(index);
+        }
     }
 
     public boolean isArray() {
-        return dims.size() != 0;
+        return table.getVarDimsByName(id.getRawWord().getName()).size() != 0;
+    }
+
+    private String getPtr() {
+        this.temp = table.getVarTempName(id.getRawWord().getName());
+        if (dims.size() == 0) {
+            return "";
+        }
+        StringBuilder ans = new StringBuilder();
+        ArrayList<Integer> varDims = table.getVarDimsByName(id.getRawWord().getName());
+        if (varDims.get(0) == -1) {
+            //todo 函数传参
+            System.out.println(123123);
+            String nt = newTemp();
+            String arrayType = getArrayType(varDims, type, 1);
+            ans.append(nt + " = load " + arrayType + "*, " + arrayType + "** " + temp + "\n");
+            this.temp = nt;
+            ans.append(dims.get(0).addCodePre());
+            nt = newTemp();
+            ans.append(nt + " = getelementptr inbounds " + arrayType + ", " + arrayType + "* " + temp + ", i32 " + dims.get(0).getTemp() + "\n");
+            this.temp = nt;
+        }
+        else {
+            ans.append(dims.get(0).addCodePre());
+            String nt = newTemp();
+            String arrayType = getArrayType(varDims, type, 0);
+            ans.append(nt + " = getelementptr inbounds " + arrayType + ", " + arrayType + "* " + temp + ", i32 0" + ", i32 " + dims.get(0).getTemp() + "\n");
+            this.temp = nt;
+        }
+        for (int i = 1; i < dims.size(); i++) {
+            ans.append(dims.get(i).addCodePre());
+            String nt = newTemp();
+            String arrayType = getArrayType(varDims, type, i);
+            ans.append(nt + " = getelementptr inbounds " + arrayType + ", " + arrayType + "* " + temp + ", i32 0" + ", i32 " + dims.get(i).getTemp() + "\n");
+            this.temp = nt;
+        }
+        return ans.toString();
     }
 
     private void addAsAssign() {
-        temp = table.getVarTempName(id.getRawWord().getName());
+        if (!isArray()) {
+            temp = table.getVarTempName(id.getRawWord().getName());
+        }
+        else {
+            addCode(getPtr());
+        }
     }
 
     private void addNotAsAssign() {
-        temp = newTemp();
-        addCode(temp + " = load " + table.getVarType(id.getRawWord().getName())
-                + ", " + table.getVarType(id.getRawWord().getName()) + "* "
-                + table.getVarTempName(id.getRawWord().getName()) + "\n");
+        if (!isArray()) {
+            if (!table.isConst(id.getRawWord().getName())) {
+                temp = newTemp();
+                addCode(temp + " = load " + table.getVarType(id.getRawWord().getName())
+                        + ", " + table.getVarType(id.getRawWord().getName()) + "* "
+                        + table.getVarTempName(id.getRawWord().getName()) + "\n");
+            }
+            else {
+                temp = table.getValue(id.getRawWord().getName()).getValueString();
+            }
+        }
+        else {
+            addCode(getPtr());
+            ArrayList<Integer> varDims = table.getVarDimsByName(id.getRawWord().getName());
+            String arrayType = getArrayType(varDims, type, dims.size());
+            String nt = newTemp();
+            if (isPoint()) {
+                if (varDims.get(0) == -1 && dims.size() == 0) {
+                    arrayType = getArrayType(varDims, type, dims.size() + 1);
+                    addCode(nt + " = load " + arrayType
+                            + "*, " + arrayType + "** "
+                            + temp + "\n");
+                }
+                else {
+                    addCode(nt + " = getelementptr inbounds " + arrayType
+                            + ", " + arrayType + "* " + temp + ", i32 0, i32 0\n");
+                }
+            }
+            else {
+                addCode(nt + " = load " + arrayType
+                        + ", " + arrayType + "* "
+                        + temp + "\n");
+            }
+            temp = nt;
+        }
     }
 
     @Override

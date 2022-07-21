@@ -9,52 +9,54 @@ public class FuncFParam extends Def {
     String type;
     ID id;
     ArrayList<Exp> dims;
-    String paramTemp = null;
+    String paramTemp;
+    String detailType;
 
     public FuncFParam(String type, ID id, ArrayList<Exp> dims) {
         this.type = type;
         this.id = id;
         this.dims = dims;
+        this.detailType = type;
+        setType();
+    }
+
+    private void setType() {
+        if (dims.size() > 0) {
+            ArrayList<Integer> dimsInt = new ArrayList<>();
+            for (Exp exp: dims) {
+                dimsInt.add(exp.getValue());
+            }
+            detailType = getArrayType(dimsInt, type, 1) + "*";
+        }
     }
 
     @Override
     public void addMidCode() {
         //todo
         paramTemp = newTemp();
-        addCode(type + " " + paramTemp);
+        addCode(detailType + " " + paramTemp);
         ArrayList<Integer> dimsInt = new ArrayList<>();
         for (Exp exp: dims) {
             dimsInt.add(exp.getValue());
         }
         if (type.equals("i32")) {
-            table.addParam(new IntegerItem(id.getRawWord().getName(), false, dimsInt, null, null));
+            table.addParam(new IntegerItem(id.getRawWord().getName(), false, dimsInt, null, null, detailType));
         }
         else if (type.equals("float")) {
-            table.addParam(new FloatItem(id.getRawWord().getName(), false, dimsInt, null, null));
+            table.addParam(new FloatItem(id.getRawWord().getName(), false, dimsInt, null, null, detailType));
         }
         else {
             System.out.println("\nERROR in FuncF!!!\n");
         }
-//        tableInsert();
-//        if (dims.size() == 0) {
-//            midCodeList.addMidCodeItem(MidCodeType.PARAM, "0", null, id.getRawWord().getName());
-//        }
-//        else if (dims.size() == 1) {
-//            midCodeList.addMidCodeItem(MidCodeType.PARAM, "1", null, id.getRawWord().getName());
-//        }
-//        else if (dims.size() == 2) {
-//            midCodeList.addMidCodeItem(MidCodeType.PARAM, "2", String.valueOf(table.getDim2(id.getRawWord().getName())), id.getRawWord().getName());
-//        }
     }
 
     public void copyValue() {
         //todo
         String temp = newTemp();
         tableInsert(temp);
-        addCode(temp + " = alloca " + type + "\n");
-        //todo 类型转换
-        addCode("store " + type + " " + paramTemp + ", "
-                + type + "* " + temp + "\n");
+        addCode(temp + " = alloca " + detailType + "\n");
+        addCode("store " + detailType + " " + paramTemp + ", "
+                + detailType + "* " + temp + "\n");
     }
 
     void tableInsert(String tempName) {

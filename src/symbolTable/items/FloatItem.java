@@ -9,6 +9,7 @@ public class FloatItem extends TableItem {
     private ArrayList<Integer> dims = new ArrayList<>();
     private ArrayList<Float> values = new ArrayList<>();
     private boolean isGlobal = false;
+    private String detailType;
 
     public FloatItem(String name, boolean isConst, ArrayList<Integer> dims, ArrayList<Float> values, String tempName) {
         this.name = name;
@@ -16,6 +17,20 @@ public class FloatItem extends TableItem {
         this.dims = dims;
         this.values = values;
         this.tempName = tempName;
+        this.detailType = "float";
+    }
+
+    public FloatItem(String name, boolean isConst, ArrayList<Integer> dims, ArrayList<Float> values, String tempName, String detailType) {
+        this.name = name;
+        this.isConst = isConst;
+        this.dims = dims;
+        this.values = values;
+        this.tempName = tempName;
+        this.detailType = detailType;
+    }
+
+    public String getDetailType() {
+        return detailType;
     }
 
     @Override
@@ -49,6 +64,11 @@ public class FloatItem extends TableItem {
 
     public void setValue(int i, float value) {
         values.set(i, value);
+    }
+
+    @Override
+    public String getValueString() {
+        return String.valueOf(values.get(0));
     }
 
     @Override

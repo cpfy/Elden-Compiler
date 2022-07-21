@@ -21,6 +21,7 @@ public class ConstInt extends MyNumber {
     @Override
     public void calculate() {
         value = constInt;
+        valueF = constInt;
     }
 
     @Override

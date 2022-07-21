@@ -9,10 +9,18 @@ public class ConstInitVal extends Node {
         this.exps = exps;
     }
 
-    public ArrayList<Integer> getInitValues() {
+    public ArrayList<Integer> getIntValues() {
         ArrayList<Integer> initValues = new ArrayList<>();
         for (Exp exp: exps) {
             initValues.add(exp.getValue());
+        }
+        return initValues;
+    }
+
+    public ArrayList<Float> getFloatValues() {
+        ArrayList<Float> initValues = new ArrayList<>();
+        for (Exp exp: exps) {
+            initValues.add(exp.getValueF());
         }
         return initValues;
     }
