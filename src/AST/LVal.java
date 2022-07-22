@@ -71,8 +71,6 @@ public class LVal extends ExpPrimary {
         StringBuilder ans = new StringBuilder();
         ArrayList<Integer> varDims = table.getVarDimsByName(id.getRawWord().getName());
         if (varDims.get(0) == -1) {
-            //todo 函数传参
-            System.out.println(123123);
             String nt = newTemp();
             String arrayType = getArrayType(varDims, type, 1);
             ans.append(nt + " = load " + arrayType + "*, " + arrayType + "** " + temp + "\n");

@@ -39,6 +39,9 @@ public class FuncDef extends Def {
         if (funcType.equals("void")) {
             addCode("ret void\n");
         }
+        else {
+            addCode("ret " + funcType + " 0\n");
+        }
         addCode("}\n");
     }
 

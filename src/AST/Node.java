@@ -23,7 +23,7 @@ public abstract class Node {
     static HashMap<String, String> reloadMap = new HashMap<>();
 
     public String newReload() {
-        String key = "&" + ++reloadNum;
+        String key = "&" + ++reloadNum + "&";
         reloadMap.put(key, null);
         return key;
     }
@@ -78,7 +78,7 @@ public abstract class Node {
             if (reloadMap.get(key) == null) {
                 continue;
             }
-            IR = IR.replace(key, reloadMap.get(key));
+            IR = IR.replaceAll(key, reloadMap.get(key));
         }
         return IR;
     }

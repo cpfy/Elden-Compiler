@@ -26,8 +26,8 @@ public class StmtReturn extends Stmt {
             addCode("ret " + funcType + " " + temp + "\n");
         }
         else {
-            addCode("ret void");
+            addCode("ret void\n");
         }
-        
+        newLable();
     }
 }

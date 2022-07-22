@@ -40,9 +40,16 @@ public class LAndExp extends Node {
                 }
             }
             else {
-                exps.get(i).getCodes().append("br i1 " + temps.get(i) + ", "
-                        + "label %" + lables.get(i) + ", "
-                        + "label %" + out + "\n");
+                if (isLast) {
+                    exps.get(i).getCodes().append("br i1 " + temps.get(i) + ", "
+                            + "label %" + lables.get(i) + ", "
+                            + "label %" + jump2 + "\n");
+                }
+                else {
+                    exps.get(i).getCodes().append("br i1 " + temps.get(i) + ", "
+                            + "label %" + lables.get(i) + ", "
+                            + "label %" + out + "\n");
+                }
             }
             exps.get(i).getCodes().append(lables.get(i) + ":\n");
             exps.get(i).generate();
