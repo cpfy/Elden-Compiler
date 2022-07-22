@@ -52,7 +52,7 @@ public abstract class Node {
         labels = 0;
     }
 //    static MidCodeList midCodeList = new MidCodeList();
-    static StringBuilder LLVMIR = new StringBuilder();
+    static ArrayList<String> LLVMIR = new ArrayList<>();
 
     static Table table = new Table();
 
@@ -72,15 +72,21 @@ public abstract class Node {
 
     public abstract void addMidCode();
 
-    public String getLLVMIR() {
-        String IR = LLVMIR.toString();
-        for (String key: reloadMap.keySet()) {
-            if (reloadMap.get(key) == null) {
-                continue;
+    public ArrayList<String> getLLVMIR() {
+        ArrayList<String> ans = new ArrayList<>();
+        for (String s: LLVMIR) {
+            for (String key: reloadMap.keySet()) {
+                if (reloadMap.get(key) == null) {
+                    continue;
+                }
+                if (!s.contains("&")) {
+                    break;
+                }
+                s = s.replaceAll(key, reloadMap.get(key));
             }
-            IR = IR.replaceAll(key, reloadMap.get(key));
+            ans.add(s);
         }
-        return IR;
+        return ans;
     }
 
     public String getArrayType(ArrayList<Exp> exps, String type) {
@@ -114,7 +120,11 @@ public abstract class Node {
     }
 
     public void addCode(String s) {
-        LLVMIR.append(s);
+        LLVMIR.add(s);
+    }
+
+    public void addCode(ArrayList<String> s) {
+        LLVMIR.addAll(s);
     }
 
 }

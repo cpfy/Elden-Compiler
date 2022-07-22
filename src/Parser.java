@@ -20,7 +20,10 @@ public class Parser {
         compUnit = getCompUnit();
         compUnit.addMidCode();
         PrintStream printStream = new PrintStream("txt/LLVM IR.txt");
-        printStream.println(compUnit.getLLVMIR().toString());
+        for (String s: compUnit.getLLVMIR()) {
+            printStream.print(s);
+        }
+
     }
 
     public ArrayList<String> getStrings() {

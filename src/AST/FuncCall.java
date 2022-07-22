@@ -20,7 +20,7 @@ public class FuncCall extends ExpUnary {
 
 
     @Override
-    public String addCodePre() {
+    public ArrayList<String> addCodePre() {
         setType(table.getFunction(id.getRawWord().getName()).getRetType());
         String retType = table.getFuncType(id.getRawWord().getName());
         ArrayList<TableItem> funcFParams = table.getFunction(id.getRawWord().getName()).getParamItems();
@@ -59,7 +59,7 @@ public class FuncCall extends ExpUnary {
         }
 
         addCode(")\n");
-        return getCodes().toString();
+        return getCodes();
 //        for (Exp exp: params) {
 //            exp.addMidCode();
 //            midCodeList.addMidCodeItem(MidCodeType.PUSH, null, null, exp.getTemp());

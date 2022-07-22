@@ -26,7 +26,7 @@ public class LVal extends ExpPrimary {
     }
 
     @Override
-    public String addCodePre() {
+    public ArrayList<String> addCodePre() {
         setType(table.getVarType(id.getRawWord().getName()));
         if (isAssign) {
             addAsAssign();
@@ -34,7 +34,7 @@ public class LVal extends ExpPrimary {
         else {
             addNotAsAssign();
         }
-        return getCodes().toString();
+        return getCodes();
     }
 
     @Override
@@ -63,38 +63,38 @@ public class LVal extends ExpPrimary {
         return table.getVarDimsByName(id.getRawWord().getName()).size() != 0;
     }
 
-    private String getPtr() {
+    private ArrayList<String> getPtr() {
+        ArrayList<String> ans = new ArrayList<>();
         this.temp = table.getVarTempName(id.getRawWord().getName());
         if (dims.size() == 0) {
-            return "";
+            return ans;
         }
-        StringBuilder ans = new StringBuilder();
         ArrayList<Integer> varDims = table.getVarDimsByName(id.getRawWord().getName());
         if (varDims.get(0) == -1) {
             String nt = newTemp();
             String arrayType = getArrayType(varDims, type, 1);
-            ans.append(nt + " = load " + arrayType + "*, " + arrayType + "** " + temp + "\n");
+            ans.add(nt + " = load " + arrayType + "*, " + arrayType + "** " + temp + "\n");
             this.temp = nt;
-            ans.append(dims.get(0).addCodePre());
+            ans.addAll(dims.get(0).addCodePre());
             nt = newTemp();
-            ans.append(nt + " = getelementptr inbounds " + arrayType + ", " + arrayType + "* " + temp + ", i32 " + dims.get(0).getTemp() + "\n");
+            ans.add(nt + " = getelementptr inbounds " + arrayType + ", " + arrayType + "* " + temp + ", i32 " + dims.get(0).getTemp() + "\n");
             this.temp = nt;
         }
         else {
-            ans.append(dims.get(0).addCodePre());
+            ans.addAll(dims.get(0).addCodePre());
             String nt = newTemp();
             String arrayType = getArrayType(varDims, type, 0);
-            ans.append(nt + " = getelementptr inbounds " + arrayType + ", " + arrayType + "* " + temp + ", i32 0" + ", i32 " + dims.get(0).getTemp() + "\n");
+            ans.add(nt + " = getelementptr inbounds " + arrayType + ", " + arrayType + "* " + temp + ", i32 0" + ", i32 " + dims.get(0).getTemp() + "\n");
             this.temp = nt;
         }
         for (int i = 1; i < dims.size(); i++) {
-            ans.append(dims.get(i).addCodePre());
+            ans.addAll(dims.get(i).addCodePre());
             String nt = newTemp();
             String arrayType = getArrayType(varDims, type, i);
-            ans.append(nt + " = getelementptr inbounds " + arrayType + ", " + arrayType + "* " + temp + ", i32 0" + ", i32 " + dims.get(i).getTemp() + "\n");
+            ans.add(nt + " = getelementptr inbounds " + arrayType + ", " + arrayType + "* " + temp + ", i32 0" + ", i32 " + dims.get(i).getTemp() + "\n");
             this.temp = nt;
         }
-        return ans.toString();
+        return ans;
     }
 
     private void addAsAssign() {

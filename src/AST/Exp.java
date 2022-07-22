@@ -1,5 +1,7 @@
 package AST;
 
+import java.util.ArrayList;
+
 public abstract class Exp extends Node {
     String type;
     int value;
@@ -24,7 +26,7 @@ public abstract class Exp extends Node {
         return valueF;
     }
 
-    StringBuilder codesPre = new StringBuilder();
+    ArrayList<String> codesPre = new ArrayList<>();
 
     public String getType() {
         return type;
@@ -34,20 +36,24 @@ public abstract class Exp extends Node {
         this.type = type;
     }
 
-    public StringBuilder getCodes() {
+    public ArrayList<String> getCodes() {
         return codesPre;
     }
 
     @Override
     public void addCode(String s) {
-        codesPre.append(s);
+        codesPre.add(s);
+    }
+
+    public void addCode(ArrayList<String> s) {
+        codesPre.addAll(s);
     }
 
     public void generate() {
-        super.addCode(codesPre.toString());
+        super.addCode(codesPre);
     }
 
-    public abstract String addCodePre();
+    public abstract ArrayList<String> addCodePre();
 
     public abstract String getTemp();
 

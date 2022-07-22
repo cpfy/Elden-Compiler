@@ -2,6 +2,7 @@ package AST;
 
 import word.WordType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ExpOp extends Exp {
@@ -18,7 +19,7 @@ public class ExpOp extends Exp {
     }
 
     @Override
-    public String addCodePre() {
+    public ArrayList<String> addCodePre() {
         addCode(left.addCodePre());
         addCode(right.addCodePre());
         setExpType();
@@ -190,7 +191,7 @@ public class ExpOp extends Exp {
         else {
             System.out.println("Error at EXPOP");
         }
-        return getCodes().toString();
+        return getCodes();
     }
 
     @Override

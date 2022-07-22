@@ -1,5 +1,7 @@
 package AST;
 
+import java.util.ArrayList;
+
 public class ConstInt extends MyNumber {
     private int constInt;
 
@@ -9,8 +11,8 @@ public class ConstInt extends MyNumber {
     }
 
     @Override
-    public String addCodePre() {
-        return "";
+    public ArrayList<String> addCodePre() {
+        return new ArrayList<>();
     }
 
     @Override
