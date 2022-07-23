@@ -31,18 +31,51 @@ public class ConstDef extends Def {
         }
         else {  //数组形式
             if (isGlobal) {
-                addCode(tempName + " = dso_local global ");
-                addCode(getArrayType(dims, getDeclType()) + " ");
+                addCode(tempName + " = dso_local constant ");
                 if (constInitVal != null) {
-                    constInitVal.addMidCode();
+                    ArrayList<Integer> dimsInt = new ArrayList<>();
+                    for (Exp exp: dims) {
+                        dimsInt.add(exp.getValue());
+                    }
+                    ArrayList<String> values = new ArrayList<>();
+                    if (getDeclType().equals("i32")) {
+                        for (Integer integer: constInitVal.getIntValues()) {
+                            values.add(String.valueOf(integer));
+                        }
+                    }
+                    else if (getDeclType().equals("float")) {
+                        for (Float f: constInitVal.getFloatValues()) {
+                            values.add(String.valueOf(f));
+                        }
+                    }
+                    ArrayList<Integer> p = new ArrayList<>();
+                    p.add(0);
+                    addCode(globalArrayInit(declType, dimsInt, values, 0, p) + "\n");
                 } else {
                     addCode("zeroinitializer\n");
                 }
             }
             else {
                 addCode(tempName + " = alloca " + getArrayType(dims, getDeclType()) + "\n");
-                //todo 数组初始化！！！！
-                constInitVal.addMidCode();
+                ArrayList<Integer> dimsInt = new ArrayList<>();
+                for (Exp exp : dims) {
+                    dimsInt.add(exp.getValue());
+                }
+                ArrayList<String> values = new ArrayList<>();
+                if (getDeclType().equals("i32")) {
+                    for (Integer integer: constInitVal.getIntValues()) {
+                        values.add(String.valueOf(integer));
+                    }
+                }
+                else if (getDeclType().equals("float")) {
+                    for (Float f: constInitVal.getFloatValues()) {
+                        values.add(String.valueOf(f));
+                    }
+                }
+                ArrayList<Integer> p = new ArrayList<>();
+                p.add(0);
+                localArrayInit(declType, dimsInt, values, 0, p, tempName);
+
             }
         }
     }

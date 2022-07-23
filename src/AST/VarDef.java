@@ -3,6 +3,7 @@ package AST;
 import symbolTable.items.FloatItem;
 import symbolTable.items.IntegerItem;
 
+import javax.swing.*;
 import java.util.ArrayList;
 
 public class VarDef extends Def {
@@ -55,9 +56,25 @@ public class VarDef extends Def {
         else {  //数组形式
             if (isGlobal) {
                 addCode(tempName + " = dso_local global ");
-                addCode(getArrayType(dims, getDeclType()) + " ");
                 if (initVal != null) {
-
+                    ArrayList<Integer> dimsInt = new ArrayList<>();
+                    for (Exp exp: dims) {
+                        dimsInt.add(exp.getValue());
+                    }
+                    ArrayList<String> values = new ArrayList<>();
+                    if (getDeclType().equals("i32")) {
+                        for (Integer integer: initVal.getIntValues()) {
+                            values.add(String.valueOf(integer));
+                        }
+                    }
+                    else if (getDeclType().equals("float")) {
+                        for (Float f: initVal.getFloatValues()) {
+                            values.add(String.valueOf(f));
+                        }
+                    }
+                    ArrayList<Integer> p = new ArrayList<>();
+                    p.add(0);
+                    addCode(globalArrayInit(declType, dimsInt, values, 0, p) + "\n");
                 } else {
                     addCode("zeroinitializer\n");
                 }
@@ -65,11 +82,25 @@ public class VarDef extends Def {
             else {
                 addCode(tempName + " = alloca " + getArrayType(dims, getDeclType()) + "\n");
                 if (initVal != null) {
-                    //todo 数组初始化！！！！
+                    ArrayList<Integer> dimsInt = new ArrayList<>();
+                    for (Exp exp : dims) {
+                        dimsInt.add(exp.getValue());
+                        System.out.println(exp.getValue());
+                    }
+                    ArrayList<String> values = new ArrayList<>();
+                    for (Exp exp: initVal.getExps()) {
+                        exp.addMidCode();
+                        values.add(exp.getTemp());
+                    }
+                    ArrayList<Integer> p = new ArrayList<>();
+                    p.add(0);
+                    localArrayInit(declType, dimsInt, values, 0, p, tempName);
                 }
             }
         }
     }
+
+
 
     @Override
     public void addMidCode() {

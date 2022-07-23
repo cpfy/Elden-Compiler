@@ -16,8 +16,9 @@ public class Compiler {
 //
 //            parserE.output3(printStream2);
 //
+            lexer.output1(printStream);
             Parser parser = new Parser(lexer.getRawWords());
-//            lexer.output1(printStream);
+
 //
 //            parser.output2(printStream);
             long endTime=System.currentTimeMillis(); //获取结束时间

@@ -127,4 +127,46 @@ public abstract class Node {
         LLVMIR.addAll(s);
     }
 
+    public String globalArrayInit(String type, ArrayList<Integer> dims, ArrayList<String> values, int n, ArrayList<Integer> p) {
+        StringBuilder ans = new StringBuilder();
+        String detailType = getArrayType(dims, type, n);
+        if (n < dims.size()) {
+            ans.append(detailType + " " + "[");
+            for (int i = 0; i < dims.get(n); i++) {
+                if (i != 0) {
+                    ans.append(", ");
+                }
+                ans.append(globalArrayInit(type, dims, values, n + 1, p));
+            }
+            ans.append("]");
+        }
+        else {
+            p.set(0, p.get(0) + 1);
+            return type + " " + values.get(p.get(0) - 1);
+        }
+        return ans.toString();
+    }
+
+    public void localArrayInit(String type, ArrayList<Integer> dims, ArrayList<String> values, int n, ArrayList<Integer> p, String tempIn) {
+        String detailType = getArrayType(dims, type, n);
+        String nt = null;
+        if (n < dims.size()) {
+            nt = newTemp();
+            addCode(nt + " = getelementptr inbounds " + detailType + ", " + detailType + "* " + tempIn + ", i32 0, i32 0\n");
+            tempIn = nt;
+            for (int i = 0; i < dims.get(n); i++) {
+                detailType = getArrayType(dims, type, n + 1);
+                if (i != 0) {
+                    nt = newTemp();
+                    addCode(nt + " = getelementptr inbounds " + detailType + ", " + detailType + "* " + tempIn + ", i32 1\n");
+                }
+                localArrayInit(type, dims, values, n + 1, p, nt);
+            }
+        }
+        else {
+            p.set(0, p.get(0) + 1);
+            addCode("store " + type + " " + values.get(p.get(0) - 1) + ", "
+                    + type + "* " + tempIn + "\n");
+        }
+    }
 }

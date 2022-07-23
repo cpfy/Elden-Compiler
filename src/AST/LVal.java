@@ -56,6 +56,7 @@ public class LVal extends ExpPrimary {
         }
         else if (type.equals("float")) {
             valueF = ((FloatItem) table.getValue(id.getRawWord().getName())).getValue(index);
+            value = (int) valueF;
         }
     }
 

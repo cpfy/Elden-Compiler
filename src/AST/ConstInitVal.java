@@ -25,6 +25,7 @@ public class ConstInitVal extends Node {
         return initValues;
     }
 
+
     @Override
     public void addMidCode() {
 

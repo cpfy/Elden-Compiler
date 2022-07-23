@@ -22,6 +22,7 @@ public class ConstFloat extends MyNumber {
 
     @Override
     public void calculate() {
+        value = (int) constFloat;
         valueF = constFloat;
     }
 

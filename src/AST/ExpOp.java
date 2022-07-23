@@ -259,14 +259,19 @@ public class ExpOp extends Exp {
         else {
             if (op == WordType.PLUS) {                          // +
                 valueF = left.getValueF() + right.getValueF();
+                value = (int) valueF;
             } else if (op == WordType.MINU) {                   // -
                 valueF = left.getValueF() - right.getValueF();
+                value = (int) valueF;
             } else if (op == WordType.MULT) {                   // *
                 valueF = left.getValueF() * right.getValueF();
+                value = (int) valueF;
             } else if (op == WordType.DIV) {                    // /
                 valueF = left.getValueF() / right.getValueF();
+                value = (int) valueF;
             } else if (op == WordType.MOD) {                    // %
                 valueF = left.getValueF() % right.getValueF();
+                value = (int) valueF;
             } else if (op == WordType.NEQ) {                    // !=  !
                 if (left.getValueF() != right.getValueF()) {
                     value = 1;
