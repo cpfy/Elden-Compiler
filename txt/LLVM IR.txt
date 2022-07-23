@@ -48,38 +48,26 @@ store i32 %12, i32* %32
 store i32 %13, i32* %34
 %35 = getelementptr inbounds i32, i32* %34, i32 1
 store i32 %14, i32* %35
-%36 = alloca [3 x [2 x i32]]
-%37 = getelementptr inbounds [3 x [2 x i32]], [3 x [2 x i32]]* %36, i32 0, i32 0
-%38 = getelementptr inbounds [2 x i32], [2 x i32]* %37, i32 0, i32 0
-store i32 10, i32* %38
-%39 = getelementptr inbounds i32, i32* %38, i32 1
-store i32 10, i32* %39
-%40 = getelementptr inbounds [2 x i32], [2 x i32]* %37, i32 1
-%41 = getelementptr inbounds [2 x i32], [2 x i32]* %40, i32 0, i32 0
-store i32 10, i32* %41
-%42 = getelementptr inbounds i32, i32* %41, i32 1
-store i32 10, i32* %42
-%43 = getelementptr inbounds [2 x i32], [2 x i32]* %37, i32 1
-%44 = getelementptr inbounds [2 x i32], [2 x i32]* %43, i32 0, i32 0
-store i32 10, i32* %44
-%45 = getelementptr inbounds i32, i32* %44, i32 1
-store i32 10, i32* %45
-%46 = alloca [3 x [2 x i32]]
-%47 = getelementptr inbounds [3 x [2 x i32]], [3 x [2 x i32]]* %46, i32 0, i32 0
-%48 = getelementptr inbounds [2 x i32], [2 x i32]* %47, i32 0, i32 0
-store i32 10, i32* %48
-%49 = getelementptr inbounds i32, i32* %48, i32 1
-store i32 10, i32* %49
-%50 = getelementptr inbounds [2 x i32], [2 x i32]* %47, i32 1
-%51 = getelementptr inbounds [2 x i32], [2 x i32]* %50, i32 0, i32 0
-store i32 10, i32* %51
-%52 = getelementptr inbounds i32, i32* %51, i32 1
-store i32 10, i32* %52
-%53 = getelementptr inbounds [2 x i32], [2 x i32]* %47, i32 1
-%54 = getelementptr inbounds [2 x i32], [2 x i32]* %53, i32 0, i32 0
-store i32 10, i32* %54
-%55 = getelementptr inbounds i32, i32* %54, i32 1
-store i32 10, i32* %55
-%56 = load i32, i32* %1
-ret i32 %56
+%36 = alloca [3 x [2 x float]]
+%37 = sitofp i32 10 to float
+%38 = sitofp i32 10 to float
+%39 = sitofp i32 10 to float
+%40 = sitofp i32 10 to float
+%41 = getelementptr inbounds [3 x [2 x float]], [3 x [2 x float]]* %36, i32 0, i32 0
+%42 = getelementptr inbounds [2 x float], [2 x float]* %41, i32 0, i32 0
+store float %37, float* %42
+%43 = getelementptr inbounds float, float* %42, i32 1
+store float %38, float* %43
+%44 = getelementptr inbounds [2 x float], [2 x float]* %41, i32 1
+%45 = getelementptr inbounds [2 x float], [2 x float]* %44, i32 0, i32 0
+store float %39, float* %45
+%46 = getelementptr inbounds float, float* %45, i32 1
+store float %40, float* %46
+%47 = getelementptr inbounds [2 x float], [2 x float]* %41, i32 1
+%48 = getelementptr inbounds [2 x float], [2 x float]* %47, i32 0, i32 0
+store float 1.125, float* %48
+%49 = getelementptr inbounds float, float* %48, i32 1
+store float 1.125, float* %49
+%50 = load i32, i32* %1
+ret i32 %50
 }

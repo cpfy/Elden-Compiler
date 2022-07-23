@@ -85,12 +85,18 @@ public class VarDef extends Def {
                     ArrayList<Integer> dimsInt = new ArrayList<>();
                     for (Exp exp : dims) {
                         dimsInt.add(exp.getValue());
-                        System.out.println(exp.getValue());
                     }
                     ArrayList<String> values = new ArrayList<>();
                     for (Exp exp: initVal.getExps()) {
                         exp.addMidCode();
-                        values.add(exp.getTemp());
+                        if (declType.equals("float") && exp.getType().equals("i32")) {
+                            String nt = newTemp();
+                            addCode(nt + " = sitofp i32 " + exp.getTemp() + " to float\n");
+                            values.add(nt);
+                        }
+                        else {
+                            values.add(exp.getTemp());
+                        }
                     }
                     ArrayList<Integer> p = new ArrayList<>();
                     p.add(0);
