@@ -10,6 +10,8 @@ public abstract class Node {
 
     static int reloadNum = 0;
 
+    static boolean isMain = false;
+
     static boolean isPoint;
 
     static void setIsPoint(boolean b) {
@@ -173,6 +175,7 @@ public abstract class Node {
                 if (i != 0) {
                     nt = newTemp();
                     addCode(nt + " = getelementptr inbounds " + detailType + ", " + detailType + "* " + tempIn + ", i32 1\n");
+                    tempIn = nt;
                 }
                 localArrayInit(type, dims, values, n + 1, p, nt);
             }

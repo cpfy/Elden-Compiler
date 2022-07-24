@@ -12,6 +12,7 @@ public class MainFuncDef extends Node {
     @Override
     public void addMidCode() {
 //        midCodeList.addMidCodeItem(MidCodeType.FUNC, "int", null, "main");
+        isMain = true;
         labels = 0;
         table.addFunc(new FunctionItem("main", "i32", null));
         table.newFunc();

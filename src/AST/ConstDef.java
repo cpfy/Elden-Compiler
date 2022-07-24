@@ -52,7 +52,7 @@ public class ConstDef extends Def {
                     p.add(0);
                     addCode(globalArrayInit(declType, dimsInt, values, 0, p) + "\n");
                 } else {
-                    addCode("zeroinitializer\n");
+                    addCode(getArrayType(dims, getDeclType()) + " zeroinitializer\n");
                 }
             }
             else {
@@ -84,7 +84,7 @@ public class ConstDef extends Def {
         if (isGlobal) {
             tempName = "@" + id.getRawWord().getName();
         }
-        else {
+        else if (dims.size() != 0) {
             tempName = newTemp();
         }
         ArrayList<Integer> dimsInt = new ArrayList<>();

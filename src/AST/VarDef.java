@@ -76,7 +76,7 @@ public class VarDef extends Def {
                     p.add(0);
                     addCode(globalArrayInit(declType, dimsInt, values, 0, p) + "\n");
                 } else {
-                    addCode("zeroinitializer\n");
+                    addCode(getArrayType(dims, getDeclType()) + " zeroinitializer\n");
                 }
             }
             else {
