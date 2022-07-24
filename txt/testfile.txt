@@ -1,10 +1,16 @@
-const int p = 10;
-const float s = 1.125;
 int main() {
-    int c = 10;
-    int a[3][2][2] = {c,c,c,c,c,c,c,c,c,c,c,c};
+    int c;
+    float f;
+    int a[10];
+    float b[10];
 
-    float b[3][2] = {p,p,p,p,s,s};
+
+
+    c = getfarray(b);
+
+    putfarray(c, b);
+
+
 
 	return c;
 }

@@ -81,8 +81,7 @@ public class Lexer {
         reservedWords.put("if", WordType.IFTK);
         reservedWords.put("else", WordType.ELSETK);
         reservedWords.put("while", WordType.WHILETK);
-        reservedWords.put("getint", WordType.GETINTTK);
-        reservedWords.put("printf", WordType.PRINTFTK);
+        reservedWords.put("putf", WordType.PRINTFTK);
         reservedWords.put("return", WordType.RETURNTK);
         reservedWords.put("void", WordType.VOIDTK);
         reservedWords.put("float", WordType.FLOATTK);

@@ -86,6 +86,20 @@ public abstract class Node {
             }
             ans.add(s);
         }
+//        ans.add("declare dso_local void @starttime()\n");
+//        ans.add("declare dso_local void @stoptime()\n");
+        ans.add("declare dso_local i32 @getint()\n");
+        ans.add("declare dso_local i32 @getch()\n");
+        ans.add("declare dso_local float @getfloat()\n");
+        ans.add("declare dso_local i32 @getarray(i32*)\n");
+        ans.add("declare dso_local i32 @getfarray(float*)\n");
+        ans.add("declare dso_local void @putint(i32)\n");
+        ans.add("declare dso_local void @putch(i32)\n");
+        ans.add("declare dso_local void @putfloat(float)\n");
+        ans.add("declare dso_local void @putarray(i32, i32*)\n");
+        ans.add("declare dso_local void @putfarray(i32, float*)\n");
+
+
         return ans;
     }
 

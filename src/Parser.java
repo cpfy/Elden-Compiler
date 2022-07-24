@@ -539,26 +539,13 @@ public class Parser {
             if (getNextWord().getType() != WordType.ASSIGN) {
                 error();
             }
-            if (seeNextWord().getType() == WordType.GETINTTK) {
-                stmt = new StmtGetInt(lVal);
-                getNextWord();
-                if (getNextWord().getType() != WordType.LPARENT) {
-                    error();
-                }
-                if (getNextWord().getType() != WordType.RPARENT) {
-                    error();
-                }
-                if (getNextWord().getType() != WordType.SEMICN) {
-                    error();
-                }
+
+            Exp exp = getExp();
+            if (getNextWord().getType() != WordType.SEMICN) {
+                error();
             }
-            else {
-                Exp exp = getExp();
-                if (getNextWord().getType() != WordType.SEMICN) {
-                    error();
-                }
-                stmt = new StmtAssign(lVal, exp);
-            }
+            stmt = new StmtAssign(lVal, exp);
+
         }
         outputs.add("<Stmt>");
         return stmt;
