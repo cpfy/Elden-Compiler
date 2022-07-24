@@ -22,6 +22,7 @@ public class IRParser {
 
     private final String OUTPUT_DIR = "output.txt";
 
+    private ArrayList<IRCode> lirlist;
     private ArrayList<Instr> instrList;
 
     public IRParser(ArrayList<Token> tokenList) {
@@ -33,6 +34,8 @@ public class IRParser {
         this.table = new SymbolTable();
 
         this.instrList = new ArrayList<>();
+
+        this.lirlist = new ArrayList<>();
     }
 
     public void start(int output, int erroutput) {
@@ -85,12 +88,12 @@ public class IRParser {
 
     }
 
-    //    GlobalIdent: global_ident
+    // GlobalIdent: global_ident
     private String GlobalIdent() {
         return global_ident();
     }
 
-    //    global_ident: _global_name | _global_id
+    // global_ident: _global_name | _global_id
     private String global_ident() {
         //此处应当必然name
         return _global_name();
@@ -345,7 +348,6 @@ public class IRParser {
         getsym(",");
         Symbol.TYPE typ2 = Type();
 //        Value v = Value();
-
     }
 
 
@@ -460,12 +462,6 @@ public class IRParser {
             switch (s) {
                 case ";":
 //                    erdp.ErrorAt(getLastToken(), ErrorDisposal.ER.ERR_I);
-                    break;
-                case ")":
-//                    erdp.ErrorAt(getLastToken(), ErrorDisposal.ER.ERR_J);
-                    break;
-                case "]":
-//                    erdp.ErrorAt(getLastToken(), ErrorDisposal.ER.ERR_K);
                     break;
                 default:
                     error();

@@ -38,3 +38,26 @@
 | GEP    | getelementptr | `<result> = getelementptr <ty>, * {, [inrange] <ty> <idx>}*` `<result> = getelementptr inbounds <ty>, <ty>* <ptrval>{, [inrange] <ty> <idx>}*` `<result> = getelementptr <ty>, <ptr vector> <ptrval>, [inrange] <vector index type> <idx>` | this inst only calculate memory,do not read or load memory |
 | Phi    | phi           | `<result> = phi [fast-math-flags] <ty> [ <val0>, <label0>], ...` |                                                            |
 | zext   | zext..to      | = zext to ; yields ty2                                       | zext                                                       |
+
+
+
+
+
+
+
+
+
+## Basic
+
+```assembly
+AREA Example,CODE,READONLY    ;声明代码段Example
+ENTRY ;程序入口
+
+Start
+	mov r0, #0xffffffff
+	B OVER
+
+OVER
+	END
+```
+
