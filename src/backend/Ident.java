@@ -4,6 +4,8 @@ public class Ident {
 
     private boolean isIdent;
     private boolean global;
+
+    private Type type;
     private String name;
     private int id;
 
@@ -31,5 +33,10 @@ public class Ident {
 
     public boolean isGlobal() {
         return global;
+    }
+
+    //frequently
+    public void setType(Type type) {
+        this.type = type;
     }
 }

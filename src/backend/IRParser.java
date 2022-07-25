@@ -36,7 +36,8 @@ public class IRParser {
         this.lirlist = new ArrayList<>();
     }
 
-    public void start(int output, int erroutput) {
+    //    外层使用的api
+    public void start(int output) {
         CompUnit();
         if (output == 1) {
             try {
@@ -67,95 +68,223 @@ public class IRParser {
         while (symCodeIs("DEFINETK")) {
             FunctionDef();
         }
-//        isGlobal = false;
-//        MainFuncDef();
-//        grammarList.add("<CompUnit>");
+        while(symCodeIs("DECLARETK")){
+            FunctionDecl();
+        }
     }
 
-    //    GlobalDef
-//	: GlobalIdent "=" OptLinkage OptPreemptionSpecifier OptVisibility OptDLLStorageClass OptThreadLocal OptUnnamedAddr OptAddrSpace OptExternallyInitialized Immutable Type Constant GlobalAttrs FuncAttrs
-//    exa:@a = dso_local global i32 3, align 4
+    // FunctionDecl : "declare" MetadataAttachments OptExternLinkage FunctionHeader
+    private void FunctionDecl() {
+        match("declare");
+        FuncHeader fh = FunctionHeader();
+    }
+
+    // GlobalDef: GlobalIdent "=" [Opt] Immutable Type Constant GlobalAttrs FuncAttrs
+    // @buf = dso_local global [2 x [100 x i32]] zeroinitializer, align 4
     private void GlobalDef() {
-        getsym("@");
-        String name = GlobalIdent();
-        if (symIs("dso_local")) {
+        match("@");
+        Ident g_idn = GlobalIdent();
+        match("=");
+        OptPreemptionSpecifier();   // 可选dso_local
+        Immutable();
+        Type t = Type();
+        Constant();     // zeroinitializer 可处理
+        GlobalAttrs();  // 处理Align等
+        FuncAttrs();
+    }
+
+    // GlobalAttrs: empty| "," GlobalAttrList;
+    private void GlobalAttrs() {
+        if (symIs(",")) {
+            getsym();
+            GlobalAttrList();
+        }
+    }
+
+    // GlobalAttrList: GlobalAttr| GlobalAttrList "," GlobalAttr;
+    private void GlobalAttrList() {
+        GlobalAttr();
+        while (symIs(",")) {
+            GlobalAttr();
+        }
+    }
+
+    // GlobalAttr: Section| Comdat| Alignment| MetadataAttachment;
+    private void GlobalAttr() {
+        //todo 只Alignment
+        Alignment();
+    }
+
+    //    Alignment : "align" int_lit    ;
+    private void Alignment() {
+        match("align");
+        getsym();
+    }
+
+    // OptPreemptionSpecifier: empty | PreemptionSpecifier;
+    // PreemptionSpecifier: "dso_local" | "dso_preemptable";
+    private void OptPreemptionSpecifier() {
+        if (symIs("dso_local") || symIs("dso_preemptable")) {
             getsym();
         }
-        getsym("global");
-        Symbol.TYPE sybtype = Type();
+        //否则不用管
+    }
 
+    // Immutable	: "constant" | "global"
+    private void Immutable() {
+        if (symIs("constant") || symIs("global")) {
+            getsym();
+        } else {
+            error();
+        }
     }
 
     // GlobalIdent: global_ident
-    private String GlobalIdent() {
+    private Ident GlobalIdent() {
         return global_ident();
     }
 
     // global_ident: _global_name | _global_id
-    private String global_ident() {
+    private Ident global_ident() {
         //此处应当必然name
         return _global_name();
     }
 
     //    _global_name: '@' ( _name | _quoted_name )
-    private String _global_name() {
-        getsym("@");
+    private Ident _global_name() {
+        match("@");
         String mydefname = sym.getTokenValue();
         getsym();
-        return mydefname;
+        Ident g_idn = new Ident(mydefname);
+        return g_idn;
+    }
+
+    //直接空
+    private void FuncAttrs() {
+        return;
     }
 
     // FunctionDef: "define" OptLinkage FunctionHeader MetadataAttachments FunctionBody
     // example: define dso_local i32 @main() #0 {
     private void FunctionDef() {
-        getsym("define");
-        if (symIs("dso_local")) {
-            getsym();
-        }
+        match("define");
+//        match("dso_local");
 
         FuncHeader hd = FunctionHeader();
         FunctionBody();
     }
 
-    //    FunctionHeader: ReturnAttrs Type GlobalIdent "(" Params ")" FuncAttrs
+    // FunctionHeader: OptPreemptionSpecifier ReturnAttrs Type GlobalIdent "(" Params ")" FuncAttrs
     private FuncHeader FunctionHeader() {
-        Symbol.TYPE typ = Type();
-        String fname = GlobalIdent();
-        getsym("(");
-        ArrayList<Symbol> paras = Params();
-        getsym(")");
-        FuncHeader funchd = new FuncHeader(fname, typ, paras);
+        OptPreemptionSpecifier();
+        ReturnAttrs();
+        Type t = Type();
+        Ident g_idn = GlobalIdent();
+        match("(");
+        ArrayList<Ident> paras = Params();
+        match(")");
+        FuncAttrs();
+        FuncHeader funchd = new FuncHeader(g_idn, t, paras);
         return funchd;
     }
 
-    //    Params
+    //    ReturnAttrs
 //	: empty
-//	| "..."
-//            | ParamList
-//	| ParamList "," "..."
-    private ArrayList<Symbol> Params() {
-        if (!symIs(")")) {
-            empty();
-            return null;
-        }
-        return ParamList();
+//	| ReturnAttrList
+//    ;
+//
+//    ReturnAttrList
+//	: ReturnAttr
+//	| ReturnAttrList ReturnAttr
+//            ;
+//
+//    ReturnAttr
+//	: Alignment
+//	| Dereferenceable
+//	| StringLit
+//	| "inreg"
+//            | "noalias"
+//            | "nonnull"
+//            | "signext"
+//            | "zeroext"
+//    ;
+    private void ReturnAttrs() {
+        return;
     }
 
+    // Params: empty| "..."| ParamList| ParamList "," "..."
+    private ArrayList<Ident> Params() {
+        ArrayList<Ident> ilist = new ArrayList<>();
+        if (symIs(")")) {
+            empty();
+            return ilist;
+        } else {
+            return ParamList();
+        }
+    }
 
-    //    ParamList	: Param	| ParamList "," Param
-    private ArrayList<Symbol> ParamList() {
-        ArrayList<Symbol> plist = new ArrayList<>();
-        Param();
+    // ParamList: Param	| ParamList "," Param
+    private ArrayList<Ident> ParamList() {
+        ArrayList<Ident> plist = new ArrayList<>();
+        Ident p = Param();
+        plist.add(p);
         while (symIs(",")) {
             getsym();
-            Symbol p = Param();
+            p = Param();
+            plist.add(p);
         }
         return plist;
     }
 
-    //    Param: Type ParamAttrs | Type ParamAttrs LocalIdent
-    private Symbol Param() {
-        return null;
+    // Param: Type ParamAttrs | Type ParamAttrs LocalIdent
+    private Ident Param() {
+        Type t = Type();
+        ParamAttrs();
+        Ident l_idn = LocalIdent();
+        l_idn.setType(t);   // 设置type
+        return l_idn;
+    }
+
+    // ParamAttrs : empty | ParamAttrList ;
+    private void ParamAttrs() {
+        if (nextisParamAttr(sym)) {
+            ParamAttrList();
+        } else {
+            empty();
+        }
+    }
+
+    // ParamAttrList : ParamAttr | ParamAttrList ParamAttr ;
+    private void ParamAttrList() {
+        ParamAttr();
+        if (nextisParamAttr(sym)) {
+            ParamAttr();
+        }
+    }
+
+    //    ParamAttr
+//	: Alignment
+//	| Dereferenceable
+//	| StringLit
+//	| "byval"
+//            | "inalloca"
+//            | "inreg"
+//            | "nest"
+//            | "noalias"
+//            | "nocapture"
+//            | "nonnull"
+//            | "readnone"
+//            | "readonly"
+//            | "returned"
+//            | "signext"
+//            | "sret"
+//            | "swifterror"
+//            | "swiftself"
+//            | "writeonly"
+//            | "zeroext"
+//    ;
+    private void ParamAttr() {
+        return;
     }
 
     // 无任何用
@@ -165,9 +294,9 @@ public class IRParser {
 
     // FunctionBody: "{" BasicBlockList UseListOrders "}"
     private void FunctionBody() {
-        getsym("{");
+        match("{");
         BasicBlockList();
-        getsym("}");
+        match("}");
     }
 
     // BasicBlockList: BasicBlock | BasicBlockList BasicBlock
@@ -234,12 +363,12 @@ public class IRParser {
     //    RetTer	: "ret" VoidType OptCommaSepMetadataAttachmentList
     //	| "ret" ConcreteType Value OptCommaSepMetadataAttachmentList
     private void RetTerm() {
-        getsym("ret");
+        match("ret");
         if (symIs("void")) {
             getsym();
             return;
         }
-        Symbol.TYPE rettype = ConcreteType();
+        Type rettype = ConcreteType();
 
     }
 
@@ -262,14 +391,14 @@ public class IRParser {
 //	| NamedType
 //	| MMXType
 //	| TokenType
-    private Symbol.TYPE ConcreteType() {
+    private Type ConcreteType() {
         switch (sym.getTokenValue()) {
             case "void":
-                return Symbol.TYPE.V;
+                return Type.V;
             case "int":
-                return Symbol.TYPE.I;
+                return Type.I;
             case "float":
-                return Symbol.TYPE.F;
+                return Type.F;
             default:
                 return null;
 
@@ -278,7 +407,7 @@ public class IRParser {
 
     //    BrTerm	: "br" LabelType LocalIdent OptCommaSepMetadataAttachmentList
     private void BrTerm() {
-        getsym("br");
+        match("br");
         LabelType();
         Ident idn = LocalIdent();
     }
@@ -306,16 +435,18 @@ public class IRParser {
 //	: '%' _id
 //    ;
     private Ident local_ident() {
-        getsym("%");
+        match("%");
         String value = sym.getTokenValue();
 
         if (Character.isDigit(value.charAt(0))) {
             // boolean isdigit = true;
+            getsym();
             Ident idn = new Ident(Integer.parseInt(value));
             return idn;
 
         } else {
             // boolean isalpha = true;
+            getsym();
             Ident idn = new Ident(value);
             return idn;
         }
@@ -327,24 +458,24 @@ public class IRParser {
 
 
     private void LoadInst() {
-        getsym("load");
-        Symbol.TYPE typ1 = Type();
+        match("load");
+        Type typ1 = Type();
         getsym();
 
-        getsym(",");
-        Symbol.TYPE typ2 = Type();
+        match(",");
+        Type typ2 = Type();
     }
 
     // "store" OptVolatile Type Value "," Type Value
 //    ex:store i32 0, i32* %1, align 4
     private void StoreInst() {
-        getsym("store");
-        Symbol.TYPE typ1 = Type();
+        match("store");
+        Type typ1 = Type();
         getsym();
 //        Value v = Value();
 
-        getsym(",");
-        Symbol.TYPE typ2 = Type();
+        match(",");
+        Type typ2 = Type();
 //        Value v = Value();
     }
 
@@ -355,10 +486,10 @@ public class IRParser {
     private void ValueInstruction() {
         String instname = sym.getTokenValue();
         getsym();
-        Symbol.TYPE type = Type();
+        Type type = Type();
 //        Value val = Value();
         Ident val = Value();
-        getsym(",");
+        match(",");
         Value();
     }
 
@@ -393,28 +524,47 @@ public class IRParser {
 //	| BlockAddressConst
 //	| ConstantExpr
     private Ident Constant() {
-        return new Ident(sym.getTokenValue());
+        match("zeroinitializer");
+
+        return null;
     }
 
-    //    Type大类
-    private Symbol.TYPE Type() {
-        Symbol.TYPE retype = null;
+    // Type大类
+    private Type Type() {
+        Type retype = null;
         switch (sym.getTokenValue()) {
+            case "void":
+                retype = Type.V;
+                break;
             case "i32":
-                retype = Symbol.TYPE.I;
+                retype = Type.I;
                 break;
             case "i32*":
-                retype = Symbol.TYPE.IP;
+                retype = Type.IP;
                 break;
             case "float":
-                retype = Symbol.TYPE.F;
+                retype = Type.F;
+                break;
+            case "float*":
+                retype = Type.FP;
                 break;
             default:
-                System.err.println("Error Type!");
+                System.out.println("Error Type!");
+                error();
                 break;
         }
         getsym();
         return retype;
+    }
+
+    // ArrayType	: "[" int_lit "x" Type "]"
+    private void ArrayType() {
+        match("[");
+        int dim = Integer.parseInt(sym.getTokenValue());
+        getsym();
+        match("x");
+        Type();
+        match("]");
     }
 
 
@@ -429,21 +579,21 @@ public class IRParser {
         }
     }
 
-    //    含判断sym
-    private void getsym(String str) {
-//        扩展支持code+str
-        if (!symIs(str) && !symCodeIs(str)) {
-            System.err.println("Not Match!: " + str);
-        }
-
-        grammarList.add(sym.tostring());
-        if (index < tokenList.size() - 1) {
-            index += 1;
-            sym = tokenList.get(index);
-        } else {
-            //todo System.out.println("Token List to End.");
-        }
-    }
+//    //    含判断sym
+//    private void getsym(String str) {
+////        扩展支持code+str
+//        if (!symIs(str) && !symCodeIs(str)) {
+//            System.err.println("Not Match!: " + str);
+//        }
+//
+//        grammarList.add(sym.tostring());
+//        if (index < tokenList.size() - 1) {
+//            index += 1;
+//            sym = tokenList.get(index);
+//        } else {
+//            //todo System.out.println("Token List to End.");
+//        }
+//    }
 
     private void error() {
         System.err.println("Error!");
@@ -457,14 +607,7 @@ public class IRParser {
 
     private void match(String s) {   //匹配字符string本身
         if (!symIs(s)) {
-            switch (s) {
-                case ";":
-//                    erdp.ErrorAt(getLastToken(), ErrorDisposal.ER.ERR_I);
-                    break;
-                default:
-                    error();
-                    break;
-            }
+            error();
         } else {
             getsym();
         }
@@ -536,20 +679,9 @@ public class IRParser {
         return true;
     }
 
-    // 种类划分
-//    private Symbol.TYPE getType(Token sym) {
-//        switch (sym.getTokenValue()){
-//            case "i32":
-//                return Symbol.TYPE.I;
-//            case "sdiv":
-//                SDivInst();
-//                break;
-//            case "fdiv":
-//                FDivInst();
-//                break;
-//            default:
-//                break;
-//        }
-//    }
+    //下一个是ParamAttr
+    private boolean nextisParamAttr(Token sym) {
+        return false;
+    }
 
 }

@@ -7,17 +7,24 @@ public class FuncHeader {
     //    FunctionHeader
     //	: [Opt] ReturnAttrs Type GlobalIdent "(" Params ")" [Opt] FuncAttrs [Opt]
 
-    private Symbol.TYPE type;
+    private Type type;
     private String fname;
-    private ArrayList<Symbol> paras;
+    private Ident idn;
+    private ArrayList<Ident> paras;
 
-    public FuncHeader(String fname, Symbol.TYPE type, ArrayList<Symbol> paras) {
+    public FuncHeader(String fname, Type type, ArrayList<Ident> paras) {
         this.type = type;
         this.fname = fname;
         this.paras = paras;
     }
 
-    public Symbol.TYPE getType() {
+    public FuncHeader(Ident idn, Type type, ArrayList<Ident> paras) {
+        this.type = type;
+        this.idn = idn;
+        this.paras = paras;
+    }
+
+    public Type getType() {
         return type;
     }
 
@@ -25,7 +32,7 @@ public class FuncHeader {
         return fname;
     }
 
-    public ArrayList<Symbol> getParas() {
+    public ArrayList<Ident> getParas() {
         return paras;
     }
 }

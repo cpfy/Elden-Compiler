@@ -36,11 +36,19 @@ public class IRDictionary {
         KEYWORDS_LIST.add("label");
         KEYWORDS_LIST.add("i32");
         KEYWORDS_LIST.add("float");
+        KEYWORDS_LIST.add("void");
 
         // Some Key
         KEYWORDS_LIST.add("dso_local");
         KEYWORDS_LIST.add("nsw");
         KEYWORDS_LIST.add("align");
+        KEYWORDS_LIST.add("zeroinitializer");
+        KEYWORDS_LIST.add("inbounds");
+        KEYWORDS_LIST.add("declare");
+
+        //其它指令
+        KEYWORDS_LIST.add("zext");
+
 
         // cmp比较与跳转指令
         KEYWORDS_LIST.add("eq");
@@ -53,11 +61,12 @@ public class IRDictionary {
         KEYWORDS_LIST.add("sge");
         KEYWORDS_LIST.add("slt");
         KEYWORDS_LIST.add("sle");
-//        KEYWORDS_LIST.add("");
-//        KEYWORDS_LIST.add("");
-//        KEYWORDS_LIST.add("");
-//        KEYWORDS_LIST.add("");
 
+
+//        KEYWORDS_LIST.add("");
+//        KEYWORDS_LIST.add("");
+//        KEYWORDS_LIST.add("");
+//        KEYWORDS_LIST.add("");
 
 
     }
@@ -72,27 +81,15 @@ public class IRDictionary {
     static {
         // 应该无用
         OPERATORS_DICT = new HashMap<>();
-        OPERATORS_DICT.put("!", "NOT");
-        OPERATORS_DICT.put("&&", "AND");
-        OPERATORS_DICT.put("||", "OR");
-        OPERATORS_DICT.put("+", "PLUS");
-        OPERATORS_DICT.put("-", "MINU");
-        OPERATORS_DICT.put("*", "MULT");
-        OPERATORS_DICT.put("/", "DIV");
 
+        OPERATORS_DICT.put("*", "MULT");
         OPERATORS_DICT.put("%", "PERC");    // 取percent意
         OPERATORS_DICT.put("@", "AT");
-        OPERATORS_DICT.put("#", "JING");
-
-//        OPERATORS_DICT.put("<", "LSS");
-//        OPERATORS_DICT.put("<=", "LEQ");
-//        OPERATORS_DICT.put(">", "GRE");
-//        OPERATORS_DICT.put(">=", "GEQ");
-//        OPERATORS_DICT.put("==", "EQL");
-//        OPERATORS_DICT.put("!=", "NEQ");
-        
-        OPERATORS_DICT.put("=", "ASSIGN");
+        OPERATORS_DICT.put("#", "POUND");
+        OPERATORS_DICT.put(":", "COLON");
         OPERATORS_DICT.put(";", "SEMICN");
+
+        OPERATORS_DICT.put("=", "ASSIGN");
         OPERATORS_DICT.put(",", "COMMA");
         OPERATORS_DICT.put("(", "LPARENT");
         OPERATORS_DICT.put(")", "RPARENT");
