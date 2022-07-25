@@ -9,6 +9,26 @@ public class InitVal extends Node {
         this.exps = exps;
     }
 
+    public ArrayList<Integer> getIntValues() {
+        ArrayList<Integer> initValues = new ArrayList<>();
+        for (Exp exp: exps) {
+            initValues.add(exp.getValue());
+        }
+        return initValues;
+    }
+
+    public ArrayList<Float> getFloatValues() {
+        ArrayList<Float> initValues = new ArrayList<>();
+        for (Exp exp: exps) {
+            initValues.add(exp.getValueF());
+        }
+        return initValues;
+    }
+
+    public ArrayList<Exp> getExps() {
+        return exps;
+    }
+
     @Override
     public void addMidCode() {
         //todo

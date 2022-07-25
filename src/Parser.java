@@ -20,7 +20,10 @@ public class Parser {
         compUnit = getCompUnit();
         compUnit.addMidCode();
         PrintStream printStream = new PrintStream("txt/LLVM IR.txt");
-        printStream.println(compUnit.getLLVMIR().toString());
+        for (String s: compUnit.getLLVMIR()) {
+            printStream.print(s);
+        }
+
     }
 
     public ArrayList<String> getStrings() {
@@ -53,7 +56,6 @@ public class Parser {
     }
 
     //CompUnit → [ CompUnit ] ( Decl | FuncDef )
-    //todo changed
     private CompUnit getCompUnit() {
         ArrayList<Decl> decls = new ArrayList<>();
         ArrayList<FuncDef> funcDefs = new ArrayList<>();
@@ -537,26 +539,13 @@ public class Parser {
             if (getNextWord().getType() != WordType.ASSIGN) {
                 error();
             }
-            if (seeNextWord().getType() == WordType.GETINTTK) {
-                stmt = new StmtGetInt(lVal);
-                getNextWord();
-                if (getNextWord().getType() != WordType.LPARENT) {
-                    error();
-                }
-                if (getNextWord().getType() != WordType.RPARENT) {
-                    error();
-                }
-                if (getNextWord().getType() != WordType.SEMICN) {
-                    error();
-                }
+
+            Exp exp = getExp();
+            if (getNextWord().getType() != WordType.SEMICN) {
+                error();
             }
-            else {
-                Exp exp = getExp();
-                if (getNextWord().getType() != WordType.SEMICN) {
-                    error();
-                }
-                stmt = new StmtAssign(lVal, exp);
-            }
+            stmt = new StmtAssign(lVal, exp);
+
         }
         outputs.add("<Stmt>");
         return stmt;
@@ -591,7 +580,6 @@ public class Parser {
 
     //LVal → Ident {'[' Exp ']'}
     private LVal getLVal() {
-        //todo
         ID id = null;
         ArrayList<Exp> dims = new ArrayList<>();
         if (seeNextWord().getType() != WordType.IDENFR) {
@@ -649,7 +637,6 @@ public class Parser {
     //UnaryExp → PrimaryExp | Ident '(' [FuncRParams] ')'
     //    | UnaryOp UnaryExp
     private Exp getUnaryExp() {
-        //todo
         Exp exp = null;
         if (seeNextWord().getType() == WordType.PLUS
                 || seeNextWord().getType() == WordType.MINU
@@ -818,7 +805,6 @@ public class Parser {
     }
 
     private Exp getConstExp() {
-        //todo
         Exp exp = null;
         exp = getAddExp();
         outputs.add("<ConstExp>");

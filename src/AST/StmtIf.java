@@ -31,6 +31,9 @@ public class StmtIf extends Stmt {
         }
 
         String label2 = newLable();
+        if (stmt2 == null) {
+            addReload(jump2cond2, label2);
+        }
         addReload(end, label2);
         addCode(label2 + ":\n");
     }

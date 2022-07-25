@@ -2,6 +2,7 @@ package AST;
 
 import word.WordType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ExpOp extends Exp {
@@ -18,7 +19,7 @@ public class ExpOp extends Exp {
     }
 
     @Override
-    public String addCodePre() {
+    public ArrayList<String> addCodePre() {
         addCode(left.addCodePre());
         addCode(right.addCodePre());
         setExpType();
@@ -190,7 +191,7 @@ public class ExpOp extends Exp {
         else {
             System.out.println("Error at EXPOP");
         }
-        return getCodes().toString();
+        return getCodes();
     }
 
     @Override
@@ -200,76 +201,128 @@ public class ExpOp extends Exp {
 
     @Override
     public void calculate() {
-        if (op == WordType.PLUS) {                          // +
-            value = left.getValue() + right.getValue();
-        }
-        else if (op == WordType.MINU) {                   // -
-            value = left.getValue() - right.getValue();
-        }
-        else if (op == WordType.MULT) {                   // *
-            value = left.getValue() * right.getValue();
-        }
-        else if (op == WordType.DIV) {                    // /
-            value = left.getValue() / right.getValue();
-        }
-        else if (op == WordType.MOD) {                    // %
-            value = left.getValue() % right.getValue();
-        }
-        else if (op == WordType.NEQ) {                    // !=  !
-            if (left.getValue() != right.getValue()) {
-                value = 1;
+        left.getValue();
+        right.getValue();
+        setExpType();
+        if (type.equals("i32")) {
+            if (op == WordType.PLUS) {                          // +
+                value = left.getValue() + right.getValue();
+            } else if (op == WordType.MINU) {                   // -
+                value = left.getValue() - right.getValue();
+            } else if (op == WordType.MULT) {                   // *
+                value = left.getValue() * right.getValue();
+            } else if (op == WordType.DIV) {                    // /
+                value = left.getValue() / right.getValue();
+            } else if (op == WordType.MOD) {                    // %
+                value = left.getValue() % right.getValue();
+            } else if (op == WordType.NEQ) {                    // !=  !
+                if (left.getValue() != right.getValue()) {
+                    value = 1;
+                } else {
+                    value = 0;
+                }
+            } else if (op == WordType.EQL || op == WordType.NOT) {                    // ==
+                if (left.getValue() == right.getValue()) {
+                    value = 1;
+                } else {
+                    value = 0;
+                }
+            } else if (op == WordType.LEQ) {                    // <=
+                if (left.getValue() <= right.getValue()) {
+                    value = 1;
+                } else {
+                    value = 0;
+                }
+            } else if (op == WordType.LSS) {                    // <
+                if (left.getValue() < right.getValue()) {
+                    value = 1;
+                } else {
+                    value = 0;
+                }
+            } else if (op == WordType.GEQ) {                    // >=
+                if (left.getValue() >= right.getValue()) {
+                    value = 1;
+                } else {
+                    value = 0;
+                }
+            } else if (op == WordType.GRE) {                    // >
+                if (left.getValue() > right.getValue()) {
+                    value = 1;
+                } else {
+                    value = 0;
+                }
+            } else {
+                System.out.println("Error at EXPOP");
             }
-            else {
-                value = 0;
-            }
-        }
-        else if (op == WordType.EQL || op == WordType.NOT) {                    // ==
-            if (left.getValue() == right.getValue()) {
-                value = 1;
-            }
-            else {
-                value = 0;
-            }
-        }
-        else if (op == WordType.LEQ) {                    // <=
-            if (left.getValue() <= right.getValue()) {
-                value = 1;
-            }
-            else {
-                value = 0;
-            }
-        }
-        else if (op == WordType.LSS) {                    // <
-            if (left.getValue() < right.getValue()) {
-                value = 1;
-            }
-            else {
-                value = 0;
-            }
-        }
-        else if (op == WordType.GEQ) {                    // >=
-            if (left.getValue() >= right.getValue()) {
-                value = 1;
-            }
-            else {
-                value = 0;
-            }
-        }
-        else if (op == WordType.GRE) {                    // >
-            if (left.getValue() > right.getValue()) {
-                value = 1;
-            }
-            else {
-                value = 0;
-            }
+            valueF = value;
         }
         else {
-            System.out.println("Error at EXPOP");
+            if (op == WordType.PLUS) {                          // +
+                valueF = left.getValueF() + right.getValueF();
+                value = (int) valueF;
+            } else if (op == WordType.MINU) {                   // -
+                valueF = left.getValueF() - right.getValueF();
+                value = (int) valueF;
+            } else if (op == WordType.MULT) {                   // *
+                valueF = left.getValueF() * right.getValueF();
+                value = (int) valueF;
+            } else if (op == WordType.DIV) {                    // /
+                valueF = left.getValueF() / right.getValueF();
+                value = (int) valueF;
+            } else if (op == WordType.MOD) {                    // %
+                valueF = left.getValueF() % right.getValueF();
+                value = (int) valueF;
+            } else if (op == WordType.NEQ) {                    // !=  !
+                if (left.getValueF() != right.getValueF()) {
+                    value = 1;
+                } else {
+                    value = 0;
+                }
+                valueF = value;
+            } else if (op == WordType.EQL || op == WordType.NOT) {                    // ==
+                if (left.getValueF() == right.getValueF()) {
+                    value = 1;
+                } else {
+                    value = 0;
+                }
+                valueF = value;
+            } else if (op == WordType.LEQ) {                    // <=
+                if (left.getValueF() <= right.getValueF()) {
+                    value = 1;
+                } else {
+                    value = 0;
+                }
+                valueF = value;
+            } else if (op == WordType.LSS) {                    // <
+                if (left.getValueF() < right.getValueF()) {
+                    value = 1;
+                } else {
+                    value = 0;
+                }
+                valueF = value;
+            } else if (op == WordType.GEQ) {                    // >=
+                if (left.getValueF() >= right.getValueF()) {
+                    value = 1;
+                } else {
+                    value = 0;
+                }
+                valueF = value;
+            } else if (op == WordType.GRE) {                    // >
+                if (left.getValueF() > right.getValueF()) {
+                    value = 1;
+                } else {
+                    value = 0;
+                }
+                valueF = value;
+            } else {
+                System.out.println("Error at EXPOP");
+            }
         }
     }
 
     private void setExpType() {
-        if (left.getType().equals("float") || right.getType().equals("float")) {
+        if ((left.getType().equals("float") || right.getType().equals("float"))
+                && (op == WordType.PLUS || op == WordType.MINU || op == WordType.MULT || op == WordType.DIV)) {
             setType("float");
         }
         else {

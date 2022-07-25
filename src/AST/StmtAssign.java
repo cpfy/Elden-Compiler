@@ -28,12 +28,5 @@ public class StmtAssign extends Stmt {
         }
         addCode("store " + lVal.getType() + " " + tempExp + ", "
                 + lVal.getType() + "* " + tempLVal + "\n");
-        
-//        if (!lVal.isArray()) {
-//            midCodeList.addMidCodeItem(MidCodeType.ASSIGNOP, exp.getTemp(), null, lVal.getTemp());
-//        }
-//        else {
-//            midCodeList.addMidCodeItem(MidCodeType.PUTARRAY, exp.getTemp(), lVal.getTemp(), lVal.getId().getRawWord().getName());
-//        }
     }
 }

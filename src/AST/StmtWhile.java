@@ -16,13 +16,15 @@ public class StmtWhile extends Stmt {
         String start = newLable();
         String end = newReload();
         addCode("br label %" + start + "\n");
-        jumps.add(start);
-        jumps.add(end);
+        jumps.add(0,end);
+        jumps.add(0,start);
         addCode(start + ":\n");
         cond.addMidCode(end);
         stmt.addMidCode();
         addCode("br label %" + start + "\n");
 
+        jumps.remove(0);
+        jumps.remove(0);
 
         String label2 = newLable();
         addReload(end, label2);

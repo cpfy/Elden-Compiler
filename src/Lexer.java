@@ -42,6 +42,28 @@ public class Lexer {
         }
     }
 
+    private String toInt(String s) {
+        String ans = s;
+        if (s.length() == 1) {
+            return s;
+        }
+        if (s.charAt(0) == '0') {
+            if (s.charAt(1) == 'x' || s.charAt(1) == 'X') {
+                ans = String.valueOf(Integer.valueOf(s.substring(2), 16));
+            }
+            else {
+                ans = String.valueOf(Integer.valueOf(s, 8));
+            }
+        }
+        return ans;
+    }
+
+    private String toFloat(String s) {
+        //todo 浮点数常数
+        String ans = null;
+
+        return s;
+    }
     public ArrayList<RawWord> getRawWords() {
         return rawWords;
     }
@@ -59,8 +81,7 @@ public class Lexer {
         reservedWords.put("if", WordType.IFTK);
         reservedWords.put("else", WordType.ELSETK);
         reservedWords.put("while", WordType.WHILETK);
-        reservedWords.put("getint", WordType.GETINTTK);
-        reservedWords.put("printf", WordType.PRINTFTK);
+        reservedWords.put("putf", WordType.PRINTFTK);
         reservedWords.put("return", WordType.RETURNTK);
         reservedWords.put("void", WordType.VOIDTK);
         reservedWords.put("float", WordType.FLOATTK);
@@ -164,10 +185,10 @@ public class Lexer {
                 headPoint++;
             }
             if (isInt) {
-                rawWords.add(new RawWord(token, WordType.INTCON, line));
+                rawWords.add(new RawWord(toInt(token), WordType.INTCON, line));
             }
             else {
-                rawWords.add(new RawWord(token, WordType.FLOATCON, line));
+                rawWords.add(new RawWord(toFloat(token), WordType.FLOATCON, line));
             }
             return;
         }

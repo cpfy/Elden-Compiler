@@ -29,22 +29,29 @@ public class LAndExp extends Node {
         for (i = 0; i < exps.size(); i++) {
             if (i == exps.size() - 1) {
                 if (isLast) {
-                    exps.get(i).getCodes().append("br i1 " + temps.get(i) + ", "
+                    exps.get(i).getCodes().add("br i1 " + temps.get(i) + ", "
                             + "label %" + jump1 + ", "
                             + "label %" + jump2 + "\n");
                 }
                 else {
-                    exps.get(i).getCodes().append("br i1 " + temps.get(i) + ", "
+                    exps.get(i).getCodes().add("br i1 " + temps.get(i) + ", "
                             + "label %" + jump1 + ", "
                             + "label %" + out + "\n");
                 }
             }
             else {
-                exps.get(i).getCodes().append("br i1 " + temps.get(i) + ", "
-                        + "label %" + lables.get(i) + ", "
-                        + "label %" + out + "\n");
+                if (isLast) {
+                    exps.get(i).getCodes().add("br i1 " + temps.get(i) + ", "
+                            + "label %" + lables.get(i) + ", "
+                            + "label %" + jump2 + "\n");
+                }
+                else {
+                    exps.get(i).getCodes().add("br i1 " + temps.get(i) + ", "
+                            + "label %" + lables.get(i) + ", "
+                            + "label %" + out + "\n");
+                }
             }
-            exps.get(i).getCodes().append(lables.get(i) + ":\n");
+            exps.get(i).getCodes().add(lables.get(i) + ":\n");
             exps.get(i).generate();
         }
     }
@@ -54,7 +61,7 @@ public class LAndExp extends Node {
             exp.addCodePre();
             String t = newTemp();
             temps.add(t);
-            exp.getCodes().append(t + " = icmp ne i32 " + exp.getTemp() + ", 0\n");
+            exp.getCodes().add(t + " = icmp ne i32 " + exp.getTemp() + ", 0\n");
             lables.add(newLable());
 //            exp.generate();
         }

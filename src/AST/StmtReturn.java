@@ -23,11 +23,14 @@ public class StmtReturn extends Stmt {
                 addCode(nt + " = sitofp i32 " + temp + " to float\n");
                 temp = nt;
             }
+            if (isMain) {
+                addCode("call void @putint(i32 " + temp + ")\n");
+            }
             addCode("ret " + funcType + " " + temp + "\n");
         }
         else {
-            addCode("ret void");
+            addCode("ret void\n");
         }
-        
+        newLable();
     }
 }
