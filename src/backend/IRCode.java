@@ -3,7 +3,7 @@ package backend;
 import java.util.ArrayList;
 
 public class IRCode {
-    private String type;    //15种中间代码种类
+    private String type;    //N种中间代码种类
     private String rawstr;  //输出的ircode字符串格式
 
     private String IRstring;
@@ -29,8 +29,8 @@ public class IRCode {
     private Symbol symbol;  //含有表达式等情况时，对应的symbol类型的符号
     private SymbolTable.Scope scope;    //todo inblockoffset用到
 
-    private String instr;   //branch跳转 的bne等类型
-    private String jumploc; //branch的跳转位置
+//    private String instr;   //branch跳转 的bne等类型
+//    private String jumploc; //branch的跳转位置
 
     //public boolean processjump = false;     //True表示jump时需处理inblockoffset,仅当break、continue时使用
 
@@ -104,8 +104,8 @@ public class IRCode {
     //Cond部分专用
     public IRCode(String type, String instr, String jumploc, Variable oper1, Variable oper2) {
         this.type = type;
-        this.instr = instr;
-        this.jumploc = jumploc;
+//        this.instr = instr;
+//        this.jumploc = jumploc;
         this.oper1 = oper1;
         this.oper2 = oper2;
     }
@@ -170,6 +170,8 @@ public class IRCode {
         return symbol;
     }
 
+
+    String instr = "", jumploc = "";
     public String getInstr() {
         return instr;
     }
@@ -264,7 +266,7 @@ public class IRCode {
                 rawstr = "goto " + IRstring;
                 break;
             case "branch":
-                rawstr = instr + " " + oper1.toString() + ", " + oper2.toString() + ", " + jumploc;
+//                rawstr = instr + " " + oper1.toString() + ", " + oper2.toString() + ", " + jumploc;
                 break;
             case "setcmp":   //此处sge、sgt等instr存入了operator
                 rawstr = operator + " " + dest.toString() + ", " + oper1.toString() + ", " + oper2.toString();

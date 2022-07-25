@@ -14,7 +14,6 @@ public class IRScanner {
     private int curRows = 1;
     private boolean readingString = false;
     private boolean readingNumber = false;
-    private boolean readingFormatString = false;
     private boolean readingBool = false;
     private boolean readingComments = false;
 
@@ -74,13 +73,21 @@ public class IRScanner {
         IRDictionary.TYPE type = tokenDictionary.queryCharType(String.valueOf(c));
         switch (type) {
             case LETTER:
+
                 if (readingComments) {
                     curToken = "";
                     break;
-                } else if (readingFormatString) {
-                    curToken += c;
-                    break;
-                } else if (readingBool) {
+                }
+//                else if(readingNumber){
+//                    createToken("INTCON");
+//                    readingNumber=false;
+//                    curToken += c;
+//                    System.err.println(curToken);
+//
+//                    break;
+//                }
+
+                else if (readingBool) {
                     curToken = endOfOp();
                 }
                 if (curToken.isEmpty()) {
@@ -92,25 +99,26 @@ public class IRScanner {
                 if (readingComments) {
                     curToken = "";
                     break;
-                } else if (readingFormatString) {
-                    curToken += c;
-                    break;
                 } else if (readingBool) {
                     curToken = endOfOp();
                 }
+
                 if (curToken.isEmpty()) {
                     readingNumber = true;
                 }
                 curToken += c;
+
+                // 处理i32
+                if(curToken == "i32"){
+                    createToken("I32TK");
+                    resetStatus();
+                }
+
                 break;
             case OPERATOR:
                 if (readingComments) {
                     curToken = "";
                     break;
-                } else if (readingFormatString && c != '"') {
-                    curToken += c;
-                    break;
-
                 } else if (readingString) {
                     curToken = endOfWord();
                     //readingString = false;
@@ -160,17 +168,19 @@ public class IRScanner {
                 }
                 break;
             case SPACE:
-                if(c == '\n'){  //newline, \n居然算SPACE
+                if (c == '\n') {  //newline, \n居然算SPACE
+                    if (readingString) {
+                        curToken = endOfWord();
+
+                    } else if (readingNumber) {
+                        createToken("INTCON");
+                    }
                     curRows++;
                     resetStatus();
                 }
                 if (readingComments) {
                     curToken = "";
                     break;
-                } else if (readingFormatString) {
-                    curToken += c;
-                    break;
-
                 } else if (readingBool) {
                     createToken(tokenDictionary.queryOpCode(curToken));
                     readingBool = false;
@@ -183,9 +193,7 @@ public class IRScanner {
                     readingNumber = false;
 
                 } else {
-
 //                    curToken = endOfWord();
-
                     if (c == Character.toChars(10)[0]) {
                         curRows++;
                         resetStatus();
@@ -193,10 +201,6 @@ public class IRScanner {
                 }
                 break;
             case OTHERS:
-                if (readingFormatString) {
-                    curToken += c;
-                }
-
                 break;
             default:
                 System.err.println("Unhandled char scanned!");
@@ -229,22 +233,29 @@ public class IRScanner {
 
     private String handleOperator(char c) {
         if (c == ';') {
-            curToken = endOfWord();
+//            curToken = endOfWord();
             readingComments = true;
-            curToken += c;
+            curToken = "";
+        }
+//         else if (c == '"') {
+//            if (!readingFormatString) {
+//                readingFormatString = true;
+//                curToken += c;
+//
+//            } else {
+//                curToken += c;
+//                createToken("STRCON");
+//                readingFormatString = false;
+//            }
+//
+//        }
 
-        } else if (c == '"') {
-            if (!readingFormatString) {
-                readingFormatString = true;
-                curToken += c;
+//        else if (c == '@' || c == '%') {
+//            curToken = endOfWord();
+//            readingBool = false;
+//            curToken += c;
 
-            } else {
-                curToken += c;
-                createToken("STRCON");
-                readingFormatString = false;
-            }
-
-        } else if (c == '<' || c == '>' || c == '!' || c == '=' || c == '/' || c == '|' || c == '&') {
+          else if (c == '<' || c == '>' || c == '!' || c == '=' || c == '/' || c == '|' || c == '&') {
             curToken = endOfWord();
             readingBool = true;
             curToken += c;
@@ -269,8 +280,15 @@ public class IRScanner {
     private void resetStatus() {
         readingString = false;
         readingNumber = false;
-        readingFormatString = false;
         readingBool = false;
         readingComments = false;
     }
+
+//    //    判断是否新的行/文法结束
+//    private boolean newSymLine() {
+//        if (sym.getRow() > getLastToken().getRow()) {
+//            return true;
+//        }
+//        return false;
+//    }
 }

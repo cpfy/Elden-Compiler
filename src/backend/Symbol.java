@@ -172,24 +172,24 @@ public class Symbol {
 
     //其他函数
     public boolean varnameIsFuncPara(String name) {
-        if (paralist == null) {
-            return false;
-        }
-        for (int i = 0; i < paralist.size(); i++) {
-            if (paralist.get(i).getName().equals(name)) {
-                return true;
-            }
-        }
+//        if (paralist == null) {
+//            return false;
+//        }
+//        for (int i = 0; i < paralist.size(); i++) {
+//            if (paralist.get(i).getName().equals(name)) {
+//                return true;
+//            }
+//        }
         return false;
     }
 
     public int varnameOrderInFuncPara(String name) {
-        for (int i = 0; i < paralist.size(); i++) {
-            if (paralist.get(i).getName().equals(name)) {
-                return i + 1;
-            }
-        }
-        System.err.println("Symbol / varnameOrderInFuncPara() ??? no name = " + name);
+//        for (int i = 0; i < paralist.size(); i++) {
+//            if (paralist.get(i).getName().equals(name)) {
+//                return i + 1;
+//            }
+//        }
+//        System.err.println("Symbol / varnameOrderInFuncPara() ??? no name = " + name);
         return -10000;
     }
 }

@@ -36,6 +36,12 @@ public class IRDictionary {
         KEYWORDS_LIST.add("label");
         KEYWORDS_LIST.add("i32");
         KEYWORDS_LIST.add("float");
+
+        // Some Key
+        KEYWORDS_LIST.add("dso_local");
+        KEYWORDS_LIST.add("nsw");
+        KEYWORDS_LIST.add("align");
+
         // cmp比较与跳转指令
         KEYWORDS_LIST.add("eq");
         KEYWORDS_LIST.add("ne");
@@ -51,6 +57,9 @@ public class IRDictionary {
 //        KEYWORDS_LIST.add("");
 //        KEYWORDS_LIST.add("");
 //        KEYWORDS_LIST.add("");
+
+
+
     }
 
     static {
@@ -70,8 +79,10 @@ public class IRDictionary {
         OPERATORS_DICT.put("-", "MINU");
         OPERATORS_DICT.put("*", "MULT");
         OPERATORS_DICT.put("/", "DIV");
+
         OPERATORS_DICT.put("%", "PERC");    // 取percent意
         OPERATORS_DICT.put("@", "AT");
+        OPERATORS_DICT.put("#", "JING");
 
 //        OPERATORS_DICT.put("<", "LSS");
 //        OPERATORS_DICT.put("<=", "LEQ");

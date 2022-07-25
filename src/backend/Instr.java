@@ -13,9 +13,6 @@ public class Instr {
     public boolean hasRetReg = false;       //有欠着的寄存器需要还掉
     private int freeRegNumber;              //寄存器标号int no
 
-    /***** *****/
-
-
     Instr(String str) {
         this.str = str;
     }
@@ -79,7 +76,8 @@ public class Instr {
     }
 
     private void ValueInstruction() {
-        switch (sym.getTokenValue()) {
+        String sym="";
+        switch (sym) {
             case "add":
                 AddInst();
                 break;
@@ -107,5 +105,29 @@ public class Instr {
             default:
                 break;
         }
+    }
+
+    private void FAddInst() {
+    }
+
+    private void SubInst() {
+    }
+
+    private void FSubInst() {
+    }
+
+    private void MulInst() {
+    }
+
+    private void FMulInst() {
+    }
+
+    private void SDivInst() {
+    }
+
+    private void FDivInst() {
+    }
+
+    private void AddInst() {
     }
 }

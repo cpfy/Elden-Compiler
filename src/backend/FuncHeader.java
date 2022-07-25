@@ -3,21 +3,21 @@ package backend;
 import java.util.ArrayList;
 
 public class FuncHeader {
-//    文法定义
-//    FunctionHeader
-//	: OptPreemptionSpecifier OptVisibility OptDLLStorageClass OptCallingConv ReturnAttrs Type GlobalIdent "(" Params ")" OptUnnamedAddr FuncAttrs OptSection OptComdat OptGC OptPrefix OptPrologue OptPersonality
+    //    文法定义
+    //    FunctionHeader
+    //	: [Opt] ReturnAttrs Type GlobalIdent "(" Params ")" [Opt] FuncAttrs [Opt]
 
-    private Parser.TYPE type;
+    private Symbol.TYPE type;
     private String fname;
     private ArrayList<Symbol> paras;
 
-    public FuncHeader(String fname, Parser.TYPE type, ArrayList<Symbol> paras) {
+    public FuncHeader(String fname, Symbol.TYPE type, ArrayList<Symbol> paras) {
         this.type = type;
         this.fname = fname;
         this.paras = paras;
     }
 
-    public Parser.TYPE getType() {
+    public Symbol.TYPE getType() {
         return type;
     }
 
