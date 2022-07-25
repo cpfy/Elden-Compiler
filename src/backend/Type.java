@@ -1,8 +1,14 @@
 package backend;
 
-// global CONST Type
-public enum Type {
-    I, V, A, F,  //integer, void, array, function
-    IP,              //integer pointer
-    FP,  //Float pointer
+import java.util.ArrayList;
+
+public class Type {
+
+    private TypeC typec;
+    private int dimen;
+    private ArrayList<Integer> dimenlist;
+
+    public Type(TypeC typec) {
+        this.typec = typec;
+    }
 }

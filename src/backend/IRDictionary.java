@@ -45,6 +45,7 @@ public class IRDictionary {
         KEYWORDS_LIST.add("zeroinitializer");
         KEYWORDS_LIST.add("inbounds");
         KEYWORDS_LIST.add("declare");
+        KEYWORDS_LIST.add("constant");
 
         //其它指令
         KEYWORDS_LIST.add("zext");

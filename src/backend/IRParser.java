@@ -1,7 +1,6 @@
 package backend;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -79,18 +78,21 @@ public class IRParser {
         FuncHeader fh = FunctionHeader();
     }
 
-    // GlobalDef: GlobalIdent "=" [Opt] Immutable Type Constant GlobalAttrs FuncAttrs
+    // GlobalDef: GlobalIdent "=" OptLinkage OptPreemptionSpecifier[Opt] Immutable Type Constant GlobalAttrs FuncAttrs
     // @buf = dso_local global [2 x [100 x i32]] zeroinitializer, align 4
     private void GlobalDef() {
-        match("@");
         Ident g_idn = GlobalIdent();
         match("=");
+        OptLinkage();
         OptPreemptionSpecifier();   // 可选dso_local
-        Immutable();
+        OptUnnamedAddr();   // "unnamed_addr"
+        Immutable();    // "constant"或"global"
         Type t = Type();
         Constant();     // zeroinitializer 可处理
         GlobalAttrs();  // 处理Align等
         FuncAttrs();
+
+
     }
 
     // GlobalAttrs: empty| "," GlobalAttrList;
@@ -161,6 +163,10 @@ public class IRParser {
 
     //直接空
     private void FuncAttrs() {
+        if(symIs("#")){
+            getsym();
+            getsym();
+        }
         return;
     }
 
@@ -368,7 +374,7 @@ public class IRParser {
             getsym();
             return;
         }
-        Type rettype = ConcreteType();
+        TypeC rettype = ConcreteType();
 
     }
 
@@ -391,14 +397,14 @@ public class IRParser {
 //	| NamedType
 //	| MMXType
 //	| TokenType
-    private Type ConcreteType() {
+    private TypeC ConcreteType() {
         switch (sym.getTokenValue()) {
             case "void":
-                return Type.V;
+                return TypeC.V;
             case "int":
-                return Type.I;
+                return TypeC.I;
             case "float":
-                return Type.F;
+                return TypeC.F;
             default:
                 return null;
 
@@ -484,14 +490,51 @@ public class IRParser {
     // 例如AddInst	: "add" OverflowFlags Type Value "," Value OptCommaSepMetadataAttachmentList
     // ex：%5 = add nsw i32 %3, %4
     private void ValueInstruction() {
+        if(symIs("getelementptr")){
+            GetElementPtrInst();
+            return;
+        }
+        
         String instname = sym.getTokenValue();
         getsym();
-        Type type = Type();
+        Type typeC = Type();
 //        Value val = Value();
         Ident val = Value();
         match(",");
         Value();
     }
+
+//    GetElementPtrInst
+//	: "getelementptr" OptInBounds Type "," Type Value OptCommaSepMetadataAttachmentList
+//	| "getelementptr" OptInBounds Type "," Type Value "," CommaSepTypeValueList OptCommaSepMetadataAttachmentList
+    private void GetElementPtrInst() {
+        match("getelementptr");
+        OptInBounds();  // "inbounds"
+        Type t1 = Type();
+        match(",");
+        Type t2 = Type();
+        Value();
+        if(symIs(",")){
+            getsym();
+            CommaSepTypeValueList();
+        }
+    }
+
+    // CommaSepTypeValueList: TypeValue| CommaSepTypeValueList "," TypeValue    ;
+    private void CommaSepTypeValueList() {
+        TypeValue();
+        while(symIs(",")){
+            getsym();
+            TypeValue();
+        }
+    }
+
+    // TypeValue: Type Value
+    private void TypeValue() {
+        Type();
+        Value();
+    }
+
 
     //    Value
 //	: Constant
@@ -524,29 +567,43 @@ public class IRParser {
 //	| BlockAddressConst
 //	| ConstantExpr
     private Ident Constant() {
-        match("zeroinitializer");
-
+        String value = sym.getTokenValue();
+        if(symIs("zeroinitializer")){
+            match("zeroinitializer");   //	| ZeroInitializerConst
+        }
+        if (Character.isDigit(value.charAt(0))) {
+            getsym();
+            Ident idn = new Ident(Integer.parseInt(value));
+            return idn;
+        }
         return null;
     }
 
     // Type大类
     private Type Type() {
-        Type retype = null;
-        switch (sym.getTokenValue()) {
+        TypeC ctype = null;
+        if(symIs("[")){
+            return ArrayType();
+        }
+
+        String typestr = sym.getTokenValue();
+
+
+        switch (typestr) {
             case "void":
-                retype = Type.V;
+                ctype = TypeC.V;
                 break;
             case "i32":
-                retype = Type.I;
+                ctype = TypeC.I;
                 break;
             case "i32*":
-                retype = Type.IP;
+                ctype = TypeC.IP;
                 break;
             case "float":
-                retype = Type.F;
+                ctype = TypeC.F;
                 break;
             case "float*":
-                retype = Type.FP;
+                ctype = TypeC.FP;
                 break;
             default:
                 System.out.println("Error Type!");
@@ -554,18 +611,70 @@ public class IRParser {
                 break;
         }
         getsym();
-        return retype;
+        Type rettype = new Type(ctype);
+        return rettype;
     }
 
-    // ArrayType	: "[" int_lit "x" Type "]"
-    private void ArrayType() {
+    // ArrayType : "[" int_lit "x" Type "]"
+    private Type ArrayType() {
         match("[");
         int dim = Integer.parseInt(sym.getTokenValue());
         getsym();
         match("x");
-        Type();
+        Type();         //todo
         match("]");
+
+        Type retype = new Type(TypeC.A);
+        return retype;
     }
+
+
+
+    /***** 可选函数 *****/
+//    OptLinkage
+//	: empty
+//	| Linkage
+//    ;
+//
+//    Linkage
+//	: "appending"
+//            | "available_externally"
+//            | "common"
+//            | "internal"
+//            | "linkonce"
+//            | "linkonce_odr"
+//            | "private"
+//            | "weak"
+//            | "weak_odr"
+//    ;
+    private void OptLinkage(){
+        if(symIs("common")||symIs("private")){
+            getsym();
+        }
+    }
+
+    private void OptInBounds() {
+        if(symIs("inbounds")){
+            getsym();
+        }
+    }
+
+//    OptUnnamedAddr
+//	: empty
+//	| UnnamedAddr
+//    ;
+//
+//    UnnamedAddr
+//	: "local_unnamed_addr"
+//            | "unnamed_addr"
+//    ;
+    private void OptUnnamedAddr(){
+        if(symIs("local_unnamed_addr")||symIs("unnamed_addr")){
+            getsym();
+        }
+    }
+
+
 
 
     //基础操作；辅助函数
