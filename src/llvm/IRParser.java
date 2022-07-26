@@ -1,8 +1,8 @@
-package ir;
+package llvm;
 
 import backend.FuncHeader;
 import backend.SymbolTable;
-import ir.Instr.Instr;
+import llvm.Instr.Instr;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -505,8 +505,8 @@ public class IRParser {
     private void CallInst() {
         match("call");
         ReturnAttrs();
-        Type();
-        Value();
+        Type t = Type();
+        Value v = Value();  // 如@putarray
         match("(");
         Args();
         match(")");

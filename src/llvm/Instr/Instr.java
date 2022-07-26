@@ -1,9 +1,9 @@
-package ir.Instr;
+package llvm.Instr;
 
 import backend.Variable;
-import ir.Ident;
-import ir.Type;
-import ir.Value;
+import llvm.Ident;
+import llvm.Type;
+import llvm.Value;
 
 import java.util.ArrayList;
 

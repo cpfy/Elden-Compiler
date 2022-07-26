@@ -1,4 +1,4 @@
-package ir;
+package llvm;
 
 public class Token {
     private String tokenCode;
