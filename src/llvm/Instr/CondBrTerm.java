@@ -1,6 +1,8 @@
-package llvm;
+package llvm.Instr;
 
+import llvm.Ident;
 import llvm.Instr.Instr;
+import llvm.Value;
 
 public class CondBrTerm extends Instr {
     private Value v;

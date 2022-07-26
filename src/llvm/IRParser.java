@@ -1,11 +1,12 @@
 package llvm;
 
-import backend.FuncHeader;
 import backend.SymbolTable;
+import llvm.Instr.AllocaInst;
 import llvm.Instr.AssignInstr;
 import llvm.Instr.BinaryInst;
 import llvm.Instr.BrTerm;
 import llvm.Instr.CallInst;
+import llvm.Instr.CondBrTerm;
 import llvm.Instr.GetElementPtrInst;
 import llvm.Instr.IcmpInst;
 import llvm.Instr.Instr;
@@ -42,14 +43,12 @@ public class IRParser {
         this.sym = tokenList.get(0);
         this.tokenList = tokenList;
         this.grammarList = new ArrayList<>();
-//        this.erdp = new ErrorDisposal();
-        this.table = new SymbolTable();
 
         this.alllist = new ArrayList<>();
     }
 
-    //    外层使用的api
-    public void start(int output) {
+    // 外层使用的api
+    public ArrayList<Block> parse(int output) {
         CompUnit();
         if (output == 1) {
             try {
@@ -58,6 +57,7 @@ public class IRParser {
                 e.printStackTrace();
             }
         }
+        return this.alllist;
     }
 
 
@@ -74,6 +74,7 @@ public class IRParser {
 
     // 成分部分
     private void CompUnit() {
+        createBlock("Global");
         while (symCodeIs("AT")) {
             GlobalDef();
         }
@@ -83,6 +84,8 @@ public class IRParser {
         while (symCodeIs("DECLARETK")) {
             FunctionDecl();
         }
+
+        alllist.add(curBlock);  // 塞进去最后一个块
     }
 
     // FunctionDecl : "declare" MetadataAttachments OptExternLinkage FunctionHeader
@@ -130,7 +133,7 @@ public class IRParser {
         Alignment();
     }
 
-    //    Alignment : "align" int_lit    ;
+    // Alignment : "align" int_lit    ;
     private void Alignment() {
         match("align");
         getsym();
@@ -145,7 +148,7 @@ public class IRParser {
         //否则不用管
     }
 
-    // Immutable	: "constant" | "global"
+    // Immutable : "constant" | "global"
     private void Immutable() {
         if (symIs("constant") || symIs("global")) {
             getsym();
@@ -187,9 +190,10 @@ public class IRParser {
     // example: define dso_local i32 @main() #0 {
     private void FunctionDef() {
         match("define");
-//        match("dso_local");
+        FuncHeader hd = FunctionHeader();   // dso_local可在内处理
 
-        FuncHeader hd = FunctionHeader();
+        createBlock(hd.getFname());     // Block以函数为名
+        Function f = new Function();
         FunctionBody();
     }
 
@@ -476,16 +480,38 @@ public class IRParser {
 //	| CatchPadInst
 //	| CleanupPadInst
     private Instr ValueInstruction() {
-        if (symIs("getelementptr")) {
-            return GetElementPtrInst();
-
-        } else if (symIs("call")) {
-            return CallInst();
-        } else if (symIs("icmp")) {
-            return ICmpInst();
+        String str = sym.getTokenValue();
+        switch (str) {
+            case "getelementptr":
+                return GetElementPtrInst();
+            case "call":
+                return CallInst();
+            case "icmp":
+                return ICmpInst();
+            case "alloca":
+                return AllocaInst();
+            default:
+                return BinaryInst();
         }
+    }
 
-        return BinaryInst();
+    //    AllocaInst
+//	: "alloca" OptInAlloca OptSwiftError Type OptCommaSepMetadataAttachmentList
+//	| "alloca" OptInAlloca OptSwiftError Type "," Alignment OptCommaSepMetadataAttachmentList
+//	| "alloca" OptInAlloca OptSwiftError Type "," Type Value OptCommaSepMetadataAttachmentList
+//	| "alloca" OptInAlloca OptSwiftError Type "," Type Value "," Alignment OptCommaSepMetadataAttachmentList
+//	| "alloca" OptInAlloca OptSwiftError Type "," AddrSpace OptCommaSepMetadataAttachmentList
+//	| "alloca" OptInAlloca OptSwiftError Type "," Alignment "," AddrSpace OptCommaSepMetadataAttachmentList
+//	| "alloca" OptInAlloca OptSwiftError Type "," Type Value "," AddrSpace OptCommaSepMetadataAttachmentList
+//	| "alloca" OptInAlloca OptSwiftError Type "," Type Value "," Alignment "," AddrSpace OptCommaSepMetadataAttachmentList
+//            ;
+    private Instr AllocaInst() {
+        match("alloca");
+        Type t = Type();
+        match(",");
+
+        Instr ai = new AllocaInst("alloca", t);
+        return ai;
     }
 
     // Binary运算
@@ -1015,6 +1041,10 @@ public class IRParser {
 
     //创建基本块
     private Block createBlock(String labelstr) {
+        if (curBlock != null) {
+            alllist.add(curBlock);
+        }
+
         Block nb = new Block();
         nb.setNum(blockcount);
         nb.setLabel(labelstr);

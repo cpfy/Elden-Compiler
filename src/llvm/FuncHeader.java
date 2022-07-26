@@ -1,7 +1,7 @@
-package backend;
+package llvm;
 
-import ir.Ident;
-import ir.Type;
+import llvm.Ident;
+import llvm.Type;
 
 import java.util.ArrayList;
 
