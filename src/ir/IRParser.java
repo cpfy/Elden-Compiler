@@ -1,4 +1,8 @@
-package backend;
+package ir;
+
+import backend.FuncHeader;
+import backend.SymbolTable;
+import ir.instr.Instr;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -14,13 +18,16 @@ public class IRParser {
 
     //private Symbol curFunc = null;  //当前调用的函数
     private int funcParaIndex;      //对照参数是否匹配时的index
-    private int curDimen = 0;           //当前变量数组维度
+    //    private int curDimen = 0;           //当前变量数组维度
     private boolean isGlobal = true;    //是否为顶层
 
     private final String OUTPUT_DIR = "output.txt";
 
-    private ArrayList<IRCode> lirlist;
-    private ArrayList<Instr> instrList;
+
+    //
+    private int blockcount = 1;     // 基本块计数
+    private Block curBlock = null;  // 当前block
+    private ArrayList<Block> alllist;
 
     public IRParser(ArrayList<Token> tokenList) {
         this.index = 0;
@@ -30,9 +37,7 @@ public class IRParser {
 //        this.erdp = new ErrorDisposal();
         this.table = new SymbolTable();
 
-        this.instrList = new ArrayList<>();
-
-        this.lirlist = new ArrayList<>();
+        this.alllist = new ArrayList<>();
     }
 
     //    外层使用的api
@@ -67,7 +72,7 @@ public class IRParser {
         while (symCodeIs("DEFINETK")) {
             FunctionDef();
         }
-        while(symCodeIs("DECLARETK")){
+        while (symCodeIs("DECLARETK")) {
             FunctionDecl();
         }
     }
@@ -163,7 +168,7 @@ public class IRParser {
 
     //直接空
     private void FuncAttrs() {
-        if(symIs("#")){
+        if (symIs("#")) {
             getsym();
             getsym();
         }
@@ -315,43 +320,246 @@ public class IRParser {
 
     // BasicBlock: OptLabelIdent Instructions Terminator
     private void BasicBlock() {
+        OptLabelIdent();
         Instructions();
         Terminator();
     }
 
+    //
+//    OptLabelIdent
+//	: empty
+//	| LabelIdent
+    private void OptLabelIdent() {
+        if (symPeek(":", 1)) {
+            LabelIdent();
+        }
+    }
+
+    //    LabelIdent
+//	: label_ident
+    private void LabelIdent() {
+        label_ident();
+    }
+
+    //    label_ident
+//	: ( _letter | _decimal_digit ) { _letter | _decimal_digit } ':'
+//            | _quoted_string ':'
+    private void label_ident() {
+        String labelstr = sym.getTokenValue();
+        getsym();
+        match(":");
+
+        //创建Block
+        createBlock(labelstr);
+    }
+
+
     // Instructions: empty | InstructionList
     private void Instructions() {
-        if (newSymLine()) {
+        if (!newSymLine()) {     // 判断是否新的行/文法结束
             return;
         }
         InstructionList();
     }
 
-    //    InstructionList
-//	: Instruction
-//	| InstructionList Instruction
+    // InstructionList : Instruction | InstructionList Instruction
     private void InstructionList() {
         Instruction();
-        while (matchInstr(sym)) {
+        while (matchInstr(sym)) {   // 是否为Instruction中的几类
             Instruction();
         }
     }
 
 
+    // Instruction : StoreInst [ | FenceInst | CmpXchgInst | AtomicRMWInst]
+//	| LocalIdent "=" ValueInstruction | ValueInstruction
     private void Instruction() {
-        switch (sym.getTokenValue()) {
-            case "store":
-                StoreInst();
-                break;
-            case "load":
-                LoadInst();
-                break;
-            default:
-                ValueInstruction();
-                break;
+        if (symIs("store")) {
+            StoreInst();    // curBlock.addInstr(vi)函数内已完成
+
+        } else if (symIs("%")) {
+            Ident li = LocalIdent();
+            match("=");
+            Instr vi = ValueInstruction();
+
+            Instr assigninstr = new Instr("assign", li, vi);
+            curBlock.addInstr(vi);
+
+        } else {
+            Instr vi = ValueInstruction();
+            curBlock.addInstr(vi);
+
         }
     }
 
+//    private void LoadInst() {
+//        match("load");
+//        Type typ1 = Type();
+//        getsym();
+//
+//        match(",");
+//        Type typ2 = Type();
+//    }
+
+    // "store" OptVolatile Type Value "," Type Value
+    // ex:store i32 0, i32* %1, align 4
+    private void StoreInst() {
+        match("store");
+        Type t1 = Type();
+        getsym();
+
+        Value v1 = Value();
+
+        match(",");
+        Type t2 = Type();
+        Value v2 = Value();
+
+        // 创建
+        Instr instr = new Instr("store", t1, v1, t2, v2);
+        curBlock.addInstr(instr);
+    }
+
+
+    // Binary运算
+    // 例如AddInst	: "add" OverflowFlags Type Value "," Value [OptCommaSepMetadataAttachmentList]
+    // ex：%5 = add nsw i32 %3, %4
+
+    //    ValueInstruction
+//    // Binary instructions
+//	: AddInst
+//	| FAddInst
+//	| SubInst
+//	| FSubInst
+//	| MulInst
+//	| FMulInst
+//	| UDivInst
+//	| SDivInst
+//	| FDivInst
+//	| URemInst
+//	| SRemInst
+//	| FRemInst
+//    // Bitwise instructions
+//	| ShlInst
+//	| LShrInst
+//	| AShrInst
+//	| AndInst
+//	| OrInst
+//	| XorInst
+//    // Vector instructions
+//	| ExtractElementInst
+//	| InsertElementInst
+//	| ShuffleVectorInst
+//    // Aggregate instructions
+//	| ExtractValueInst
+//	| InsertValueInst
+//    // Memory instructions
+//	| AllocaInst
+//	| LoadInst
+//	| GetElementPtrInst
+//    // Conversion instructions
+//	| TruncInst
+//	| ZExtInst
+//	| SExtInst
+//	| FPTruncInst
+//	| FPExtInst
+//	| FPToUIInst
+//	| FPToSIInst
+//	| UIToFPInst
+//	| SIToFPInst
+//	| PtrToIntInst
+//	| IntToPtrInst
+//	| BitCastInst
+//	| AddrSpaceCastInst
+//    // Other instructions
+//	| ICmpInst
+//	| FCmpInst
+//	| PhiInst
+//	| SelectInst
+//	| CallInst
+//	| VAArgInst
+//	| LandingPadInst
+//	| CatchPadInst
+//	| CleanupPadInst
+    private Instr ValueInstruction() {
+        if (symIs("getelementptr")) {
+            GetElementPtrInst();
+            return null;    // todo!!!!
+        } else if (symIs("call")) {
+            CallInst();
+        }
+
+        String instrname = sym.getTokenValue();
+        getsym();
+        Type t = Type();
+        Value v1 = Value();
+        match(",");
+        Value v2 = Value();
+
+        // 一些处理封装了，失败。。 createValueInstr(instname, t, v1, v2);
+        Instr instr = new Instr(instrname, t, v1, v2);
+        return instr;
+    }
+
+    //    CallInst : OptTail "call" FastMathFlags OptCallingConv ReturnAttrs Type Value "(" Args ")" FuncAttrs OperandBundles OptCommaSepMetadataAttachmentList
+    // call void @putarray(i32 %6, i32* %8)
+    private void CallInst() {
+        match("call");
+        ReturnAttrs();
+        Type();
+        Value();
+        match("(");
+        Args();
+        match(")");
+        FuncAttrs();    // 杂鱼处理
+    }
+
+    // 函数的参数
+//    Args
+//	: empty
+//	| "..."
+//            | ArgList
+//	| ArgList "," "..."
+    private void Args() {
+        if (isConcreteType(sym)) {
+            ArgList();
+        }
+    }
+
+
+    //    ArgList
+//	: Arg
+//	| ArgList "," Arg
+//    ;
+    private void ArgList() {
+        Arg();
+        while (symIs(",")) {
+            getsym();
+            Arg();
+        }
+    }
+
+    //    Arg
+//	: ConcreteType ParamAttrs Value
+//	| MetadataType Metadata
+    private void Arg() {
+        ConcreteType();
+        ParamAttrs();
+        Value();
+    }
+
+
+    //    Terminator
+//	: RetTerm
+//	| BrTerm
+//	| CondBrTerm
+//	| SwitchTerm
+//	| IndirectBrTerm
+//	| InvokeTerm
+//	| ResumeTerm
+//	| CatchSwitchTerm
+//	| CatchRetTerm
+//	| CleanupRetTerm
+//	| UnreachableTerm
     private void Terminator() {
         switch (sym.getTokenValue()) {
             case "ret":
@@ -375,10 +583,9 @@ public class IRParser {
             return;
         }
         TypeC rettype = ConcreteType();
-
     }
 
-    //    ConcreteType
+    // ConcreteType
 //	: IntType
 //    // Type ::= 'float' | 'void' (etc)
 //	| FloatType
@@ -406,12 +613,12 @@ public class IRParser {
             case "float":
                 return TypeC.F;
             default:
+                error();
                 return null;
-
         }
     }
 
-    //    BrTerm	: "br" LabelType LocalIdent OptCommaSepMetadataAttachmentList
+    // BrTerm	: "br" LabelType LocalIdent OptCommaSepMetadataAttachmentList
     private void BrTerm() {
         match("br");
         LabelType();
@@ -421,25 +628,14 @@ public class IRParser {
     private void LabelType() {
     }
 
-    //
-//    LocalIdent
-//	: local_ident
+    // LocalIdent : local_ident
     private Ident LocalIdent() {
         return local_ident();
     }
 
-    //    local_ident
-//	: _local_name
-//	| _local_id
-//    ;
-//
-//    _local_name
-//	: '%' ( _name | _quoted_name )
-//    ;
-//
-//    _local_id
-//	: '%' _id
-//    ;
+    // local_ident : _local_name | _local_id ;
+    // _local_name : '%' ( _name | _quoted_name ) ;
+    // _local_id : '%' _id ;
     private Ident local_ident() {
         match("%");
         String value = sym.getTokenValue();
@@ -458,53 +654,7 @@ public class IRParser {
         }
     }
 
-//    private void MainFuncDef() {
-//
-//    }
-
-
-    private void LoadInst() {
-        match("load");
-        Type typ1 = Type();
-        getsym();
-
-        match(",");
-        Type typ2 = Type();
-    }
-
-    // "store" OptVolatile Type Value "," Type Value
-//    ex:store i32 0, i32* %1, align 4
-    private void StoreInst() {
-        match("store");
-        Type typ1 = Type();
-        getsym();
-//        Value v = Value();
-
-        match(",");
-        Type typ2 = Type();
-//        Value v = Value();
-    }
-
-
-    // Binary运算
-    // 例如AddInst	: "add" OverflowFlags Type Value "," Value OptCommaSepMetadataAttachmentList
-    // ex：%5 = add nsw i32 %3, %4
-    private void ValueInstruction() {
-        if(symIs("getelementptr")){
-            GetElementPtrInst();
-            return;
-        }
-        
-        String instname = sym.getTokenValue();
-        getsym();
-        Type typeC = Type();
-//        Value val = Value();
-        Ident val = Value();
-        match(",");
-        Value();
-    }
-
-//    GetElementPtrInst
+    //    GetElementPtrInst
 //	: "getelementptr" OptInBounds Type "," Type Value OptCommaSepMetadataAttachmentList
 //	| "getelementptr" OptInBounds Type "," Type Value "," CommaSepTypeValueList OptCommaSepMetadataAttachmentList
     private void GetElementPtrInst() {
@@ -513,17 +663,20 @@ public class IRParser {
         Type t1 = Type();
         match(",");
         Type t2 = Type();
-        Value();
-        if(symIs(",")){
+        Value v = Value();
+        if (symIs(",")) {
             getsym();
             CommaSepTypeValueList();
         }
+
+        Instr ni = new Instr("getelementptr", t1, t2, v);
+        return ni;
     }
 
     // CommaSepTypeValueList: TypeValue| CommaSepTypeValueList "," TypeValue    ;
     private void CommaSepTypeValueList() {
         TypeValue();
-        while(symIs(",")){
+        while (symIs(",")) {
             getsym();
             TypeValue();
         }
@@ -536,15 +689,10 @@ public class IRParser {
     }
 
 
-    //    Value
-//	: Constant
-//    // %42
-//    // %foo
-//	| LocalIdent
-//	| InlineAsm
-    private Ident Value() {
+    // Value: Constant| LocalIdent| InlineAsm
+    private Value Value() {
         if (symIs("%")) {
-            return LocalIdent();
+            return new Value(LocalIdent());
         }
         return Constant();
     }
@@ -566,23 +714,24 @@ public class IRParser {
 //	| UndefConst
 //	| BlockAddressConst
 //	| ConstantExpr
-    private Ident Constant() {
+    private Value Constant() {
         String value = sym.getTokenValue();
-        if(symIs("zeroinitializer")){
+        if (symIs("zeroinitializer")) {
             match("zeroinitializer");   //	| ZeroInitializerConst
         }
         if (Character.isDigit(value.charAt(0))) {
             getsym();
             Ident idn = new Ident(Integer.parseInt(value));
-            return idn;
+            return new Value(idn);
         }
+        error();
         return null;
     }
 
     // Type大类
     private Type Type() {
         TypeC ctype = null;
-        if(symIs("[")){
+        if (symIs("[")) {
             return ArrayType();
         }
 
@@ -629,7 +778,6 @@ public class IRParser {
     }
 
 
-
     /***** 可选函数 *****/
 //    OptLinkage
 //	: empty
@@ -647,19 +795,19 @@ public class IRParser {
 //            | "weak"
 //            | "weak_odr"
 //    ;
-    private void OptLinkage(){
-        if(symIs("common")||symIs("private")){
+    private void OptLinkage() {
+        if (symIs("common") || symIs("private")) {
             getsym();
         }
     }
 
     private void OptInBounds() {
-        if(symIs("inbounds")){
+        if (symIs("inbounds")) {
             getsym();
         }
     }
 
-//    OptUnnamedAddr
+    //    OptUnnamedAddr
 //	: empty
 //	| UnnamedAddr
 //    ;
@@ -668,13 +816,11 @@ public class IRParser {
 //	: "local_unnamed_addr"
 //            | "unnamed_addr"
 //    ;
-    private void OptUnnamedAddr(){
-        if(symIs("local_unnamed_addr")||symIs("unnamed_addr")){
+    private void OptUnnamedAddr() {
+        if (symIs("local_unnamed_addr") || symIs("unnamed_addr")) {
             getsym();
         }
     }
-
-
 
 
     //基础操作；辅助函数
@@ -770,7 +916,7 @@ public class IRParser {
         return tokenList.get(index - 1);
     }
 
-    //    判断是否新的行/文法结束
+    // 判断是否新的行/文法结束
     private boolean newSymLine() {
         if (sym.getRow() > getLastToken().getRow()) {
             return true;
@@ -778,7 +924,7 @@ public class IRParser {
         return false;
     }
 
-    //    是否为Instruction中的几类
+    // 是否为Instruction中的几类
     private boolean matchInstr(Token sym) {
         String instr = sym.getTokenValue();
         if (symIs("@") || symIs("define") || symIs("}")) {
@@ -790,6 +936,31 @@ public class IRParser {
 
     //下一个是ParamAttr
     private boolean nextisParamAttr(Token sym) {
+        return false;
+    }
+
+    //创建基本块
+    private Block createBlock(String labelstr) {
+        Block nb = new Block();
+        nb.setNum(blockcount);
+        nb.setLabel(labelstr);
+        curBlock = nb;
+
+        return nb;
+    }
+
+    //创建Instr
+    private void createValueInstr(String instrname, Type t, Value v1, Value v2) {
+        Instr instr = new Instr(instrname, t, v1, v2);
+        curBlock.addInstr(instr);
+    }
+
+    // 是否属于ConcreteType
+    private boolean isConcreteType(Token sym) {
+        String t = sym.getTokenValue();
+        if (t.equals("i32") || t.equals("float") || t.equals("void") || t.equals("[")) {
+            return true;
+        }
         return false;
     }
 

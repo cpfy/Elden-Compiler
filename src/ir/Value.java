@@ -1,10 +1,13 @@
-package backend;
+package ir;
 
 public class Value {
 
     private boolean hex;    // 10 or 16进制
     private int val;
     private String hexVal;
+
+    private boolean isIdent = false;  // 是否ident
+    private Ident ident;
 
     public Value(String str) {
         if (str.charAt(0) == '0') {
@@ -15,6 +18,11 @@ public class Value {
             this.val = Integer.parseInt(str);
         }
 
+    }
+
+    public Value(Ident ident){
+        this.isIdent = true;
+        this.ident = ident;
     }
 
     public boolean isHex() {

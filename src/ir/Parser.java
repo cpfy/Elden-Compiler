@@ -1,4 +1,4 @@
-package backend;
+package ir;
 
 public class Parser {
     /*enum TYPE {
