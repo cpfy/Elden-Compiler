@@ -2,7 +2,15 @@ package llvm;
 
 import backend.FuncHeader;
 import backend.SymbolTable;
+import llvm.Instr.AssignInstr;
+import llvm.Instr.BinaryInst;
+import llvm.Instr.BrTerm;
+import llvm.Instr.CallInst;
+import llvm.Instr.GetElementPtrInst;
+import llvm.Instr.IcmpInst;
 import llvm.Instr.Instr;
+import llvm.Instr.RetTerm;
+import llvm.Instr.StoreInstr;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -375,35 +383,26 @@ public class IRParser {
 //	| LocalIdent "=" ValueInstruction | ValueInstruction
     private void Instruction() {
         if (symIs("store")) {
-            StoreInst();    // curBlock.addInstr(vi)函数内已完成
+            Instr i = StoreInst();    // curBlock.addInstr(vi)函数内已完成
+            curBlock.addInstr(i);
 
         } else if (symIs("%")) {
             Ident li = LocalIdent();
             match("=");
             Instr vi = ValueInstruction();
 
-            Instr assigninstr = new Instr("assign", li, vi);
-            curBlock.addInstr(vi);
+            Instr asi = new AssignInstr("assign", li, vi);
+            curBlock.addInstr(asi);
 
         } else {
             Instr vi = ValueInstruction();
             curBlock.addInstr(vi);
-
         }
     }
 
-//    private void LoadInst() {
-//        match("load");
-//        Type typ1 = Type();
-//        getsym();
-//
-//        match(",");
-//        Type typ2 = Type();
-//    }
-
     // "store" OptVolatile Type Value "," Type Value
     // ex:store i32 0, i32* %1, align 4
-    private void StoreInst() {
+    private Instr StoreInst() {
         match("store");
         Type t1 = Type();
         getsym();
@@ -415,14 +414,10 @@ public class IRParser {
         Value v2 = Value();
 
         // 创建
-        Instr instr = new Instr("store", t1, v1, t2, v2);
-        curBlock.addInstr(instr);
+        Instr instr = new StoreInstr("store", t1, t2, v1, v2);
+        return instr;
     }
 
-
-    // Binary运算
-    // 例如AddInst	: "add" OverflowFlags Type Value "," Value [OptCommaSepMetadataAttachmentList]
-    // ex：%5 = add nsw i32 %3, %4
 
     //    ValueInstruction
 //    // Binary instructions
@@ -482,12 +477,21 @@ public class IRParser {
 //	| CleanupPadInst
     private Instr ValueInstruction() {
         if (symIs("getelementptr")) {
-            GetElementPtrInst();
-            return null;    // todo!!!!
+            return GetElementPtrInst();
+
         } else if (symIs("call")) {
-            CallInst();
+            return CallInst();
+        } else if (symIs("icmp")) {
+            return ICmpInst();
         }
 
+        return BinaryInst();
+    }
+
+    // Binary运算
+    // 例如AddInst	: "add" OverflowFlags Type Value "," Value [OptCommaSepMetadataAttachmentList]
+    // ex：%5 = add nsw i32 %3, %4
+    private Instr BinaryInst() {
         String instrname = sym.getTokenValue();
         getsym();
         Type t = Type();
@@ -495,22 +499,43 @@ public class IRParser {
         match(",");
         Value v2 = Value();
 
-        // 一些处理封装了，失败。。 createValueInstr(instname, t, v1, v2);
-        Instr instr = new Instr(instrname, t, v1, v2);
-        return instr;
+        Instr bi = new BinaryInst(instrname, t, v1, v2);
+        return bi;
+    }
+
+    // ICmpInst : "icmp" IPred Type Value "," Value OptCommaSepMetadataAttachmentList
+    private Instr ICmpInst() {
+        match("icmp");
+        String ipred = IPred();
+        Type t = Type();
+        Value v1 = Value();
+        match(",");
+        Value v2 = Value();
+
+        Instr icmpi = new IcmpInst("icmp", ipred, t, v1, v2);
+        return icmpi;
+    }
+
+    private String IPred() {
+        String p = sym.getTokenValue();
+        getsym();
+        return p;
     }
 
     //    CallInst : OptTail "call" FastMathFlags OptCallingConv ReturnAttrs Type Value "(" Args ")" FuncAttrs OperandBundles OptCommaSepMetadataAttachmentList
     // call void @putarray(i32 %6, i32* %8)
-    private void CallInst() {
+    private Instr CallInst() {
         match("call");
         ReturnAttrs();
         Type t = Type();
         Value v = Value();  // 如@putarray
         match("(");
-        Args();
+        ArrayList<TypeValue> args = Args();
         match(")");
         FuncAttrs();    // 杂鱼处理
+
+        Instr instr = new CallInst("call", t, v.getIdent(), args);
+        return instr;
     }
 
     // 函数的参数
@@ -519,10 +544,11 @@ public class IRParser {
 //	| "..."
 //            | ArgList
 //	| ArgList "," "..."
-    private void Args() {
+    private ArrayList<TypeValue> Args() {
         if (isConcreteType(sym)) {
-            ArgList();
+            return ArgList();
         }
+        return null;
     }
 
 
@@ -530,21 +556,26 @@ public class IRParser {
 //	: Arg
 //	| ArgList "," Arg
 //    ;
-    private void ArgList() {
-        Arg();
+    private ArrayList<TypeValue> ArgList() {
+        ArrayList<TypeValue> arglist = new ArrayList<>();
+        TypeValue arg = Arg();
+        arglist.add(arg);
         while (symIs(",")) {
             getsym();
-            Arg();
+            arg = Arg();
+            arglist.add(arg);
         }
+        return arglist;
     }
 
     //    Arg
 //	: ConcreteType ParamAttrs Value
 //	| MetadataType Metadata
-    private void Arg() {
-        ConcreteType();
+    private TypeValue Arg() {
+        Type t = ConcreteType();
         ParamAttrs();
-        Value();
+        Value v = Value();
+        return new TypeValue(t, v);     // Type+Value组合
     }
 
 
@@ -561,28 +592,44 @@ public class IRParser {
 //	| CleanupRetTerm
 //	| UnreachableTerm
     private void Terminator() {
+        Instr term;
         switch (sym.getTokenValue()) {
             case "ret":
-                RetTerm();
+                term = RetTerm();
+                curBlock.addInstr(term);
                 break;
             case "br":
-                BrTerm();
+                if (symPeek("label", 1)) {
+                    term = CondBrTerm();
+                } else {
+                    term = BrTerm();
+                }
+                curBlock.addInstr(term);
                 break;
             default:
                 //todo
+                error();
                 break;
         }
+
     }
 
     //    RetTer	: "ret" VoidType OptCommaSepMetadataAttachmentList
     //	| "ret" ConcreteType Value OptCommaSepMetadataAttachmentList
-    private void RetTerm() {
+    private Instr RetTerm() {
         match("ret");
         if (symIs("void")) {
             getsym();
-            return;
+            Instr i = new RetTerm("ret", new Type(TypeC.V));
+            return i;
+
+        } else {
+            Type retype = ConcreteType();
+            Value v = Value();
+
+            Instr i = new RetTerm("ret", retype, v);
+            return i;
         }
-        TypeC rettype = ConcreteType();
     }
 
     // ConcreteType
@@ -604,14 +651,14 @@ public class IRParser {
 //	| NamedType
 //	| MMXType
 //	| TokenType
-    private TypeC ConcreteType() {
+    private Type ConcreteType() {
         switch (sym.getTokenValue()) {
             case "void":
-                return TypeC.V;
+                return new Type(TypeC.V);
             case "int":
-                return TypeC.I;
+                return new Type(TypeC.I);
             case "float":
-                return TypeC.F;
+                return new Type(TypeC.F);
             default:
                 error();
                 return null;
@@ -619,13 +666,40 @@ public class IRParser {
     }
 
     // BrTerm	: "br" LabelType LocalIdent OptCommaSepMetadataAttachmentList
-    private void BrTerm() {
+    private Instr BrTerm() {
         match("br");
         LabelType();
-        Ident idn = LocalIdent();
+        Ident ident = LocalIdent();
+
+        Instr bti = new BrTerm("br", ident);
+        return bti;
     }
 
+    // CondBrTerm "br" IntType Value "," LabelType LocalIdent "," LabelType LocalIdent OptCommaSepMetadataAttachmentList ;
+    private Instr CondBrTerm() {
+        match("br");
+        IntType();
+        Value v = Value();
+        match(",");
+        LabelType();
+        Ident l1 = LocalIdent();
+        match(",");
+        LabelType();
+        Ident l2 = LocalIdent();
+
+        Instr i = new CondBrTerm("condbr", v, l1, l2);
+        return i;
+    }
+
+    // IntType: int_type
+    // int_type: 'i' _decimals
+    private void IntType() {
+        getsym();
+    }
+
+    // LabelType : "label"
     private void LabelType() {
+        match("label");
     }
 
     // LocalIdent : local_ident
@@ -657,7 +731,7 @@ public class IRParser {
     //    GetElementPtrInst
 //	: "getelementptr" OptInBounds Type "," Type Value OptCommaSepMetadataAttachmentList
 //	| "getelementptr" OptInBounds Type "," Type Value "," CommaSepTypeValueList OptCommaSepMetadataAttachmentList
-    private void GetElementPtrInst() {
+    private Instr GetElementPtrInst() {
         match("getelementptr");
         OptInBounds();  // "inbounds"
         Type t1 = Type();
@@ -669,8 +743,8 @@ public class IRParser {
             CommaSepTypeValueList();
         }
 
-        Instr ni = new Instr("getelementptr", t1, t2, v);
-        return ni;
+        Instr gepi = new GetElementPtrInst("getelementptr", t1, t2, v);
+        return gepi;
     }
 
     // CommaSepTypeValueList: TypeValue| CommaSepTypeValueList "," TypeValue    ;
@@ -947,12 +1021,6 @@ public class IRParser {
         curBlock = nb;
 
         return nb;
-    }
-
-    //创建Instr
-    private void createValueInstr(String instrname, Type t, Value v1, Value v2) {
-        Instr instr = new Instr(instrname, t, v1, v2);
-        curBlock.addInstr(instr);
     }
 
     // 是否属于ConcreteType

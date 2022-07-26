@@ -77,13 +77,14 @@ public class Instr {
 //    }
 
     private String instrname;   //N种中间代码种类
-    private Type type;      // 默认type1
-    private Value value1;
-    private Value value2;
-    private Type type2;
-    private boolean isassign = false;   // 是否赋值语句
-    private Ident left;     // 赋值语句assign的左边
-    private Instr right;    // 右边的Instr
+
+//    private Type type;      // 默认type1
+//    private Value value1;
+//    private Value value2;
+//    private Type type2;
+//    private boolean isassign = false;   // 是否赋值语句
+//    private Ident left;     // 赋值语句assign的左边
+//    private Instr right;    // 右边的Instr
 
 
     private String rawstr;  //输出的ircode字符串格式
@@ -115,35 +116,35 @@ public class Instr {
         this.instrname = instrname;
     }
 
-    public Instr(String instrname, Type t, Value v1, Value v2) {
-        this.instrname = instrname;
-        this.type = t;
-        this.value1 = v1;
-        this.value2 = v2;
-    }
-
-    public Instr(String instrname, Type t1, Value v1, Type t2, Value v2) {
-        this.instrname = instrname;
-        this.type = t1;
-        this.value1 = v1;
-        this.type2 = t2;
-        this.value2 = v2;
-    }
-
-    public Instr(String instrname, Ident left, Instr right) {
-        this.instrname = instrname;
-        this.left = left;
-        this.right = right;
-
-        this.isassign = true;
-    }
-
-    public Instr(String instrname, Type t1, Type t2, Value v) {
-        this.instrname = instrname;
-        this.type = t1;
-        this.type2 = t2;
-        this.value1 = v;
-    }
+//    public Instr(String instrname, Type t, Value v1, Value v2) {
+//        this.instrname = instrname;
+//        this.type = t;
+//        this.value1 = v1;
+//        this.value2 = v2;
+//    }
+//
+//    public Instr(String instrname, Type t1, Value v1, Type t2, Value v2) {
+//        this.instrname = instrname;
+//        this.type = t1;
+//        this.value1 = v1;
+//        this.type2 = t2;
+//        this.value2 = v2;
+//    }
+//
+//    public Instr(String instrname, Ident left, Instr right) {
+//        this.instrname = instrname;
+//        this.left = left;
+//        this.right = right;
+//
+//        this.isassign = true;
+//    }
+//
+//    public Instr(String instrname, Type t1, Type t2, Value v) {
+//        this.instrname = instrname;
+//        this.type = t1;
+//        this.type2 = t2;
+//        this.value1 = v;
+//    }
 
 
     // to arm

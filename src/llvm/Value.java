@@ -48,4 +48,12 @@ public class Value {
     public void setVal(int val) {
         this.val = val;
     }
+
+    public boolean isIdent() {
+        return isIdent;
+    }
+
+    public Ident getIdent() {
+        return ident;
+    }
 }
