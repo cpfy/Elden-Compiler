@@ -31,7 +31,7 @@ TopLevelEntity
 
 ```
 GlobalDecl
-	: GlobalIdent "=" ExternLinkage OptPreemptionSpecifier OptVisibility OptDLLStorageClass OptThreadLocal OptUnnamedAddr OptAddrSpace OptExternallyInitialized Immutable Type GlobalAttrs FuncAttrs
+	: GlobalIdent "=" ExternLinkage OptPreemptionSpecifier [Opt] Immutable Type GlobalAttrs FuncAttrs
 ```
 
 ##### GlobalDef
@@ -40,6 +40,49 @@ GlobalDecl
 GlobalDef
 	: GlobalIdent "=" OptLinkage OptPreemptionSpecifier OptVisibility OptDLLStorageClass OptThreadLocal OptUnnamedAddr OptAddrSpace OptExternallyInitialized Immutable Type Constant GlobalAttrs FuncAttrs
 ```
+
+##### Immutable
+
+```
+Immutable
+	: "constant"
+	| "global"
+;
+```
+
+##### 
+
+##### GlobalAttrs系列
+
+```
+GlobalAttrs
+	: empty
+	| "," GlobalAttrList
+;
+
+GlobalAttrList
+	: GlobalAttr
+	| GlobalAttrList "," GlobalAttr
+;
+
+GlobalAttr
+	: Section
+	| Comdat
+	| Alignment
+	//   ::= !dbg !57
+	| MetadataAttachment
+;
+```
+
+##### Alignment
+
+```
+Alignment
+	: "align" int_lit
+;
+```
+
+
 
 ##### GlobalIdent
 
@@ -70,9 +113,86 @@ _global_id
 	: '@' _id
 ```
 
+##### FuncAttrs系列
+
+```
+FuncAttrs
+	: empty
+	| FuncAttrList
+;
+
+FuncAttrList
+	: FuncAttr
+	| FuncAttrList FuncAttr
+;
+
+FuncAttr
+	// not used in attribute groups.
+	: AttrGroupID
+	// used in attribute groups.
+	| "align" "=" int_lit
+	| "alignstack" "=" int_lit
+	// used in functions.
+	| Alignment
+	| AllocSize
+	| StackAlignment
+	| StringLit
+	| StringLit "=" StringLit
+	| "alwaysinline"
+	| "argmemonly"
+	| "builtin"
+	| "cold"
+	| "convergent"
+	| "inaccessiblemem_or_argmemonly"
+	| "inaccessiblememonly"
+	| "inlinehint"
+	| "jumptable"
+	| "minsize"
+	| "naked"
+	| "nobuiltin"
+	| "noduplicate"
+	| "noimplicitfloat"
+	| "noinline"
+	| "nonlazybind"
+	| "norecurse"
+	| "noredzone"
+	| "noreturn"
+	| "nounwind"
+	| "optnone"
+	| "optsize"
+	| "readnone"
+	| "readonly"
+	| "returns_twice"
+	| "safestack"
+	| "sanitize_address"
+	| "sanitize_hwaddress"
+	| "sanitize_memory"
+	| "sanitize_thread"
+	| "speculatable"
+	| "ssp"
+	| "sspreq"
+	| "sspstrong"
+	| "strictfp"
+	| "uwtable"
+	| "writeonly"
+;
+```
+
+##### One of Attr
+
+```
+attr_group_id
+	: '#' _id
+;
+```
+
+
+
 #### Func
 
 ##### FunctionDecl
+
+最后用的
 
 ```
 FunctionDecl
@@ -90,8 +210,35 @@ FunctionDef
 
 ```
 FunctionHeader
-	: OptPreemptionSpecifier OptVisibility OptDLLStorageClass OptCallingConv ReturnAttrs Type GlobalIdent "(" Params ")" OptUnnamedAddr FuncAttrs OptSection OptComdat OptGC OptPrefix OptPrologue OptPersonality
+	: OptPreemptionSpecifier [Opt] ReturnAttrs Type GlobalIdent "(" Params ")" OptUnnamedAddr FuncAttrs [Opt]
 ```
+
+##### ReturnAttrs系列
+
+```
+ReturnAttrs
+	: empty
+	| ReturnAttrList
+;
+
+ReturnAttrList
+	: ReturnAttr
+	| ReturnAttrList ReturnAttr
+;
+
+ReturnAttr
+	: Alignment
+	| Dereferenceable
+	| StringLit
+	| "inreg"
+	| "noalias"
+	| "nonnull"
+	| "signext"
+	| "zeroext"
+;
+```
+
+
 
 ##### FunctionBody
 
@@ -121,6 +268,42 @@ Param
 ;
 ```
 
+##### ParamAttrs系列
+
+```
+ParamAttrs
+	: empty
+	| ParamAttrList
+;
+
+ParamAttrList
+	: ParamAttr
+	| ParamAttrList ParamAttr
+;
+
+ParamAttr
+	: Alignment
+	| Dereferenceable
+	| StringLit
+	| "byval"
+	| "inalloca"
+	| "inreg"
+	| "nest"
+	| "noalias"
+	| "nocapture"
+	| "nonnull"
+	| "readnone"
+	| "readonly"
+	| "returned"
+	| "signext"
+	| "sret"
+	| "swifterror"
+	| "swiftself"
+	| "writeonly"
+	| "zeroext"
+;
+```
+
 
 
 #### Block
@@ -139,6 +322,40 @@ BasicBlockList
 BasicBlock
 	: OptLabelIdent Instructions Terminator
 ```
+
+#### Label
+
+##### OptLabelIdent
+
+```
+OptLabelIdent
+	: empty
+	| LabelIdent
+;
+```
+
+
+
+##### LabelIdent
+
+```
+LabelIdent
+	: label_ident
+;
+```
+
+
+
+##### label_ident
+
+```
+label_ident
+	: ( _letter | _decimal_digit ) { _letter | _decimal_digit } ':'
+	| _quoted_string ':'
+;
+```
+
+
 
 #### Instruction
 
@@ -299,6 +516,37 @@ LoadInst
 	| "load" "atomic" OptVolatile Type "," Type Value OptSyncScope AtomicOrdering "," Alignment OptCommaSepMetadataAttachmentList
 ```
 
+##### CallInst
+
+```
+CallInst
+	: OptTail "call" FastMathFlags OptCallingConv ReturnAttrs Type Value "(" Args ")" FuncAttrs OperandBundles OptCommaSepMetadataAttachmentList
+;
+```
+
+##### 函数Arg系列
+
+```
+Args
+	: empty
+	| "..."
+	| ArgList
+	| ArgList "," "..."
+;
+
+ArgList
+	: Arg
+	| ArgList "," Arg
+;
+
+Arg
+	: ConcreteType ParamAttrs Value
+	| MetadataType Metadata
+;
+```
+
+
+
 #### Terminator
 
 ```
@@ -428,7 +676,7 @@ GetElementPtrExpr
 
 ##### OptInBounds
 
-无用
+可选
 
 ```
 OptInBounds
@@ -460,6 +708,21 @@ OptInrange
 	| "inrange"
 ```
 
+##### CommaSepTypeValue系列
+
+```
+CommaSepTypeValueList
+	: TypeValue
+	| CommaSepTypeValueList "," TypeValue
+;
+
+TypeValue
+	: Type Value
+;
+```
+
+
+
 ### Basic
 
 #### Type系列
@@ -467,7 +730,6 @@ OptInrange
 ```
 Type
 	: VoidType
-	// Types '(' ArgTypeListI ')' OptFuncAttrs
 	| FuncType
 	| FirstClassType
 ;
@@ -509,6 +771,14 @@ VoidType
 	: "void"
 ```
 
+##### ArrayType
+
+```
+ArrayType
+	: "[" int_lit "x" Type "]"
+;
+```
+
 
 
 #### Value
@@ -547,7 +817,7 @@ Constant
 	| ConstantExpr
 ```
 
-##### const系列
+##### int/float
 
 ```
 IntConst
@@ -584,6 +854,68 @@ float_lit
 
 _frac_lit
 	: [ _sign ] _decimals '.' { _decimal_digit }
+;
+```
+
+##### ArrayConst
+
+```
+ArrayConst
+	: "[" TypeConsts "]"
+;
+```
+
+#### ConstantExpr
+
+```
+ConstantExpr
+	// Binary expressions
+	: AddExpr
+	| FAddExpr
+	| SubExpr
+	| FSubExpr
+	| MulExpr
+	| FMulExpr
+	| UDivExpr
+	| SDivExpr
+	| FDivExpr
+	| URemExpr
+	| SRemExpr
+	| FRemExpr
+	// Bitwise expressions
+	| ShlExpr
+	| LShrExpr
+	| AShrExpr
+	| AndExpr
+	| OrExpr
+	| XorExpr
+	// Vector expressions
+	| ExtractElementExpr
+	| InsertElementExpr
+	| ShuffleVectorExpr
+	// Aggregate expressions
+	| ExtractValueExpr
+	| InsertValueExpr
+	// Memory expressions
+	| GetElementPtrExpr
+	// Conversion expressions
+	| TruncExpr
+	| ZExtExpr
+	| SExtExpr
+	| FPTruncExpr
+	| FPExtExpr
+	| FPToUIExpr
+	| FPToSIExpr
+	| UIToFPExpr
+	| SIToFPExpr
+	| PtrToIntExpr
+	| IntToPtrExpr
+	| BitCastExpr
+	| AddrSpaceCastExpr
+	// Other expressions
+	| ICmpExpr
+	| FCmpExpr
+	| SelectExpr
 ;
 ```
 
@@ -637,5 +969,44 @@ _hex_digit
 
 _decimals
 	: _decimal_digit { _decimal_digit }
+```
+
+
+
+### Optimal
+
+#### OptLinkage
+
+```
+OptLinkage
+	: empty
+	| Linkage
+;
+
+Linkage
+	: "appending"
+	| "available_externally"
+	| "common"
+	| "internal"
+	| "linkonce"
+	| "linkonce_odr"
+	| "private"
+	| "weak"
+	| "weak_odr"
+;
+```
+
+#### OptUnnamedAddr
+
+```
+OptUnnamedAddr
+	: empty
+	| UnnamedAddr
+;
+
+UnnamedAddr
+	: "local_unnamed_addr"
+	| "unnamed_addr"
+;
 ```
 
