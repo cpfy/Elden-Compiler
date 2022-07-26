@@ -545,6 +545,27 @@ Arg
 ;
 ```
 
+##### ICmpInst系列
+
+```
+ICmpInst
+	: "icmp" IPred Type Value "," Value OptCommaSepMetadataAttachmentList
+;
+
+IPred
+	: "eq"
+	| "ne"
+	| "sge"
+	| "sgt"
+	| "sle"
+	| "slt"
+	| "uge"
+	| "ugt"
+	| "ule"
+	| "ult"
+;
+```
+
 
 
 #### Terminator
@@ -591,10 +612,24 @@ LabelType
 	: "label"
 ```
 
+##### IntType系列
+
+```
+IntType
+	: int_type
+;
+
+int_type
+	: 'i' _decimals
+;
+```
+
+
+
 ##### Label
 
 ```
-Label             [-a-zA-Z$._0-9]+
+Label 	[-a-zA-Z$._0-9]+
 ```
 
 ##### LocalIdent
