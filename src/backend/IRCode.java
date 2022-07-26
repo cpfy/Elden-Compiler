@@ -29,54 +29,52 @@ public class IRCode {
     private Symbol symbol;  //含有表达式等情况时，对应的symbol类型的符号
     private SymbolTable.Scope scope;    //todo inblockoffset用到
 
-//    private String instr;   //branch跳转 的bne等类型
-//    private String jumploc; //branch的跳转位置
 
-    //public boolean processjump = false;     //True表示jump时需处理inblockoffset,仅当break、continue时使用
+//    public IRCode
 
-    //todo 分类包括：note,label
-    public IRCode(String type, String IRstring) {
-        this.type = type;
-        this.IRstring = IRstring;
-    }
-
-    //todo 分类包括：print
-    public IRCode(String type, Variable variable) {
-        this.type = type;
-        this.variable = variable;
-    }
-
-    //todo "decl"类 int 的无初值情况
-    //或 "funcDecl" functype + " " + funcname + "()"
-    public IRCode(String type, String kind, String name) {
-        this.type = type;
-        this.kind = kind;
-        this.name = name;
-    }
-
-    //const int 初始化
-    public IRCode(String type, String kind, String name, int num) {
-        this.type = type;
-        this.kind = kind;
-        this.name = name;
-        this.num = num;
-    }
-
-    //int 初始化，初始值是一个存在variable里面的var。【废弃】改为拆成2条IRCode
-    public IRCode(String type, String kind, String name, Variable var) {
-        this.type = type;
-        this.kind = kind;
-        this.name = name;
-        this.variable = var;
-    }
-
-    //todo arrayDef：类别，数组名，第一维大小，第二维（0表示无第2维）
-    public IRCode(String type, String name, int array1, int array2) {
-        this.type = type;
-        this.name = name;
-        this.array1 = array1;
-        this.array2 = array2;
-    }
+//    //todo 分类包括：note,label
+//    public IRCode(String type, String IRstring) {
+//        this.type = type;
+//        this.IRstring = IRstring;
+//    }
+//
+//    //todo 分类包括：print
+//    public IRCode(String type, Variable variable) {
+//        this.type = type;
+//        this.variable = variable;
+//    }
+//
+//    //todo "decl"类 int 的无初值情况
+//    //或 "funcDecl" functype + " " + funcname + "()"
+//    public IRCode(String type, String kind, String name) {
+//        this.type = type;
+//        this.kind = kind;
+//        this.name = name;
+//    }
+//
+//    //const int 初始化
+//    public IRCode(String type, String kind, String name, int num) {
+//        this.type = type;
+//        this.kind = kind;
+//        this.name = name;
+//        this.num = num;
+//    }
+//
+//    //int 初始化，初始值是一个存在variable里面的var。【废弃】改为拆成2条IRCode
+//    public IRCode(String type, String kind, String name, Variable var) {
+//        this.type = type;
+//        this.kind = kind;
+//        this.name = name;
+//        this.variable = var;
+//    }
+//
+//    //todo arrayDef：类别，数组名，第一维大小，第二维（0表示无第2维）
+//    public IRCode(String type, String name, int array1, int array2) {
+//        this.type = type;
+//        this.name = name;
+//        this.array1 = array1;
+//        this.array2 = array2;
+//    }
 
 /*    //todo arrayInit：类别，数组名，第一维大小，第二维（0表示无第2维）,初始化Exp
     public IRCode(String type, String name, int array1, int array2, String initstr) {
@@ -87,19 +85,19 @@ public class IRCode {
         this.IRstring = initstr;
     }*/
 
-    public IRCode(String type, Variable dest, Variable oper1) {
-        this.type = type;
-        this.dest = dest;
-        this.oper1 = oper1;
-    }
-
-    public IRCode(String type, String operator, Variable dest, Variable oper1, Variable oper2) {
-        this.type = type;
-        this.operator = operator;
-        this.dest = dest;
-        this.oper1 = oper1;
-        this.oper2 = oper2;
-    }
+//    public IRCode(String type, Variable dest, Variable oper1) {
+//        this.type = type;
+//        this.dest = dest;
+//        this.oper1 = oper1;
+//    }
+//
+//    public IRCode(String type, String operator, Variable dest, Variable oper1, Variable oper2) {
+//        this.type = type;
+//        this.operator = operator;
+//        this.dest = dest;
+//        this.oper1 = oper1;
+//        this.oper2 = oper2;
+//    }
 
     //Cond部分专用
     public IRCode(String type, String instr, String jumploc, Variable oper1, Variable oper2) {

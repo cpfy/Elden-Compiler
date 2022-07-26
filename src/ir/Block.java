@@ -1,7 +1,7 @@
 package ir;
 
 import backend.Phi;
-import ir.instr.Instr;
+import ir.Instr.Instr;
 
 import java.util.ArrayList;
 

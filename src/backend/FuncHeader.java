@@ -1,5 +1,8 @@
 package backend;
 
+import ir.Ident;
+import ir.Type;
+
 import java.util.ArrayList;
 
 public class FuncHeader {

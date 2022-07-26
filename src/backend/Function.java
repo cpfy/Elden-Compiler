@@ -1,5 +1,7 @@
 package backend;
 
+import ir.Block;
+
 import java.util.ArrayList;
 
 public class Function {

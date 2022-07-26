@@ -2,7 +2,7 @@ package ir;
 
 import backend.FuncHeader;
 import backend.SymbolTable;
-import ir.instr.Instr;
+import ir.Instr.Instr;
 
 import java.io.File;
 import java.io.FileWriter;
