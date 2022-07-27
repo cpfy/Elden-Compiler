@@ -18,8 +18,9 @@ public class MainFuncDef extends Node {
         table.newFunc();
         addCode("\n");
         addCode("define dso_local i32 @main() {\n" );
-        newLable();
+        addCode(newLable() + ":\n");
         block.addMidCode();
+        addCode("ret " + "i32 " + " 0   ;不会被用到\n");
         addCode("}\n");
         
     }

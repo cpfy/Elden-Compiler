@@ -1,6 +1,7 @@
 @buf = dso_local global [2 x [100 x i32]] zeroinitializer
 
 define dso_local void @merge_sort(i32 %0, i32 %1) {
+2:
 %3 = alloca i32
 store i32 %0, i32* %3
 %4 = alloca i32
@@ -15,6 +16,7 @@ store i32 %1, i32* %4
 br i1 %10, label %11, label %13
 11:
 ret void
+12:
 br label %13
 13:
 %14 = alloca i32
@@ -175,6 +177,7 @@ ret void
 }
 
 define dso_local i32 @main() {
+0:
 %1 = alloca i32
 %2 = getelementptr inbounds [2 x [100 x i32]], [2 x [100 x i32]]* @buf, i32 0, i32 0
 %3 = getelementptr inbounds [100 x i32], [100 x i32]* %2, i32 0, i32 0
@@ -188,6 +191,8 @@ call void @merge_sort(i32 0, i32 %5)
 call void @putarray(i32 %6, i32* %8)
 call void @putint(i32 0)
 ret i32 0
+9:
+ret i32  0   ;不会被用到
 }
 declare dso_local i32 @getint()
 declare dso_local i32 @getch()

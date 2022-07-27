@@ -31,7 +31,7 @@ public class FuncDef extends Def {
             funcFParams.get(i).addMidCode();
         }
         addCode(") {\n");
-        newLable();
+        addCode(newLable() + ":\n");
         for (FuncFParam funcFParam: funcFParams) {
             funcFParam.copyValue();
         }

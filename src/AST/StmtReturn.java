@@ -31,6 +31,6 @@ public class StmtReturn extends Stmt {
         else {
             addCode("ret void\n");
         }
-        newLable();
+        addCode(newLable() + ":\n");
     }
 }
