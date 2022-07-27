@@ -14,4 +14,9 @@ public class BrTerm extends Instr {
     public Ident getLi() {
         return li;
     }
+
+    // 跳转name
+    public String getLabelName(){
+        return String.valueOf(li.getId());
+    }
 }

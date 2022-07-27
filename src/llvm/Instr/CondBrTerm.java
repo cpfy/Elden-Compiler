@@ -28,4 +28,13 @@ public class CondBrTerm extends Instr {
     public Ident getL2() {
         return l2;
     }
+
+    // 跳转name
+    public String getLabel1Name(){
+        return String.valueOf(l1.getId());
+    }
+
+    public String getLabel2Name(){
+        return String.valueOf(l2.getId());
+    }
 }
