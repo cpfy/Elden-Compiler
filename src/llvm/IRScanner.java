@@ -102,6 +102,10 @@ public class IRScanner {
                 } else if (readingBool) {
                     curToken = endOfOp();
                 }
+                else if(readingString){
+                    endOfWord();
+                }
+
 
                 if (curToken.isEmpty()) {
                     readingNumber = true;
@@ -109,10 +113,10 @@ public class IRScanner {
                 curToken += c;
 
                 // 处理i32
-                if(curToken == "i32"){
-                    createToken("I32TK");
-                    resetStatus();
-                }
+//                if(curToken == "i32"){
+//                    createToken("I32TK");
+//                    resetStatus();
+//                }
 
                 break;
             case OPERATOR:

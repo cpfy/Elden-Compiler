@@ -10,8 +10,14 @@ import llvm.Instr.CondBrTerm;
 import llvm.Instr.GetElementPtrInst;
 import llvm.Instr.IcmpInst;
 import llvm.Instr.Instr;
+import llvm.Instr.LoadInst;
 import llvm.Instr.RetTerm;
 import llvm.Instr.StoreInstr;
+import llvm.Instr.ZExtInst;
+import llvm.Type.IntType;
+import llvm.Type.PointerType;
+import llvm.Type.Type;
+import llvm.Type.TypeC;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -36,7 +42,11 @@ public class IRParser {
     //
     private int blockcount = 1;     // 基本块计数
     private Block curBlock = null;  // 当前block
-    private ArrayList<Block> alllist;
+    private ArrayList<Block> allblocklist;
+    private ArrayList<Function> allfunctionlist;
+
+    //
+    private Function curFunction = null;   // 当前function
 
     public IRParser(ArrayList<Token> tokenList) {
         this.index = 0;
@@ -44,11 +54,12 @@ public class IRParser {
         this.tokenList = tokenList;
         this.grammarList = new ArrayList<>();
 
-        this.alllist = new ArrayList<>();
+        this.allblocklist = new ArrayList<>();
+        this.allfunctionlist = new ArrayList<>();
     }
 
     // 外层使用的api
-    public ArrayList<Block> parse(int output) {
+    public ArrayList<Block> parseBlock(int output) {
         CompUnit();
         if (output == 1) {
             try {
@@ -57,7 +68,19 @@ public class IRParser {
                 e.printStackTrace();
             }
         }
-        return this.alllist;
+        return this.allblocklist;
+    }
+
+    public ArrayList<Function> parseFunc(int output) {
+        CompUnit();
+        if (output == 1) {
+            try {
+                writefile(OUTPUT_DIR);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return this.allfunctionlist;
     }
 
 
@@ -85,7 +108,8 @@ public class IRParser {
             FunctionDecl();
         }
 
-        alllist.add(curBlock);  // 塞进去最后一个块
+        allblocklist.add(curBlock);  // 塞进去最后一个块
+        allfunctionlist.add(curFunction);
     }
 
     // FunctionDecl : "declare" MetadataAttachments OptExternLinkage FunctionHeader
@@ -192,9 +216,11 @@ public class IRParser {
         match("define");
         FuncHeader hd = FunctionHeader();   // dso_local可在内处理
 
-        createBlock(hd.getFname());     // Block以函数为名
-        Function f = new Function();
+        createBlock(hd.getFname());     // 函数首个Block，以函数为名
+        this.curFunction = new Function(hd);
         FunctionBody();
+        this.allfunctionlist.add(this.curFunction);
+        this.curFunction = null;
     }
 
     // FunctionHeader: OptPreemptionSpecifier ReturnAttrs Type GlobalIdent "(" Params ")" FuncAttrs
@@ -207,8 +233,8 @@ public class IRParser {
         ArrayList<Ident> paras = Params();
         match(")");
         FuncAttrs();
-        FuncHeader funchd = new FuncHeader(g_idn, t, paras);
-        return funchd;
+        FuncHeader funcheader = new FuncHeader(g_idn, t, paras);
+        return funcheader;
     }
 
     //    ReturnAttrs
@@ -237,10 +263,10 @@ public class IRParser {
 
     // Params: empty| "..."| ParamList| ParamList "," "..."
     private ArrayList<Ident> Params() {
-        ArrayList<Ident> ilist = new ArrayList<>();
+        ArrayList<Ident> plist = new ArrayList<>();
         if (symIs(")")) {
             empty();
-            return ilist;
+            return plist;
         } else {
             return ParamList();
         }
@@ -263,9 +289,9 @@ public class IRParser {
     private Ident Param() {
         Type t = Type();
         ParamAttrs();
-        Ident l_idn = LocalIdent();
-        l_idn.setType(t);   // 设置type
-        return l_idn;
+        Ident ident = LocalIdent();
+        ident.setType(t);   // 设置type
+        return ident;
     }
 
     // ParamAttrs : empty | ParamAttrList ;
@@ -342,13 +368,12 @@ public class IRParser {
 //	: empty
 //	| LabelIdent
     private void OptLabelIdent() {
-        if (symPeek(":", 1)) {
+        if (symPeek("COLON", 1)) {
             LabelIdent();
         }
     }
 
-    //    LabelIdent
-//	: label_ident
+    // LabelIdent : label_ident
     private void LabelIdent() {
         label_ident();
     }
@@ -368,9 +393,9 @@ public class IRParser {
 
     // Instructions: empty | InstructionList
     private void Instructions() {
-        if (!newSymLine()) {     // 判断是否新的行/文法结束
-            return;
-        }
+//        if (!newSymLine()) {     // 判断是否新的行/文法结束
+//            return;
+//        }
         InstructionList();
     }
 
@@ -409,10 +434,7 @@ public class IRParser {
     private Instr StoreInst() {
         match("store");
         Type t1 = Type();
-        getsym();
-
         Value v1 = Value();
-
         match(",");
         Type t2 = Type();
         Value v2 = Value();
@@ -490,9 +512,42 @@ public class IRParser {
                 return ICmpInst();
             case "alloca":
                 return AllocaInst();
+            case "load":
+                return LoadInst();
+            case "zext":
+                return ZExtInst();
             default:
                 return BinaryInst();
         }
+    }
+
+    // ZExtInst : "zext" Type Value "to" Type OptCommaSepMetadataAttachmentList
+    private Instr ZExtInst() {
+        match("zext");
+        Type t1 = Type();
+        Value v = Value();
+        match("to");
+        Type t2 = Type();
+
+        Instr zei = new ZExtInst("zext", t1, t2, v);
+        return zei;
+    }
+
+    // LoadInst
+//	: "load" OptVolatile Type "," Type Value OptCommaSepMetadataAttachmentList
+//	| "load" OptVolatile Type "," Type Value "," Alignment OptCommaSepMetadataAttachmentList
+//	// Atomic load.
+//	| "load" "atomic" OptVolatile Type "," Type Value OptSyncScope AtomicOrdering OptCommaSepMetadataAttachmentList
+//	| "load" "atomic" OptVolatile Type "," Type Value OptSyncScope AtomicOrdering "," Alignment OptCommaSepMetadataAttachmentList
+    private Instr LoadInst() {
+        match("load");
+        Type t1 = Type();
+        match(",");
+        Type t2 = Type();
+        Value v = Value();
+
+        Instr li = new LoadInst("load", t1, t2, v);
+        return li;
     }
 
     //    AllocaInst
@@ -508,7 +563,6 @@ public class IRParser {
     private Instr AllocaInst() {
         match("alloca");
         Type t = Type();
-        match(",");
 
         Instr ai = new AllocaInst("alloca", t);
         return ai;
@@ -574,6 +628,7 @@ public class IRParser {
         if (isConcreteType(sym)) {
             return ArgList();
         }
+        error();
         return null;
     }
 
@@ -625,7 +680,7 @@ public class IRParser {
                 curBlock.addInstr(term);
                 break;
             case "br":
-                if (symPeek("label", 1)) {
+                if (symPeek("COMMA", 5)) {
                     term = CondBrTerm();
                 } else {
                     term = BrTerm();
@@ -678,11 +733,18 @@ public class IRParser {
 //	| MMXType
 //	| TokenType
     private Type ConcreteType() {
-        switch (sym.getTokenValue()) {
-            case "void":
-                return new Type(TypeC.V);
-            case "int":
-                return new Type(TypeC.I);
+        String v = sym.getTokenValue();
+        switch (v) {
+            //todo 补充完整
+            case "[":
+                return ArrayType();
+            case "i":
+                if (assignPeek("*",",")) {
+                    return PointerType();
+                }
+                return IntType();
+//            case "void":
+//                return new Type(TypeC.V);
             case "float":
                 return new Type(TypeC.F);
             default:
@@ -719,8 +781,11 @@ public class IRParser {
 
     // IntType: int_type
     // int_type: 'i' _decimals
-    private void IntType() {
+    private Type IntType() {
         getsym();
+        int decimal = Integer.parseInt(sym.getTokenValue());
+        getsym();
+        return new IntType(TypeC.I, decimal);
     }
 
     // LabelType : "label"
@@ -824,44 +889,47 @@ public class IRParser {
             Ident idn = new Ident(Integer.parseInt(value));
             return new Value(idn);
         }
+        // @foo GlobalIdent
+        else if (symIs("@")) {
+            Ident gi = GlobalIdent();
+            return new Value(gi);
+        }
+
+        //todo
+
         error();
         return null;
     }
 
     // Type大类
+//    Type
+//	: VoidType
+//	| FuncType
+//	| FirstClassType
     private Type Type() {
-        TypeC ctype = null;
-        if (symIs("[")) {
-            return ArrayType();
-        }
-
         String typestr = sym.getTokenValue();
-
-
-        switch (typestr) {
-            case "void":
-                ctype = TypeC.V;
-                break;
-            case "i32":
-                ctype = TypeC.I;
-                break;
-            case "i32*":
-                ctype = TypeC.IP;
-                break;
-            case "float":
-                ctype = TypeC.F;
-                break;
-            case "float*":
-                ctype = TypeC.FP;
-                break;
-            default:
-                System.out.println("Error Type!");
-                error();
-                break;
+        if(symIs("void")){
+            return new Type(TypeC.V);
         }
+        return FirstClassType();
+    }
+
+    // FirstClassType : ConcreteType | MetadataType
+    private Type FirstClassType() {
+        return ConcreteType();
+    }
+
+    // PointerType : Type OptAddrSpace "*"
+    // todo 假装i_pointer
+    private Type PointerType() {
         getsym();
-        Type rettype = new Type(ctype);
-        return rettype;
+        int decimal = Integer.parseInt(sym.getTokenValue());
+        getsym();
+        Type t = new IntType(TypeC.I, decimal);
+
+        match("*");
+
+        return new PointerType(TypeC.IP, t);
     }
 
     // ArrayType : "[" int_lit "x" Type "]"
@@ -993,15 +1061,15 @@ public class IRParser {
         return newsym.getTokenCode().equals(s);
     }
 
-    private boolean assignPeek() {   //查找分号前有无等号
+    private boolean assignPeek(String s, String end) {   //查找本行结束前是否有某个符号
         int offset = 1;
         int curRow = tokenList.get(index).getRow();
         while (index + offset < tokenList.size()) {
             Token newsym = tokenList.get(index + offset);
-            if (newsym.getTokenValue().equals(";") ||
+            if (newsym.getTokenValue().equals(end) ||
                     newsym.getRow() > curRow) {
                 break;
-            } else if (newsym.getTokenValue().equals("=")) {
+            } else if (newsym.getTokenValue().equals(s)) {
                 return true;
             }
             offset += 1;
@@ -1027,7 +1095,7 @@ public class IRParser {
     // 是否为Instruction中的几类
     private boolean matchInstr(Token sym) {
         String instr = sym.getTokenValue();
-        if (symIs("@") || symIs("define") || symIs("}")) {
+        if (symIs("@") || symIs("define") || symIs("}") || symIs("br") || symIs("ret")) {
             return false;
         }
 
@@ -1042,7 +1110,10 @@ public class IRParser {
     //创建基本块
     private Block createBlock(String labelstr) {
         if (curBlock != null) {
-            alllist.add(curBlock);
+            allblocklist.add(curBlock);
+        }
+        if (curFunction != null) {
+            curFunction.addBlock(curBlock);
         }
 
         Block nb = new Block();
@@ -1056,7 +1127,7 @@ public class IRParser {
     // 是否属于ConcreteType
     private boolean isConcreteType(Token sym) {
         String t = sym.getTokenValue();
-        if (t.equals("i32") || t.equals("float") || t.equals("void") || t.equals("[")) {
+        if (t.equals("i") || t.equals("float") || t.equals("void") || t.equals("[")) {
             return true;
         }
         return false;

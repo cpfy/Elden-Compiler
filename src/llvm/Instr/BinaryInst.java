@@ -1,6 +1,6 @@
 package llvm.Instr;
 
-import llvm.Type;
+import llvm.Type.Type;
 import llvm.Value;
 
 public class BinaryInst extends Instr {

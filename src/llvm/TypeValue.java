@@ -1,5 +1,7 @@
 package llvm;
 
+import llvm.Type.Type;
+
 public class TypeValue {
     private Type type;
     private Value value;

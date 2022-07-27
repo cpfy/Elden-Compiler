@@ -1,5 +1,7 @@
 package llvm;
 
+import llvm.Type.Type;
+
 public class Ident {
 
     private boolean isIdent;

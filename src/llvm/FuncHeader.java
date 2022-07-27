@@ -1,7 +1,6 @@
 package llvm;
 
-import llvm.Ident;
-import llvm.Type;
+import llvm.Type.Type;
 
 import java.util.ArrayList;
 

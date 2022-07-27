@@ -1,11 +1,7 @@
 package llvm.Instr;
 
-import llvm.Ident;
-import llvm.Type;
-import llvm.TypeValue;
+import llvm.Type.Type;
 import llvm.Value;
-
-import java.util.ArrayList;
 
 public class IcmpInst extends Instr {
     private String ipred;

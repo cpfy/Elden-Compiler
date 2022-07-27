@@ -1,4 +1,4 @@
-package llvm;
+package llvm.Type;
 
 import java.util.ArrayList;
 

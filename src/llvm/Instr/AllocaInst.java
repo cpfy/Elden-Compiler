@@ -1,7 +1,6 @@
 package llvm.Instr;
 
-import llvm.Type;
-import llvm.Value;
+import llvm.Type.Type;
 
 public class AllocaInst extends Instr {
     private Type t;

@@ -9,8 +9,10 @@ public class Function {
     private int blocknum;    // 函数内基本块个数
     public boolean voidreturn;  //返回值是否为空
 
-    public Function(){
-        
+    public Function(FuncHeader funcheader) {
+        this.funcheader = funcheader;
+        this.blocklist = new ArrayList<>();
+
     }
 
     public ArrayList<Block> getBlocklist() {
@@ -23,5 +25,9 @@ public class Function {
 
     public int getBlocknum() {
         return blocknum;
+    }
+
+    public void addBlock(Block block) {
+        this.blocklist.add(block);
     }
 }

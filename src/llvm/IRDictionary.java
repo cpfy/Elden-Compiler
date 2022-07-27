@@ -34,7 +34,7 @@ public class IRDictionary {
         KEYWORDS_LIST.add("define");
         KEYWORDS_LIST.add("global");
         KEYWORDS_LIST.add("label");
-        KEYWORDS_LIST.add("i32");
+//        KEYWORDS_LIST.add("i32");
         KEYWORDS_LIST.add("float");
         KEYWORDS_LIST.add("void");
 
