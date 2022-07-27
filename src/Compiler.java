@@ -1,32 +1,46 @@
+import llvm.Block;
+import llvm.IRParser;
+import llvm.IRScanner;
+import llvm.Token;
+
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 
 public class Compiler {
     public static void main(String[] args) {
+        boolean llvmtest = true;
+
         try {
+            if (llvmtest) {
+                IRScanner irs = new IRScanner();
 
-            //要测的程序或方法
-            long startTime=System.currentTimeMillis(); //获取结束时间
+                try {
+                    ArrayList<Token> i = irs.scanfile("ll_test/gen/test.ll");
+                    IRParser ip = new IRParser(i);
+                    ArrayList<Block> allb = ip.parseBlock(0);
+                    System.out.println(allb);
+                    System.out.println("end.");
 
-            PrintStream printStream = new PrintStream("txt/output.txt");
-            Lexer lexer = new Lexer("txt/testfile.txt");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-//            PrintStream printStream2 = new PrintStream("error.txt");
-//            PrintStream printStream3 = new PrintStream("mips.txt");
-//
-//            parserE.output3(printStream2);
-//
-            lexer.output1(printStream);
-            Parser parser = new Parser(lexer.getRawWords());
+            } else {
 
-//
-//            parser.output2(printStream);
-            long endTime=System.currentTimeMillis(); //获取结束时间
-            System.out.println("程序运行时间： "+(endTime-startTime)+"ms");
-//
-//            MipsCodeGenerator mipsCodeGenerator = new MipsCodeGenerator(parser.getMidCodeList(), parser.getStrings());
-//
-//            mipsCodeGenerator.output(printStream3);
+                //要测的程序或方法
+                long startTime = System.currentTimeMillis(); //获取结束时间
+
+                PrintStream printStream = new PrintStream("txt/output.txt");
+                Lexer lexer = new Lexer("txt/testfile.txt");
+
+                lexer.output1(printStream);
+                Parser parser = new Parser(lexer.getRawWords());
+
+                long endTime = System.currentTimeMillis(); //获取结束时间
+                System.out.println("程序运行时间： " + (endTime - startTime) + "ms");
+            }
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();

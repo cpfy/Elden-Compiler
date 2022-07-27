@@ -1,5 +1,7 @@
 package backend;
 
+import llvm.Instr.Instr;
+
 import java.util.ArrayList;
 
 public class Instrs {
