@@ -10,4 +10,8 @@ public class BrTerm extends Instr {
         super(instrname);
         this.li = li;
     }
+
+    public Ident getLi() {
+        return li;
+    }
 }

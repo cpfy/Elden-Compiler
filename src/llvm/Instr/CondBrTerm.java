@@ -16,4 +16,16 @@ public class CondBrTerm extends Instr {
         this.l1 = l1;
         this.l2 = l2;
     }
+
+    public Value getV() {
+        return v;
+    }
+
+    public Ident getL1() {
+        return l1;
+    }
+
+    public Ident getL2() {
+        return l2;
+    }
 }

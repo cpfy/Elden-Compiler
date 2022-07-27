@@ -18,4 +18,12 @@ public class RetTerm extends Instr{
         this.retype = retype;
         this.v = v;
     }
+
+    public Type getRetype() {
+        return retype;
+    }
+
+    public Value getV() {
+        return v;
+    }
 }
