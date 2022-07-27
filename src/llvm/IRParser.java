@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class IRParser {
     private Token sym;
@@ -47,6 +48,11 @@ public class IRParser {
 
     //
     private Function curFunction = null;   // 当前function
+    private static HashMap<String, Block> blockmap;    // label name -> Block
+
+    public static Block searchBlockmapByLabel(String label) {
+        return blockmap.get(label);
+    }
 
     public IRParser(ArrayList<Token> tokenList) {
         this.index = 0;
@@ -56,7 +62,11 @@ public class IRParser {
 
         this.allblocklist = new ArrayList<>();
         this.allfunctionlist = new ArrayList<>();
+
+        //
+        this.blockmap = new HashMap<>();
     }
+
 
     // 外层使用的api
     public ArrayList<Block> parseBlock(int output) {
@@ -109,6 +119,7 @@ public class IRParser {
         }
 
         allblocklist.add(curBlock);  // 塞进去最后一个块
+        blockmap.put(curBlock.getLabel(), curBlock);
         allfunctionlist.add(curFunction);
     }
 
@@ -680,10 +691,11 @@ public class IRParser {
                 curBlock.addInstr(term);
                 break;
             case "br":
-                if (symPeek("COMMA", 5)) {
-                    term = CondBrTerm();
-                } else {
+                if (symPeek("LABELTK", 1)) {
                     term = BrTerm();
+
+                } else {
+                    term = CondBrTerm();
                 }
                 curBlock.addInstr(term);
                 break;
@@ -734,18 +746,20 @@ public class IRParser {
 //	| TokenType
     private Type ConcreteType() {
         String v = sym.getTokenValue();
+        if (assignPeek("*", ",", "%", "@")) {
+            return PointerType();
+        }
         switch (v) {
             //todo 补充完整
             case "[":
                 return ArrayType();
             case "i":
-                if (assignPeek("*",",")) {
-                    return PointerType();
-                }
+//                if (assignPeek("*", ",")) {
+//                    return PointerType();
+//                }
                 return IntType();
-//            case "void":
-//                return new Type(TypeC.V);
             case "float":
+                getsym();
                 return new Type(TypeC.F);
             default:
                 error();
@@ -908,7 +922,8 @@ public class IRParser {
 //	| FirstClassType
     private Type Type() {
         String typestr = sym.getTokenValue();
-        if(symIs("void")){
+        if (symIs("void")) {
+            getsym();
             return new Type(TypeC.V);
         }
         return FirstClassType();
@@ -922,10 +937,12 @@ public class IRParser {
     // PointerType : Type OptAddrSpace "*"
     // todo 假装i_pointer
     private Type PointerType() {
-        getsym();
-        int decimal = Integer.parseInt(sym.getTokenValue());
-        getsym();
-        Type t = new IntType(TypeC.I, decimal);
+//        getsym();
+//        int decimal = Integer.parseInt(sym.getTokenValue());
+//        getsym();
+//        Type t = new IntType(TypeC.I, decimal);
+
+        Type t = Type();
 
         match("*");
 
@@ -935,11 +952,14 @@ public class IRParser {
     // ArrayType : "[" int_lit "x" Type "]"
     private Type ArrayType() {
         match("[");
+//        pointercount += 1;
+
         int dim = Integer.parseInt(sym.getTokenValue());
         getsym();
         match("x");
         Type();         //todo
         match("]");
+//        pointercount -= 1;
 
         Type retype = new Type(TypeC.A);
         return retype;
@@ -1061,16 +1081,23 @@ public class IRParser {
         return newsym.getTokenCode().equals(s);
     }
 
-    private boolean assignPeek(String s, String end) {   //查找本行结束前是否有某个符号
+    private boolean assignPeek(String s, String end, String end2, String end3) {   // 查找本行结束前/end前是否有某个符号
         int offset = 1;
         int curRow = tokenList.get(index).getRow();
         while (index + offset < tokenList.size()) {
             Token newsym = tokenList.get(index + offset);
             if (newsym.getTokenValue().equals(end) ||
+                    newsym.getTokenValue().equals(end2) ||
+                    newsym.getTokenValue().equals(end3) ||
                     newsym.getRow() > curRow) {
                 break;
             } else if (newsym.getTokenValue().equals(s)) {
-                return true;
+                if (!newsym.isPointerused()) {
+                    newsym.setPointerused(true);
+                    return true;
+                } else {
+                    break;  // *已经用过，必然超过
+                }
             }
             offset += 1;
         }
@@ -1111,6 +1138,7 @@ public class IRParser {
     private Block createBlock(String labelstr) {
         if (curBlock != null) {
             allblocklist.add(curBlock);
+            blockmap.put(curBlock.getLabel(), curBlock);
         }
         if (curFunction != null) {
             curFunction.addBlock(curBlock);

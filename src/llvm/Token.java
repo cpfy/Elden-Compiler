@@ -5,6 +5,8 @@ public class Token {
     private String tokenValue;
     private int row;
 
+    private boolean pointerused = false;
+
     public Token(String tokenCode, String tokenValue, int row) {
         this.tokenCode = tokenCode;
         this.tokenValue = tokenValue;
@@ -37,5 +39,13 @@ public class Token {
 
     public void setRow(int row) {
         this.row = row;
+    }
+
+    public boolean isPointerused() {
+        return pointerused;
+    }
+
+    public void setPointerused(boolean pointerused) {
+        this.pointerused = pointerused;
     }
 }

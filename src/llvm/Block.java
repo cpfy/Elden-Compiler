@@ -81,13 +81,13 @@ public class Block {
 
     // 得全读取完再查，不然会出问题
     // 返回列表，其中列表中为该基本块可能进入的后继基本块（应该通过该基本块的最后一条指令就可以计算出）
-    // 无suc的情况返回的null，而非空列表
+    // 无suc的情况返回空列表
     public ArrayList<Block> getBrInfo() {
         ArrayList<Block> sucBlist = new ArrayList<>();
         Instr last = inblocklist.get(inblocklist.size() - 1);
         switch (last.getInstrname()) {
             case "ret":
-                return null;
+                return sucBlist;
             case "br":
                 if (last instanceof BrTerm) {
                     BrTerm brt = (BrTerm) last;
@@ -117,9 +117,6 @@ public class Block {
                 throw new IllegalArgumentException();
         }
 
-        if (sucBlist.isEmpty()) {
-            return null;
-        }
         return sucBlist;
     }
 
