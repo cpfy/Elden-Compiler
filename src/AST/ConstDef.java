@@ -39,12 +39,12 @@ public class ConstDef extends Def {
                     }
                     ArrayList<String> values = new ArrayList<>();
                     if (getDeclType().equals("i32")) {
-                        for (Integer integer: constInitVal.getIntValues()) {
+                        for (Integer integer: constInitVal.getIntValues(dimsInt, 0)) {
                             values.add(String.valueOf(integer));
                         }
                     }
                     else if (getDeclType().equals("float")) {
-                        for (Float f: constInitVal.getFloatValues()) {
+                        for (Float f: constInitVal.getFloatValues(dimsInt, 0)) {
                             values.add(String.valueOf(f));
                         }
                     }
@@ -63,12 +63,12 @@ public class ConstDef extends Def {
                 }
                 ArrayList<String> values = new ArrayList<>();
                 if (getDeclType().equals("i32")) {
-                    for (Integer integer: constInitVal.getIntValues()) {
+                    for (Integer integer: constInitVal.getIntValues(dimsInt, 0)) {
                         values.add(String.valueOf(integer));
                     }
                 }
                 else if (getDeclType().equals("float")) {
-                    for (Float f: constInitVal.getFloatValues()) {
+                    for (Float f: constInitVal.getFloatValues(dimsInt, 0)) {
                         values.add(String.valueOf(f));
                     }
                 }
@@ -92,10 +92,10 @@ public class ConstDef extends Def {
             dimsInt.add(exp.getValue());
         }
         if (getDeclType().equals("i32")) {
-            table.addInteger(new IntegerItem(id.getRawWord().getName(), true, dimsInt, constInitVal.getIntValues(), tempName));
+            table.addInteger(new IntegerItem(id.getRawWord().getName(), true, dimsInt, constInitVal.getIntValues(dimsInt, 0), tempName));
         }
         else if (getDeclType().equals("float")) {
-            table.addFloat(new FloatItem(id.getRawWord().getName(), true, dimsInt, constInitVal.getFloatValues(), tempName));
+            table.addFloat(new FloatItem(id.getRawWord().getName(), true, dimsInt, constInitVal.getFloatValues(dimsInt, 0), tempName));
         }
 
     }
