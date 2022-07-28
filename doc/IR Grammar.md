@@ -566,6 +566,39 @@ IPred
 ;
 ```
 
+##### AllocaInst
+
+```
+AllocaInst
+	: "alloca" OptInAlloca OptSwiftError Type OptCommaSepMetadataAttachmentList
+	| "alloca" OptInAlloca OptSwiftError Type "," Alignment OptCommaSepMetadataAttachmentList
+	| "alloca" OptInAlloca OptSwiftError Type "," Type Value OptCommaSepMetadataAttachmentList
+	| "alloca" OptInAlloca OptSwiftError Type "," Type Value "," Alignment OptCommaSepMetadataAttachmentList
+	| "alloca" OptInAlloca OptSwiftError Type "," AddrSpace OptCommaSepMetadataAttachmentList
+	| "alloca" OptInAlloca OptSwiftError Type "," Alignment "," AddrSpace OptCommaSepMetadataAttachmentList
+	| "alloca" OptInAlloca OptSwiftError Type "," Type Value "," AddrSpace OptCommaSepMetadataAttachmentList
+	| "alloca" OptInAlloca OptSwiftError Type "," Type Value "," Alignment "," AddrSpace OptCommaSepMetadataAttachmentList
+;
+
+OptInAlloca
+	: empty
+	| "inalloca"
+;
+
+OptSwiftError
+	: empty
+	| "swifterror"
+;
+```
+
+##### ZExtInst
+
+```
+ZExtInst
+	: "zext" Type Value "to" Type OptCommaSepMetadataAttachmentList
+;
+```
+
 
 
 #### Terminator
@@ -602,25 +635,6 @@ BrTerm
 
 CondBrTerm
 	: "br" IntType Value "," LabelType LocalIdent "," LabelType LocalIdent OptCommaSepMetadataAttachmentList
-;
-```
-
-##### LabelType
-
-```
-LabelType
-	: "label"
-```
-
-##### IntType系列
-
-```
-IntType
-	: int_type
-;
-
-int_type
-	: 'i' _decimals
 ;
 ```
 
@@ -775,6 +789,17 @@ FirstClassType
 ;
 ```
 
+##### FuncType
+
+```
+FuncType
+	: Type "(" Params ")"
+;
+
+```
+
+
+
 ##### ConcreteType
 
 ```
@@ -811,6 +836,33 @@ VoidType
 ```
 ArrayType
 	: "[" int_lit "x" Type "]"
+;
+```
+
+##### LabelType
+
+```
+LabelType
+	: "label"
+```
+
+##### IntType
+
+```
+IntType
+	: int_type
+;
+
+int_type
+	: 'i' _decimals
+;
+```
+
+##### PointerType
+
+```
+PointerType
+	: Type OptAddrSpace "*"
 ;
 ```
 
