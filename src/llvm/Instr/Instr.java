@@ -5,7 +5,7 @@ import llvm.Ident;
 
 import java.util.ArrayList;
 
-public abstract class Instr {
+public class Instr {
 
     private String instrname;   //N种中间代码种类
 

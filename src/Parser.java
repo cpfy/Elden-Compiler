@@ -19,7 +19,7 @@ public class Parser {
         this.rawWords = rawWords;
         compUnit = getCompUnit();
         compUnit.addMidCode();
-        PrintStream printStream = new PrintStream("txt/LLVM IR.txt");
+        PrintStream printStream = new PrintStream("txt/llvmir.txt");
         for (String s: compUnit.getLLVMIR()) {
             printStream.print(s);
         }

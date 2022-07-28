@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 public class Compiler {
     public static void main(String[] args) {
-        boolean llvmtest = true;
+        boolean llvmtest = false;
 
         try {
             if (llvmtest) {
