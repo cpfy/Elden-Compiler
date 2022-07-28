@@ -33,7 +33,7 @@ public class Compiler {
                 long startTime = System.currentTimeMillis(); //获取结束时间
 
                 PrintStream printStream = new PrintStream("txt/output.txt");
-                Lexer lexer = new Lexer("txt/testfile.txt");
+                Lexer lexer = new Lexer("txt/testfile.sy");
 
                 lexer.output1(printStream);
                 Parser parser = new Parser(lexer.getRawWords());

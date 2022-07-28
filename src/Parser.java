@@ -12,14 +12,14 @@ public class Parser {
     private ArrayList<String> outputs = new ArrayList<>();
     private CompUnit compUnit;
 
-    private ArrayList<Exp> initValues = new ArrayList<>();
+
 
 
     public Parser(ArrayList<RawWord> rawWords) throws FileNotFoundException {
         this.rawWords = rawWords;
         compUnit = getCompUnit();
         compUnit.addMidCode();
-        PrintStream printStream = new PrintStream("txt/llvmir.txt");
+        PrintStream printStream = new PrintStream("txt/llvmir.ll");
         for (String s: compUnit.getLLVMIR()) {
             printStream.print(s);
         }
@@ -157,9 +157,9 @@ public class Parser {
                 }
             }
             if (getNextWord().getType() == WordType.ASSIGN) {
-                initValues = new ArrayList<>();
+
                 constInitVal = getConstInitVal();
-                initValues = new ArrayList<>();
+
             }
             else {
                 error();
@@ -175,13 +175,24 @@ public class Parser {
     //ConstInitVal → ConstExp
     //    | '{' [ ConstInitVal { ',' ConstInitVal } ] '}'
     private ConstInitVal getConstInitVal() {
+        ArrayList<Object> initValues = new ArrayList<>();
         if (seeNextWord().getType() == WordType.LBRACE) {
             getNextWord();
             if (seeNextWord().getType() != WordType.RBRACE) {
-                getConstInitVal();
+                if (seeNextWord().getType() == WordType.LBRACE) {
+                    initValues.add(getConstInitVal());
+                }
+                else {
+                    initValues.add(getConstExp());
+                }
                 while (seeNextWord().getType() == WordType.COMMA) {
                     getNextWord();
-                    getConstInitVal();
+                    if (seeNextWord().getType() == WordType.LBRACE) {
+                        initValues.add(getConstInitVal());
+                    }
+                    else {
+                        initValues.add(getConstExp());
+                    }
                 }
             }
             if (getNextWord().getType() == WordType.RBRACE) {
@@ -241,9 +252,7 @@ public class Parser {
         }
         if (seeNextWord().getType() == WordType.ASSIGN) {
             getNextWord();
-            initValues = new ArrayList<>();
             initVal = getInitVal();
-            initValues = new ArrayList<>();
         }
         outputs.add("<VarDef>");
         return new VarDef(id, dims, initVal);
@@ -251,13 +260,14 @@ public class Parser {
 
     //InitVal → Exp | '{' [ InitVal { ',' InitVal } ] '}'
     private InitVal getInitVal () {
+        ArrayList<Object> initValues = new ArrayList<>();
         if (seeNextWord().getType() == WordType.LBRACE) {
             getNextWord();
             if (seeNextWord().getType() != WordType.RBRACE) {
-                getInitVal();
+                initValues.add(getInitVal());
                 while (seeNextWord().getType() == WordType.COMMA) {
                     getNextWord();
-                    getInitVal();
+                    initValues.add(getInitVal());
                 }
             }
             if (getNextWord().getType() == WordType.RBRACE) {

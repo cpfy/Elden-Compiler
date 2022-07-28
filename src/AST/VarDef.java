@@ -23,9 +23,9 @@ public class VarDef extends Def {
             if (isGlobal) {
                 if (initVal != null) {
                     if (getDeclType().equals("i32")) {
-                        addCode(tempName + " = dso_local global i32 " + initVal.getInit().get(0).getValue() + "\n");
+                        addCode(tempName + " = dso_local global i32 " + initVal.getInit(null, 0).get(0).getValue() + "\n");
                     } else {
-                        addCode(tempName + " = dso_local global float " + initVal.getInit().get(0).getValueF() + "\n");
+                        addCode(tempName + " = dso_local global float " + initVal.getInit(null, 0).get(0).getValueF() + "\n");
                     }
                 } else {
                     if (getDeclType().equals("i32")) {
@@ -38,12 +38,12 @@ public class VarDef extends Def {
                 addCode(tempName + " = alloca " + getDeclType() + "\n");
                 if (initVal != null) {
                     initVal.addMidCode();
-                    String temp = initVal.getInit().get(0).getTemp();
-                    if (getDeclType().equals("i32") && initVal.getInit().get(0).getType().equals("float")) {
+                    String temp = initVal.getInit(null, 0).get(0).getTemp();
+                    if (getDeclType().equals("i32") && initVal.getInit(null, 0).get(0).getType().equals("float")) {
                         String nt = newTemp();
                         addCode(nt + " = fptosi float " + temp + " to i32\n");
                         temp = nt;
-                    } else if (getDeclType().equals("float") && initVal.getInit().get(0).getType().equals("i32")) {
+                    } else if (getDeclType().equals("float") && initVal.getInit(null, 0).get(0).getType().equals("i32")) {
                         String nt = newTemp();
                         addCode(nt + " = sitofp i32 " + temp + " to float\n");
                         temp = nt;
@@ -63,12 +63,12 @@ public class VarDef extends Def {
                     }
                     ArrayList<String> values = new ArrayList<>();
                     if (getDeclType().equals("i32")) {
-                        for (Integer integer: initVal.getIntValues()) {
+                        for (Integer integer: initVal.getIntValues(dimsInt, 0)) {
                             values.add(String.valueOf(integer));
                         }
                     }
                     else if (getDeclType().equals("float")) {
-                        for (Float f: initVal.getFloatValues()) {
+                        for (Float f: initVal.getFloatValues(dimsInt, 0)) {
                             values.add(String.valueOf(f));
                         }
                     }
@@ -87,7 +87,7 @@ public class VarDef extends Def {
                         dimsInt.add(exp.getValue());
                     }
                     ArrayList<String> values = new ArrayList<>();
-                    for (Exp exp: initVal.getExps()) {
+                    for (Exp exp: initVal.getInit(dimsInt, 0)) {
                         exp.addMidCode();
                         if (declType.equals("float") && exp.getType().equals("i32")) {
                             String nt = newTemp();
