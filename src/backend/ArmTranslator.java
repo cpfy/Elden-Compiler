@@ -801,8 +801,8 @@ public class ArmTranslator {
             int tmpregno = register.applyTmpRegister();
             String tmpregname = register.getRegisterNameFromNo(tmpregno);
 
-//            pushinstrs.addInstr(new Instr("li $" + tmpregname + ", " + num));      //无pushoffset隐患
-//            pushinstrs.addInstr(new Instr("sw $" + tmpregname + ", ", 0, "($sp)", "push"));
+//            pushinstrs.addInstr(new NewInstr("li $" + tmpregname + ", " + num));      //无pushoffset隐患
+//            pushinstrs.addInstr(new NewInstr("sw $" + tmpregname + ", ", 0, "($sp)", "push"));
 
             register.freeTmpRegister(tmpregno);
 
@@ -818,16 +818,16 @@ public class ArmTranslator {
 
                 } else if (varsymbol.isGlobal() && varsymbol.getType() != Symbol.TYPE.F) {  //还要判断不是func返回值
                     String globalvarname = varsymbol.getName();
-                    pushinstrs.addInstr(new Instr("lw $" + tmpregname + ", Global_" + globalvarname));  //todo 也许不用加$zero
+                    pushinstrs.addInstr(new NewInstr("lw $" + tmpregname + ", Global_" + globalvarname));  //todo 也许不用加$zero
 
                 } else {
                     loadWordOfLocalMainfuncVarSymbolFromSpToReg(tmpregname, varsymbol, 1, pushinstrs);
                 }
 
-//                pushinstrs.addInstr(new Instr("sw $" + tmpregname + ", ", 0, "($sp)", "push"));
+//                pushinstrs.addInstr(new NewInstr("sw $" + tmpregname + ", ", 0, "($sp)", "push"));
 //
 //                //register.freeTmpRegister(tmpregno);   //不能放！因为实际还没存。。以下归还tmpregno
-//                Instr last = new Instr("#push an symbolkind var end.");  //用一个#标签包装处理
+//                Instr last = new NewInstr("#push an symbolkind var end.");  //用一个#标签包装处理
 //                last.hasRetReg = true;            //归还tmpregno
 //                last.setFreeRegNumber(tmpregno);  //释放的寄存器编号
 //                pushinstrs.addInstr(last);
@@ -836,10 +836,10 @@ public class ArmTranslator {
                 String varregname = searchRegName(var); //不用分类是否为symbol！searchregname函数处理了
 
                 int tmpregno = register.getRegisterNoFromName(varregname);
-//                pushinstrs.addInstr(new Instr("sw $" + varregname + ", ", 0, "($sp)", "push"));
+//                pushinstrs.addInstr(new NewInstr("sw $" + varregname + ", ", 0, "($sp)", "push"));
 //
 //                //register.freeRegister(var);     ///不能放！因为实际还没存。。以下归还var
-//                Instr last = new Instr("#push an nonsymbol(tmp)kind var end.");  //用一个#标签包装处理
+//                Instr last = new NewInstr("#push an nonsymbol(tmp)kind var end.");  //用一个#标签包装处理
 //                last.hasRetReg = true;            //归还tmpregno
 //                last.setFreeRegNumber(var.getCurReg());  //释放的寄存器编号 //todo 可能参数没在寄存器的情况?
 //                pushinstrs.addInstr(last);
@@ -862,33 +862,33 @@ public class ArmTranslator {
 
                     if (offsetType.equals("num")) {    //offset = 数字
                         int arroffset = offset.getNum() * arraysymbol.getDimen2() * 4;    //偏移量=index * dimen2 * 4
-                        pushinstrs.addInstr(new Instr("la $" + tmpregname + ", Global_" + globalarrayname + "+" + arroffset));
+                        pushinstrs.addInstr(new NewInstr("la $" + tmpregname + ", Global_" + globalarrayname + "+" + arroffset));
 
                     } else {    //offset = var变量
                         String offsetregname = loadWordOfAnyVariableToRegName(offset, 1, pushinstrs);
-                        pushinstrs.addInstr(new Instr("sll $" + offsetregname + ", $" + offsetregname + ", 2"));   //！！！需要乘以4
-                        pushinstrs.addInstr(new Instr("li $" + tmpregname + ", " + arraysymbol.getDimen2()));
-                        pushinstrs.addInstr(new Instr("mult $" + offsetregname + ", $" + tmpregname));
-                        pushinstrs.addInstr(new Instr("mflo $" + tmpregname));
+                        pushinstrs.addInstr(new NewInstr("sll $" + offsetregname + ", $" + offsetregname + ", 2"));   //！！！需要乘以4
+                        pushinstrs.addInstr(new NewInstr("li $" + tmpregname + ", " + arraysymbol.getDimen2()));
+                        pushinstrs.addInstr(new NewInstr("mult $" + offsetregname + ", $" + tmpregname));
+                        pushinstrs.addInstr(new NewInstr("mflo $" + tmpregname));
 
-                        pushinstrs.addInstr(new Instr("la $" + tmpregname + ", Global_" + globalarrayname + "($" + tmpregname + ")"));
+                        pushinstrs.addInstr(new NewInstr("la $" + tmpregname + ", Global_" + globalarrayname + "($" + tmpregname + ")"));
 
                         //以下处理： register.freeRegister(offset);
                         if (offset.getCurReg() != -1) {
                             //register.freeRegister(offset);  //统一释放存数组偏移量的reg.此处不能放
 
-                            Instr last = new Instr("#push/la an hasoffset global array end.");  //用一个#标签包装处理
+                            NewInstr last = new NewInstr("#push/la an hasoffset global array end.");  //用一个#标签包装处理
 //                            last.hasRetReg = true;        //最后一个语句，附加一个归还offsetReg操作
 //                            last.setFreeRegNumber(offset.getCurReg());  //todo getCurReg方法存疑
                             pushinstrs.addInstr(last);
 
                         } else {
-                            pushinstrs.addInstr(new Instr("#push an hasoffset global array end."));  //用一个#标签包装处理);
+                            pushinstrs.addInstr(new NewInstr("#push an hasoffset global array end."));  //用一个#标签包装处理);
                         }
                     }
 
                 } else {
-                    pushinstrs.addInstr(new Instr("la $" + tmpregname + ", Global_" + globalarrayname));
+                    pushinstrs.addInstr(new NewInstr("la $" + tmpregname + ", Global_" + globalarrayname));
                 }
 
             } else {     //局部数组
@@ -896,9 +896,9 @@ public class ArmTranslator {
                 //todo 处理offset！
             }
 
-//            pushinstrs.addInstr(new Instr("sw $" + tmpregname + ", ", 0, "($sp)", "push"));
+//            pushinstrs.addInstr(new NewInstr("sw $" + tmpregname + ", ", 0, "($sp)", "push"));
 //
-//            Instr last = new Instr("#push an global array end.");  //用一个#标签包装处理
+//            Instr last = new NewInstr("#push an global array end.");  //用一个#标签包装处理
 //            last.hasRetReg = true;            //归还tmpregno
 //            last.setFreeRegNumber(tmpregno);  //释放的寄存器编号
 //            pushinstrs.addInstr(last);
@@ -939,7 +939,7 @@ public class ArmTranslator {
         for (int i = pushwaitList.size() - paras; i < pushwaitList.size(); i++) {
             Instrs pushinstrs = pushwaitList.get(i);
             pushoffset -= 4;
-            for (Instr pinstr : pushinstrs.getInstrList()) {
+            for (NewInstr pinstr : pushinstrs.getInstrList()) {
 //                if (pinstr.pushoffset) {
 //                    add(pinstr.toString(pushoffset));
 //                } else if (pinstr.activeRegoffset) {
@@ -1908,7 +1908,7 @@ public class ArmTranslator {
         if (curFunc.varnameIsFuncPara(name)) {    //函数内+para需要lw
             int paraspoffset = calcuFuncParaOffset(name);
 
-//            Instr lwinstr = new Instr("lw $" + regname + ", ", paraspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
+//            Instr lwinstr = new NewInstr("lw $" + regname + ", ", paraspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
             //lwinstr.setAddroffset(true);
 //            pushinstrs.addInstr(lwinstr);
 
@@ -1916,7 +1916,7 @@ public class ArmTranslator {
             Symbol symbol = var.getSymbol();
             int localvarspoffset = calcuFuncLocalVarOffset(symbol);
 
-//            Instr lwinstr = new Instr("lw $" + regname + ", ", localvarspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
+//            Instr lwinstr = new NewInstr("lw $" + regname + ", ", localvarspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
             //lwinstr.setAddroffset(true);
 //            pushinstrs.addInstr(lwinstr);
         }
@@ -1928,7 +1928,7 @@ public class ArmTranslator {
         //String hexaddr = "0x" + Integer.toHexString(symboladdr);
         String hexaddr = convertIntAddrToHex(symboladdr);
 
-        Instr hexinstr = new Instr("lw $" + regname + ", " + hexaddr);
+        NewInstr hexinstr = new NewInstr("lw $" + regname + ", " + hexaddr);
         pushinstrs.addInstr(hexinstr);
     }
 
@@ -1950,7 +1950,7 @@ public class ArmTranslator {
                     int arroffset = offset.getNum() * arraysymbol.getDimen2() * 4;    //偏移量=index * dimen2 * 4
                     paraspoffset += arroffset;
                     //若para，原样lw传地址
-//                    Instr lwinstr = new Instr("lw $" + regname + ", ", paraspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
+//                    Instr lwinstr = new NewInstr("lw $" + regname + ", ", paraspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
 //                    pushinstrs.addInstr(lwinstr);
 
                 } else {    //offset = var变量
@@ -1958,35 +1958,35 @@ public class ArmTranslator {
                     String tmpregname = register.getRegisterNameFromNo(tmpregno);   //申请临时寄存器
 
                     String offsetregname = loadWordOfAnyVariableToRegName(offset, 1, pushinstrs);
-                    pushinstrs.addInstr(new Instr("sll $" + offsetregname + ", $" + offsetregname + ", 2"));   //！！！需要乘以4
-                    pushinstrs.addInstr(new Instr("li $" + tmpregname + ", " + arraysymbol.getDimen2()));
-                    pushinstrs.addInstr(new Instr("mult $" + offsetregname + ", $" + tmpregname));
-                    pushinstrs.addInstr(new Instr("mflo $" + tmpregname));
+                    pushinstrs.addInstr(new NewInstr("sll $" + offsetregname + ", $" + offsetregname + ", 2"));   //！！！需要乘以4
+                    pushinstrs.addInstr(new NewInstr("li $" + tmpregname + ", " + arraysymbol.getDimen2()));
+                    pushinstrs.addInstr(new NewInstr("mult $" + offsetregname + ", $" + tmpregname));
+                    pushinstrs.addInstr(new NewInstr("mflo $" + tmpregname));
 
                     //先把函数参数中array首地址加载到regname
-//                    pushinstrs.addInstr(new Instr("lw $" + regname + ", ", paraspoffset, "($sp)", "actreg"));
+//                    pushinstrs.addInstr(new NewInstr("lw $" + regname + ", ", paraspoffset, "($sp)", "actreg"));
 
                     //之后将regname中的地址增加偏移量(即$tmpregname)
-                    pushinstrs.addInstr(new Instr("add $" + regname + ", $" + regname + ", $" + tmpregname));
+                    pushinstrs.addInstr(new NewInstr("add $" + regname + ", $" + regname + ", $" + tmpregname));
 
                     //以下处理： register.freeRegister(offset);
                     if (offset.getCurReg() != -1) {
                         //register.freeRegister(offset);  //统一释放存数组偏移量的reg.此处不能放
 
-                        Instr last = new Instr("#push an array end.");  //用一个#标签包装处理
+                        NewInstr last = new NewInstr("#push an array end.");  //用一个#标签包装处理
 //                        last.hasRetReg = true;        //最后一个语句，附加一个归还offsetReg操作
 //                        last.setFreeRegNumber(offset.getCurReg());  //todo getCurReg方法存疑
                         pushinstrs.addInstr(last);
 
                     } else {
-                        Instr last = new Instr("#push an array end.");  //用一个#标签包装处理
+                        NewInstr last = new NewInstr("#push an array end.");  //用一个#标签包装处理
                         pushinstrs.addInstr(last);
                     }
                 }
 
             } else {
                 //若para，原样lw传地址; 若local variable，正常la传地址
-//                Instr lwinstr = new Instr("lw $" + regname + ", ", paraspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
+//                Instr lwinstr = new NewInstr("lw $" + regname + ", ", paraspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
 //                pushinstrs.addInstr(lwinstr);
             }
 
@@ -2003,7 +2003,7 @@ public class ArmTranslator {
                     int arroffset = offset.getNum() * arraysymbol.getDimen2() * 4;    //偏移量=index * dimen2 * 4
                     localvarspoffset += arroffset;
                     //local variable，正常la传地址
-//                    Instr lwinstr = new Instr("la $" + regname + ", ", localvarspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
+//                    Instr lwinstr = new NewInstr("la $" + regname + ", ", localvarspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
 //                    pushinstrs.addInstr(lwinstr);
 
                 } else {    //offset = var变量
@@ -2011,33 +2011,33 @@ public class ArmTranslator {
                     String tmpregname = register.getRegisterNameFromNo(tmpregno);   //申请临时寄存器
 
                     String offsetregname = loadWordOfAnyVariableToRegName(offset, 1, pushinstrs);
-                    pushinstrs.addInstr(new Instr("sll $" + offsetregname + ", $" + offsetregname + ", 2"));   //！！！需要乘以4
-                    pushinstrs.addInstr(new Instr("li $" + tmpregname + ", " + arraysymbol.getDimen2()));
-                    pushinstrs.addInstr(new Instr("mult $" + offsetregname + ", $" + tmpregname));
-                    pushinstrs.addInstr(new Instr("mflo $" + tmpregname));
+                    pushinstrs.addInstr(new NewInstr("sll $" + offsetregname + ", $" + offsetregname + ", 2"));   //！！！需要乘以4
+                    pushinstrs.addInstr(new NewInstr("li $" + tmpregname + ", " + arraysymbol.getDimen2()));
+                    pushinstrs.addInstr(new NewInstr("mult $" + offsetregname + ", $" + tmpregname));
+                    pushinstrs.addInstr(new NewInstr("mflo $" + tmpregname));
 
-                    pushinstrs.addInstr(new Instr("add $" + tmpregname + ", $" + tmpregname + ", $sp"));
-//                    pushinstrs.addInstr(new Instr("la $" + regname + ", ", localvarspoffset, "($" + tmpregname + ")", "actreg"));
+                    pushinstrs.addInstr(new NewInstr("add $" + tmpregname + ", $" + tmpregname + ", $sp"));
+//                    pushinstrs.addInstr(new NewInstr("la $" + regname + ", ", localvarspoffset, "($" + tmpregname + ")", "actreg"));
 
                     //以下处理： register.freeRegister(offset);
                     if (offset.getCurReg() != -1) {
                         //register.freeRegister(offset);  //统一释放存数组偏移量的reg.此处不能放
 
                         //todo la有点问题，好像本质就是move
-                        Instr last = new Instr("#push an array end.");  //用一个#标签包装处理
+                        NewInstr last = new NewInstr("#push an array end.");  //用一个#标签包装处理
 //                        last.hasRetReg = true;        //最后一个语句，附加一个归还offsetReg操作
 //                        last.setFreeRegNumber(offset.getCurReg());  //todo getCurReg方法存疑
                         pushinstrs.addInstr(last);
 
                     } else {
-                        Instr last = new Instr("#push an array end.");  //用一个#标签包装处理
+                        NewInstr last = new NewInstr("#push an array end.");  //用一个#标签包装处理
                         pushinstrs.addInstr(last);
                     }
                 }
 
             } else {
                 //若para，原样lw传地址; 若local variable，正常la传地址
-//                Instr lwinstr = new Instr("la $" + regname + ", ", localvarspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
+//                Instr lwinstr = new NewInstr("la $" + regname + ", ", localvarspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
 //                pushinstrs.addInstr(lwinstr);
             }
         }
@@ -2057,7 +2057,7 @@ public class ArmTranslator {
                 symboladdr += arroffset;
 
                 String hexaddr = convertIntAddrToHex(symboladdr);
-                Instr hexinstr = new Instr("li $" + regname + ", " + hexaddr);
+                NewInstr hexinstr = new NewInstr("li $" + regname + ", " + hexaddr);
                 pushinstrs.addInstr(hexinstr);
 
             } else {    //offset = var变量
@@ -2065,32 +2065,32 @@ public class ArmTranslator {
                 String tmpregname = register.getRegisterNameFromNo(tmpregno);   //申请临时寄存器
 
                 String offsetregname = loadWordOfAnyVariableToRegName(offset, 1, pushinstrs);
-                pushinstrs.addInstr(new Instr("sll $" + offsetregname + ", $" + offsetregname + ", 2"));   //！！！需要乘以4
-                pushinstrs.addInstr(new Instr("li $" + tmpregname + ", " + var.getSymbol().getDimen2()));
-                pushinstrs.addInstr(new Instr("mult $" + offsetregname + ", $" + tmpregname));
-                pushinstrs.addInstr(new Instr("mflo $" + tmpregname));
+                pushinstrs.addInstr(new NewInstr("sll $" + offsetregname + ", $" + offsetregname + ", 2"));   //！！！需要乘以4
+                pushinstrs.addInstr(new NewInstr("li $" + tmpregname + ", " + var.getSymbol().getDimen2()));
+                pushinstrs.addInstr(new NewInstr("mult $" + offsetregname + ", $" + tmpregname));
+                pushinstrs.addInstr(new NewInstr("mflo $" + tmpregname));
 
                 //tmpregname是此时算出的偏移量
-                pushinstrs.addInstr(new Instr("addi $" + regname + ", $" + tmpregname + ", " + symboladdr));
+                pushinstrs.addInstr(new NewInstr("addi $" + regname + ", $" + tmpregname + ", " + symboladdr));
 
                 //以下处理： register.freeRegister(offset);
                 if (offset.getCurReg() != -1) {
                     //register.freeRegister(offset);  //统一释放存数组偏移量的reg.此处不能放
                     //todo la有点问题，好像本质就是move
-                    Instr last = new Instr("#push an local array end.");  //用一个#标签包装处理
+                    NewInstr last = new NewInstr("#push an local array end.");  //用一个#标签包装处理
 //                    last.hasRetReg = true;        //最后一个语句，附加一个归还offsetReg操作
 //                    last.setFreeRegNumber(offset.getCurReg());  //todo getCurReg方法存疑
 //                    pushinstrs.addInstr(last);
 
                 } else {
-                    Instr last = new Instr("#push an local array end.");  //用一个#标签包装处理
+                    NewInstr last = new NewInstr("#push an local array end.");  //用一个#标签包装处理
                     pushinstrs.addInstr(last);
                 }
             }
 
         } else {  //无偏移量
             String hexaddr = convertIntAddrToHex(symboladdr);
-            Instr hexinstr = new Instr("li $" + regname + ", " + hexaddr);
+            NewInstr hexinstr = new NewInstr("li $" + regname + ", " + hexaddr);
             pushinstrs.addInstr(hexinstr);
         }
     }
@@ -2113,7 +2113,7 @@ public class ArmTranslator {
             } else if (oper0symbol.isGlobal() && oper0symbol.getType() != Symbol.TYPE.F) {  //还要判断不是func返回值
                 String globalvarname = oper0symbol.getName();
                 op0reg = searchRegName(oper0);
-                pushinstrs.addInstr(new Instr("lw $" + op0reg + ", Global_" + globalvarname));
+                pushinstrs.addInstr(new NewInstr("lw $" + op0reg + ", Global_" + globalvarname));
 
             } else {
                 op0reg = searchRegName(oper0);
