@@ -102,6 +102,17 @@ public class CondBrTerm extends Instr {
 
 
 
+#### LoadInst
+
+```
+public class LoadInst extends Instr {
+    private Type t1;
+    private Type t2;
+    private Value v;
+```
+
+
+
 ### Block
 
 基本块
@@ -122,7 +133,11 @@ private String innerfunc;   // 所属函数名
 
 
 
+
+
 ### Function
+
+（第一个块：名为 Func_xxx 的 Block）
 
 N个基本块构成
 
