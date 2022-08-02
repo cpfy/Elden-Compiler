@@ -26,73 +26,41 @@ public class Register {
     }
 
     private void initRegMap() {
-        regMap.put(0, "zero");
-        regMap.put(1, "at");
-        regMap.put(2, "v0");
-        regMap.put(3, "v1");
-        regMap.put(4, "a0");
-        regMap.put(5, "a1");
-        regMap.put(6, "a2");
-        regMap.put(7, "a3");
-        regMap.put(8, "t0");
-        regMap.put(9, "t1");
-        regMap.put(10, "t2");
-        regMap.put(11, "t3");
-        regMap.put(12, "t4");
-        regMap.put(13, "t5");
-        regMap.put(14, "t6");
-        regMap.put(15, "t7");
-        regMap.put(16, "s0");
-        regMap.put(17, "s1");
-        regMap.put(18, "s2");
-        regMap.put(19, "s3");
-        regMap.put(20, "s4");
-        regMap.put(21, "s5");
-        regMap.put(22, "s6");
-        regMap.put(23, "s7");
-        regMap.put(24, "t8");
-        regMap.put(25, "t9");
-        regMap.put(26, "k0");
-        regMap.put(27, "k1");
-        regMap.put(28, "gp");
-        regMap.put(29, "sp");
-        regMap.put(30, "fp");
-        regMap.put(31, "ra");
+        regMap.put(0, "R0");
+        regMap.put(1, "R1");
+        regMap.put(2, "R2");
+        regMap.put(3, "R3");
+        regMap.put(4, "R4");
+        regMap.put(5, "R5");
+        regMap.put(6, "R6");
+        regMap.put(7, "R7");
+        regMap.put(8, "R8");
+        regMap.put(9, "R9");
+        regMap.put(10, "R10");
+        regMap.put(11, "R11");
+        regMap.put(12, "R12");
+        regMap.put(13, "SP");   // Stack pointer
+        regMap.put(14, "LR");   // Link Register
+        regMap.put(15, "PC");   // pro.. count
     }
 
     private void initRegnameMap() {
-        regNameMap.put("zero", 0);
-        regNameMap.put("at", 1);
-        regNameMap.put("v0", 2);
-        regNameMap.put("v1", 3);
-        regNameMap.put("a0", 4);
-        regNameMap.put("a1", 5);
-        regNameMap.put("a2", 6);
-        regNameMap.put("a3", 7);
-        regNameMap.put("t0", 8);
-        regNameMap.put("t1", 9);
-        regNameMap.put("t2", 10);
-        regNameMap.put("t3", 11);
-        regNameMap.put("t4", 12);
-        regNameMap.put("t5", 13);
-        regNameMap.put("t6", 14);
-        regNameMap.put("t7", 15);
-        regNameMap.put("s0", 16);
-        regNameMap.put("s1", 17);
-        regNameMap.put("s2", 18);
-        regNameMap.put("s3", 19);
-        regNameMap.put("s4", 20);
-        regNameMap.put("s5", 21);
-        regNameMap.put("s6", 22);
-        regNameMap.put("s7", 23);
-        regNameMap.put("t8", 24);
-        regNameMap.put("t9", 25);
-        regNameMap.put("k0", 26);
-        regNameMap.put("k1", 27);
-        regNameMap.put("gp", 28);
-        regNameMap.put("sp", 29);
-        regNameMap.put("fp", 30);
-        regNameMap.put("ra", 31);
+        regNameMap.put("R0", 0);
+        regNameMap.put("R1", 1);
+        regNameMap.put("R2", 2);
+        regNameMap.put("R3", 3);
+        regNameMap.put("R4", 4);
+        regNameMap.put("R5", 5);
+        regNameMap.put("R6", 6);
+        regNameMap.put("R7", 7);
+        regNameMap.put("R8", 8);
+        regNameMap.put("R9", 9);
+        regNameMap.put("R10", 10);
+        regNameMap.put("R11", 11);
+        regNameMap.put("R12", 12);
+        regNameMap.put("SP", 13);
+        regNameMap.put("LR", 14);
+        regNameMap.put("PC", 15);
     }
 
     private void initFreeRegList() {
@@ -172,10 +140,15 @@ public class Register {
     }
 
     public void freeTmpRegister(int regno) {
-        if (regno < 8 || regno == 29 || regno == 31) {
+//        if (regno < 8 || regno == 29 || regno == 31) {
+//            System.err.println("Register freeTmpRegister() : Error free tmp Reg No!! regno = " + regno);
+//
+//        }
+        if(regno > 15){
             System.err.println("Register freeTmpRegister() : Error free tmp Reg No!! regno = " + regno);
+        }
 
-        } else if (!freeRegList.contains(regno)) {
+        else if (!freeRegList.contains(regno)) {
             removeActiveRegList(regno);     //删除变量in activeregList 活跃变量表
             freeRegList.add(regno);
             System.out.println("Free Reg $" + regMap.get(regno) + " from Tmp");

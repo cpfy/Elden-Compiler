@@ -168,3 +168,22 @@ address_of_return : .word return
 .global scanf
 ```
 
+
+
+
+
+#### 寄存器详解
+
+arm官方文档：
+
+> https://developer.arm.com/documentation/dui0473/m/overview-of-the-arm-architecture/arm-registers
+
+ARM processors provide general-purpose and special-purpose registers. Some additional registers are available in privileged execution modes.
+
+In all ARM processors, the following registers are available and accessible in any processor mode:
+
+* 13 general-purpose registers R0-R12.
+* One Stack Pointer (SP).
+* One Link Register (LR).
+* One Program Counter (PC).
+* One Application Program Status Register (APSR).

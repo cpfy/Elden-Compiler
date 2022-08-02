@@ -2,10 +2,14 @@ package backend;
 
 import llvm.Block;
 import llvm.Function;
+import llvm.Ident;
 import llvm.Instr.AllocaInst;
+import llvm.Instr.BrTerm;
 import llvm.Instr.Instr;
+import llvm.Instr.RetTerm;
 import llvm.Type.Type;
 import llvm.Type.TypeC;
+import llvm.Value;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -97,44 +101,54 @@ public class ArmGenerator {
     private void addFuncdefStmt(Instr i) {
     }
 
-    private void addBranchStmt(Instr code) {
-        String iname = code.getInstrname();
+    private void addBranchStmt(Instr instr) {
+        String iname = instr.getInstrname();
         switch (iname) {
             case "note":
             case "label":
-                addNotes(code);
+                addNotes(instr);
                 break;
             case "icmp":
-                addSetCmp(code);
+                addSetCmp(instr);
                 break;
             case "push":
-                addPush(code);
+                addPush(instr);
                 break;
             case "call":
-                addCall(code);
+                addCall(instr);
                 break;
             case "assign":
-                addAssign(code);
+                addAssign(instr);
                 break;
             case "alloca":
-                addAlloca(code);
+                addAlloca(instr);
 //                addArrayDecl(code);
 //                addIntDecl(code);
                 break;
 
             // Terminal() 系列
             case "br":
-                addJump(code);
+                addBr(instr);
                 break;
             case "condbr":
-                addJump(code);
+                addCondBr(instr);
+//                addJump(code);
                 break;
             case "ret":          //函数内return返回值
-                addReturn(code);
+                addReturn(instr);
                 break;
             default:
                 break;
         }
+    }
+
+    private void addCondBr(Instr instr) {
+    }
+
+    private void addBr(Instr code) {
+        Ident bident = ((BrTerm) code).getLi();
+        String labelname = bident.getName();
+        add("b " + labelname);
     }
 
     private void addAlloca(Instr code) {
@@ -224,12 +238,18 @@ public class ArmGenerator {
     }
 
     private void addJump(Instr code) {
+        //
+
+
+
+
+        //中的jump
     }
 
     private void addCompareBranch(Instr code) {
     }
 
-    private void addSetCmp(Instr code) {
+    private void addSetCmp(Instr instr) {
 //        String cmpinstr = code.getOperator();  //创建ircode时instr存进了operator
 //
 //        Variable oper1 = code.getOper1();
@@ -436,6 +456,21 @@ public class ArmGenerator {
     }
 
     private void addCall(Instr code) {
+        String callfuncname = "";
+        add("bx " + callfuncname);
+    }
+
+    private void addReturn(Instr instr) {
+        Value vret = ((RetTerm) instr).getV();
+        if (vret.isIdent()) {
+            Ident vident = vret.getIdent();
+            // todo load
+
+        } else {
+            int num = vret.getVal();
+            add("bx lr");//todo
+        }
+
     }
 
     private void addAssign(Instr code) {
@@ -453,8 +488,6 @@ public class ArmGenerator {
     private void addIntDecl(Instr code) {
     }
 
-    private void addReturn(Instr code) {
-    }
 
     private void addNotes(Instr code) {
     }

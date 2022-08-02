@@ -1,4 +1,6 @@
+import backend.ArmGenerator;
 import llvm.Block;
+import llvm.Function;
 import llvm.IRParser;
 import llvm.IRScanner;
 import llvm.Token;
@@ -10,7 +12,9 @@ import java.util.ArrayList;
 
 public class Compiler {
     public static void main(String[] args) {
-        boolean llvmtest = false;
+        boolean llvmtest = true;
+        boolean armtest = true;
+        ArrayList<Function> allb = new ArrayList<>();
 
         try {
             if (llvmtest) {
@@ -19,9 +23,19 @@ public class Compiler {
                 try {
                     ArrayList<Token> i = irs.scanfile("ll_test/gen/test.ll");
                     IRParser ip = new IRParser(i);
-                    ArrayList<Block> allb = ip.parseBlock(0);
+                    allb = ip.parseFunc(0);
                     System.out.println(allb);
-                    System.out.println("end.");
+                    System.out.println("LLVM End.");
+
+                    if (armtest) {
+                        if (allb.size() == 0) {
+                            System.out.println("Err null allb.");
+
+                        } else {
+                            ArmGenerator ag = new ArmGenerator(allb);
+                            ag.convertarm();
+                        }
+                    }
 
                 } catch (IOException e) {
                     e.printStackTrace();
