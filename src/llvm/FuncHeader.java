@@ -11,7 +11,7 @@ public class FuncHeader {
 
     private Type type;
     private String fname;
-    private Ident idn;
+    //    private Ident idn;
     private ArrayList<Ident> paras;
 
     public FuncHeader(String fname, Type type, ArrayList<Ident> paras) {
@@ -22,7 +22,9 @@ public class FuncHeader {
 
     public FuncHeader(Ident idn, Type type, ArrayList<Ident> paras) {
         this.type = type;
-        this.idn = idn;
+//        this.idn = idn;
+        this.fname = idn.getName();
+
         this.paras = paras;
     }
 
