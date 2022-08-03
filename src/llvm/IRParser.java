@@ -90,6 +90,7 @@ public class IRParser {
                 e.printStackTrace();
             }
         }
+
         return this.allfunctionlist;
     }
 
@@ -116,13 +117,26 @@ public class IRParser {
         while (symCodeIs("DEFINETK")) {
             FunctionDef();
         }
+
+        // 事实需要
+
 //        while (symCodeIs("DECLARETK")) {
 //            FunctionDecl();
 //        }
 
+
         allblocklist.add(curBlock);  // 塞进去最后一个块
         blockmap.put(curBlock.getLabel(), curBlock);
 //        allfunctionlist.add(curFunction);
+
+//        if (curBlock != null) {
+//            allblocklist.add(curBlock);  // 塞进去最后一个块
+//            blockmap.put(curBlock.getLabel(), curBlock);
+//        }
+//        if (curFunction != null) {
+//            allfunctionlist.add(curFunction);
+//        }
+//>>>>>>> Stashed changes
     }
 
     // FunctionDecl : "declare" MetadataAttachments OptExternLinkage FunctionHeader
@@ -229,7 +243,9 @@ public class IRParser {
         match("define");
         FuncHeader hd = FunctionHeader();   // dso_local可在内处理
 
-        createBlock(hd.getFname());     // 函数首个Block，以函数为名
+//        createBlock(hd.getFname());     // 函数首个Block，以函数为名
+        // 函数头自带一个label，不需要
+
         this.curFunction = new Function(hd);
         FunctionBody();
         this.allfunctionlist.add(this.curFunction);
@@ -372,10 +388,15 @@ public class IRParser {
     // BasicBlock: OptLabelIdent Instructions Terminator
     private void BasicBlock() {
         OptLabelIdent();
-        Instructions();
-        Terminator();
 
-
+        // 与llvm文法不一致，允许跳Instruction
+        if(symIs("ret")||symIs("br")){
+            Terminator();
+        }
+        else{
+            Instructions();
+            Terminator();
+        }
     }
 
     //
@@ -1152,6 +1173,7 @@ public class IRParser {
         FuncHeader fh = new FuncHeader(fname, new Type(TypeC.V), new ArrayList<>());
 
         Function nf = new Function(fh);
+        allfunctionlist.add(nf);
         curFunction = nf;
 
         return nf;
@@ -1162,9 +1184,9 @@ public class IRParser {
         if (curBlock != null) {
             allblocklist.add(curBlock);
             blockmap.put(curBlock.getLabel(), curBlock);
-        }
-        if (curFunction != null) {
-            curFunction.addBlock(curBlock);
+            if (curFunction != null) {
+                curFunction.addBlock(curBlock);
+            }
         }
 
         Block nb = new Block();
