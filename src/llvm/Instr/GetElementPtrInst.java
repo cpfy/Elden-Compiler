@@ -20,4 +20,7 @@ public class GetElementPtrInst extends Instr {
         this.type2 = t2;
         this.v = v;
     }
+
+    public void setValue(Value i){this.v = i;}
+    public Value getV(){return this.v;}
 }

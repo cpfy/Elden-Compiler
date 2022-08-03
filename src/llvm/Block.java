@@ -1,11 +1,13 @@
 package llvm;
 
 import backend.Phi;
+import backend.Variable;
 import llvm.Instr.BrTerm;
 import llvm.Instr.CondBrTerm;
 import llvm.Instr.Instr;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Block {
     // 基本块
@@ -121,8 +123,6 @@ public class Block {
     }
 
     /*** add end by sujunzhe ***/
-
-
     private ArrayList<Phi> phis;    // 基本块的Phi函数
     private String instr;   //branch跳转 的bne等类型
     private String jumploc; //branch的跳转位置
@@ -154,9 +154,7 @@ public class Block {
         return num;
     }
 
-    public ArrayList<Phi> getPhis() {
-        return phis;
-    }
+    public ArrayList<Phi> getPhis() { return phis; }
 
     public String getInnerfunc() {
         return innerfunc;
@@ -176,5 +174,9 @@ public class Block {
 
     public void addInstr(Instr instr) {
         this.inblocklist.add(instr);
+    }
+
+    public void addPhi(Phi phi){
+        phis.add(phi);
     }
 }

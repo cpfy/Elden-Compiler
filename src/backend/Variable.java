@@ -91,4 +91,8 @@ public class Variable {
         }
         return String.valueOf(num);
     }
+
+    public void setName(String name){
+        this.name = name;
+    }
 }

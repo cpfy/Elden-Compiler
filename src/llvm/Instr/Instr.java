@@ -206,4 +206,7 @@ public class Instr {
 //    public String toString() {
 //        return str;
 //    }
+      public Variable getDest(){return this.dest;}
+      public Variable getOper1(){return this.oper1;}
+      public Variable getOper2(){return this.oper2;}
 }

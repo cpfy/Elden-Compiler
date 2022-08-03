@@ -41,4 +41,8 @@ public class Ident {
     public void setType(Type type) {
         this.type = type;
     }
+
+    public void setName(String name){this.name = name;}
+
+    public void setId(int id){this.id = id;}
 }

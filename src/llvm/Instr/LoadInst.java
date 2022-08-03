@@ -14,4 +14,6 @@ public class LoadInst extends Instr {
         this.t2 = t2;
         this.v = v;
     }
+
+    public Value getV(){return v;}
 }

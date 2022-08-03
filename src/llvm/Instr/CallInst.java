@@ -19,5 +19,5 @@ public class CallInst extends Instr {
         this.args = args;
     }
 
-
+    public ArrayList<TypeValue> getArgs(){return this.args;}
 }
