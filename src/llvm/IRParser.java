@@ -1133,6 +1133,9 @@ public class IRParser {
 
     //下一个是ParamAttr
     private boolean nextisParamAttr(Token sym) {
+//        if(symPeek("COMMA",1)||symPeek("RIGHT",1)){
+//            return
+//        }
         return false;
     }
 

@@ -5,10 +5,12 @@ import llvm.Function;
 import llvm.Ident;
 import llvm.Instr.AllocaInst;
 import llvm.Instr.BrTerm;
+import llvm.Instr.CallInst;
 import llvm.Instr.Instr;
 import llvm.Instr.RetTerm;
 import llvm.Type.Type;
 import llvm.Type.TypeC;
+import llvm.TypeValue;
 import llvm.Value;
 
 import java.io.File;
@@ -49,7 +51,16 @@ public class ArmGenerator {
 
     public void convertarm() {
         add(".data");
-        tabcount += 1;
+        add(".extern getint");
+        add(".extern getch");
+        add(".extern getfloat");
+        add(".extern getarray");
+        add(".extern getfarray");
+        add(".extern putint");
+        add(".extern putch");
+        add(".extern putfloat");
+        add(".extern putarray");
+        add(".extern putfarray");
 
         collectPrintStr();
 
@@ -145,33 +156,31 @@ public class ArmGenerator {
     private void addCondBr(Instr instr) {
     }
 
-    private void addBr(Instr code) {
-        Ident bident = ((BrTerm) code).getLi();
+    private void addBr(Instr instr) {
+        Ident bident = ((BrTerm) instr).getLi();
         String labelname = bident.getName();
         add("b " + labelname);
     }
 
-    private void addAlloca(Instr code) {
-        Type t = ((AllocaInst) code).getT();
+    private void addAlloca(Instr instr) {
+        Type t = ((AllocaInst) instr).getT();
         if (t.getTypec() == TypeC.A) {
-            addAllocaArray(code);
+            addAllocaArray(instr);
         } else if (t.getTypec() == TypeC.I) {
-            addAllocaInt(code);
+            addAllocaInt(instr);
         } else {
             error();
         }
     }
 
-    private void addAllocaInt(Instr code) {
+    private void addAllocaInt(Instr instr) {
 //        String name = code.getName();
         String name = "";
 
-        if (code.isGlobal()) {  //全局int变量存.data段
+        if (instr.isGlobal()) {  //全局int变量存.data段
             String intDeclWordInitStr = "Global_" + name + ": .word ";
             tabcount += 1;
-
             add(intDeclWordInitStr + "0:1");
-
             tabcount -= 1;
 
         } else {    //局部int变量分寄存器或存sp段
@@ -234,19 +243,17 @@ public class ArmGenerator {
     private void addAllocaArray(Instr code) {
     }
 
-    private void addPrints(Instr code) {
+    private void addPrints(Instr instr) {
     }
 
-    private void addJump(Instr code) {
+    private void addJump(Instr instr) {
         //
-
-
 
 
         //中的jump
     }
 
-    private void addCompareBranch(Instr code) {
+    private void addCompareBranch(Instr instr) {
     }
 
     private void addSetCmp(Instr instr) {
@@ -449,15 +456,76 @@ public class ArmGenerator {
         }
     }
 
-    private void addGetint(Instr code) {
+    private void addGetint(Instr instr) {
     }
 
-    private void addPush(Instr code) {
+    private void addPush(Instr instr) {
     }
 
-    private void addCall(Instr code) {
-        String callfuncname = "";
+    private void addCall(Instr instr) {
+
+        String callfuncname = ((CallInst) instr).getFuncname();
+        if (isStandardCall(callfuncname)) {
+            addStandardCall(instr);
+            return;
+        }
         add("bx " + callfuncname);
+    }
+
+    //    #####
+    private boolean isStandardCall(String callfuncname) {
+        return callfuncname.equals("getint") || callfuncname.equals("getch") ||
+                callfuncname.equals("getfloat") || callfuncname.equals("getarray") ||
+                callfuncname.equals("getfarray") ||
+                callfuncname.equals("putint") || callfuncname.equals("putch") ||
+                callfuncname.equals("putfloat") || callfuncname.equals("putarray") ||
+                callfuncname.equals("putfarray");
+    }
+
+
+    // 标准printf, scanf等函数
+    private void addStandardCall(Instr instr) {
+        String callfuncname = ((CallInst) instr).getFuncname();
+        ArrayList<TypeValue> args = ((CallInst) instr).getArgs();
+        switch (callfuncname) {
+            //todo 补充array处理
+
+
+            case "getint":
+
+                break;
+            case "getch":
+
+                break;
+            case "getfloat":
+
+
+                break;
+            case "getarray":
+
+                break;
+            case "getfarray":
+
+                break;
+            case "putint":
+
+                break;
+            case "putch":
+
+                break;
+            case "putfloat":
+
+                break;
+            case "putarray":
+
+                break;
+            case "putfarray":
+
+                break;
+            case "default":
+                
+                break;
+        }
     }
 
     private void addReturn(Instr instr) {
@@ -473,23 +541,23 @@ public class ArmGenerator {
 
     }
 
-    private void addAssign(Instr code) {
+    private void addAssign(Instr instr) {
     }
 
-    private void addAssign2(Instr code) {
+    private void addAssign2(Instr instr) {
     }
 
-    private void addAssignRet(Instr code) {
+    private void addAssignRet(Instr instr) {
     }
 
-    private void addArrayDecl(Instr code) {
+    private void addArrayDecl(Instr instr) {
     }
 
-    private void addIntDecl(Instr code) {
+    private void addIntDecl(Instr instr) {
     }
 
 
-    private void addNotes(Instr code) {
+    private void addNotes(Instr instr) {
     }
 
     private void addProgramEnd() {

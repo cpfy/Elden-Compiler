@@ -26,41 +26,41 @@ public class Register {
     }
 
     private void initRegMap() {
-        regMap.put(0, "R0");
-        regMap.put(1, "R1");
-        regMap.put(2, "R2");
-        regMap.put(3, "R3");
-        regMap.put(4, "R4");
-        regMap.put(5, "R5");
-        regMap.put(6, "R6");
-        regMap.put(7, "R7");
-        regMap.put(8, "R8");
-        regMap.put(9, "R9");
-        regMap.put(10, "R10");
-        regMap.put(11, "R11");
-        regMap.put(12, "R12");
-        regMap.put(13, "SP");   // Stack pointer
-        regMap.put(14, "LR");   // Link Register
-        regMap.put(15, "PC");   // pro.. count
+        regMap.put(0, "r0");
+        regMap.put(1, "r1");
+        regMap.put(2, "r2");
+        regMap.put(3, "r3");
+        regMap.put(4, "r4");
+        regMap.put(5, "r5");
+        regMap.put(6, "r6");
+        regMap.put(7, "r7");
+        regMap.put(8, "r8");
+        regMap.put(9, "r9");
+        regMap.put(10, "r10");
+        regMap.put(11, "r11");
+        regMap.put(12, "r12");
+        regMap.put(13, "sp");   // Stack pointer
+        regMap.put(14, "lr");   // Link Register
+        regMap.put(15, "pc");   // pro.. count
     }
 
     private void initRegnameMap() {
-        regNameMap.put("R0", 0);
-        regNameMap.put("R1", 1);
-        regNameMap.put("R2", 2);
-        regNameMap.put("R3", 3);
-        regNameMap.put("R4", 4);
-        regNameMap.put("R5", 5);
-        regNameMap.put("R6", 6);
-        regNameMap.put("R7", 7);
-        regNameMap.put("R8", 8);
-        regNameMap.put("R9", 9);
-        regNameMap.put("R10", 10);
-        regNameMap.put("R11", 11);
-        regNameMap.put("R12", 12);
-        regNameMap.put("SP", 13);
-        regNameMap.put("LR", 14);
-        regNameMap.put("PC", 15);
+        regNameMap.put("r0", 0);
+        regNameMap.put("r1", 1);
+        regNameMap.put("r2", 2);
+        regNameMap.put("r3", 3);
+        regNameMap.put("r4", 4);
+        regNameMap.put("r5", 5);
+        regNameMap.put("r6", 6);
+        regNameMap.put("r7", 7);
+        regNameMap.put("r8", 8);
+        regNameMap.put("r9", 9);
+        regNameMap.put("r10", 10);
+        regNameMap.put("r11", 11);
+        regNameMap.put("r12", 12);
+        regNameMap.put("sp", 13);
+        regNameMap.put("lr", 14);
+        regNameMap.put("pc", 15);
     }
 
     private void initFreeRegList() {
