@@ -3,6 +3,7 @@ import llvm.Block;
 import llvm.Function;
 import llvm.IRParser;
 import llvm.IRScanner;
+import llvm.Instr.Instr;
 import llvm.Token;
 
 import java.io.FileNotFoundException;
@@ -12,8 +13,8 @@ import java.util.ArrayList;
 
 public class Compiler {
     public static void main(String[] args) {
-        boolean llvmtest = true;
-        boolean armtest = true;
+        boolean llvmtest = false;
+        boolean armtest = false;
         ArrayList<Function> allb = new ArrayList<>();
 
         try {
@@ -21,12 +22,20 @@ public class Compiler {
                 IRScanner irs = new IRScanner();
 
                 try {
-                    ArrayList<Token> i = irs.scanfile("ll_test/gen/test.ll");
+                    ArrayList<Token> i = irs.scanfile("txt/llvmir.ll");
                     IRParser ip = new IRParser(i);
                     allb = ip.parseFunc(0);
-                    System.out.println(allb);
+                    System.out.println(allb.size());
+                    for (Function function: allb) {
+                        System.out.println("Func:\t" + function.getBlocklist().size());
+                        for (Block block: function.getBlocklist()) {
+                            System.out.println("Block:\t" + block.getInblocklist().size());
+                            for (Instr instr: block.getInblocklist()) {
+                                System.out.println(instr.toString());
+                            }
+                        }
+                    }
                     System.out.println("LLVM End.");
-
                     if (armtest) {
                         if (allb.size() == 0) {
                             System.out.println("Err null allb.");

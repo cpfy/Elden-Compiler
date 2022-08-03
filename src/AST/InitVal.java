@@ -32,8 +32,8 @@ public class InitVal extends Node {
         }
         ArrayList<Integer> initValues = new ArrayList<>();
         for (Object exp: exps) {
-            if (exp instanceof ConstInitVal) {
-                ArrayList<Integer> temps = ((ConstInitVal) exp).getIntValues(dims, getN(dims, n, count));
+            if (exp instanceof InitVal) {
+                ArrayList<Integer> temps = ((InitVal) exp).getIntValues(dims, getN(dims, n, count));
                 count += temps.size();
                 initValues.addAll(temps);
             }
@@ -58,8 +58,8 @@ public class InitVal extends Node {
         }
         ArrayList<Float> initValues = new ArrayList<>();
         for (Object exp: exps) {
-            if (exp instanceof ConstInitVal) {
-                ArrayList<Float> temps = ((ConstInitVal) exp).getFloatValues(dims, getN(dims, n, count));
+            if (exp instanceof InitVal) {
+                ArrayList<Float> temps = ((InitVal) exp).getFloatValues(dims, getN(dims, n, count));
                 count += temps.size();
                 initValues.addAll(temps);
             }
