@@ -107,16 +107,18 @@ public class IRParser {
 
     // 成分部分
     private void CompUnit() {
-        createBlock("Global");
+        createFunction("GlobalContainer");
+        createBlock("GlobalContainer");
         while (symCodeIs("AT")) {
             GlobalDef();
         }
+
         while (symCodeIs("DEFINETK")) {
             FunctionDef();
         }
-        while (symCodeIs("DECLARETK")) {
-            FunctionDecl();
-        }
+//        while (symCodeIs("DECLARETK")) {
+//            FunctionDecl();
+//        }
 
         allblocklist.add(curBlock);  // 塞进去最后一个块
         blockmap.put(curBlock.getLabel(), curBlock);
@@ -1131,7 +1133,20 @@ public class IRParser {
 
     //下一个是ParamAttr
     private boolean nextisParamAttr(Token sym) {
+//        if(symPeek("COMMA",1)||symPeek("RIGHT",1)){
+//            return
+//        }
         return false;
+    }
+
+    //创建container函数块
+    private Function createFunction(String fname) {
+        FuncHeader fh = new FuncHeader(fname, new Type(TypeC.V), new ArrayList<>());
+
+        Function nf = new Function(fh);
+        curFunction = nf;
+
+        return nf;
     }
 
     //创建基本块

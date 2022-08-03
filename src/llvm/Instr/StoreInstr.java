@@ -16,4 +16,6 @@ public class StoreInstr extends Instr{
         this.v1 = v1;
         this.v2 = v2;
     }
+    public Value getV1(){return this.v1;}
+    public Value getV2(){return this.v2;}
 }

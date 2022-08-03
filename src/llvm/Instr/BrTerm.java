@@ -15,6 +15,8 @@ public class BrTerm extends Instr {
         return li;
     }
 
+    public void setLi(Ident ident){this.li = ident;}
+
     // 跳转name
     public String getLabelName(){
         return String.valueOf(li.getId());

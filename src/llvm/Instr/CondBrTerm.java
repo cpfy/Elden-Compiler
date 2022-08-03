@@ -21,6 +21,8 @@ public class CondBrTerm extends Instr {
         return v;
     }
 
+    public void setV(Value v){this.v = v;}
+
     public Ident getL1() {
         return l1;
     }
@@ -37,4 +39,7 @@ public class CondBrTerm extends Instr {
     public String getLabel2Name(){
         return String.valueOf(l2.getId());
     }
+
+    public void setL1(Ident L1){this.l1 = L1;}
+    public void setL2(Ident L2){this.l2 = L2;}
 }

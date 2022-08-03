@@ -12,4 +12,7 @@ public class AssignInstr extends Instr {
         this.localident = localident;
         this.valueinstr = valueinstr;
     }
+    public Ident getIdent(){return localident;}
+    public void setIdent(Ident localident){this.localident = localident;}
+    public Instr getValueinstr(){return valueinstr;}
 }

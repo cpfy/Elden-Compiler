@@ -26,4 +26,5 @@ public class RetTerm extends Instr{
     public Value getV() {
         return v;
     }
+    public void setV(Value v){this.v = v;}
 }

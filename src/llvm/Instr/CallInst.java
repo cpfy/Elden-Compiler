@@ -19,5 +19,20 @@ public class CallInst extends Instr {
         this.args = args;
     }
 
+    public Type getReturntype() {
+        return returntype;
+    }
+
+    public String getFuncname() {
+        return funcname;
+    }
+
+    public ArrayList<TypeValue> getArgs() {
+        return args;
+    }
+
+
+    // isStandard()判断可放在这里
+
 
 }
