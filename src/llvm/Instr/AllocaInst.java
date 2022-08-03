@@ -10,5 +10,9 @@ public class AllocaInst extends Instr {
         this.t = t;
     }
 
+    public Type getT() {
+        return t;
+    }
+
     public Type getType(){return this.t;}
 }

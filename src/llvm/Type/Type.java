@@ -7,4 +7,8 @@ public class Type {
     public Type(TypeC typec) {
         this.typec = typec;
     }
+
+    public TypeC getTypec() {
+        return typec;
+    }
 }

@@ -5,17 +5,17 @@ import llvm.Instr.Instr;
 import java.util.ArrayList;
 
 public class Instrs {
-    private ArrayList<Instr> instrList;
+    private ArrayList<NewInstr> instrList;
 
     public Instrs() {
         instrList = new ArrayList<>();
     }
 
-    public ArrayList<Instr> getInstrList() {
+    public ArrayList<NewInstr> getInstrList() {
         return instrList;
     }
 
-    public void addInstr(Instr instr) {
+    public void addInstr(NewInstr instr) {
         instrList.add(instr);
     }
 }
