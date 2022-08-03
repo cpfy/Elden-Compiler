@@ -122,7 +122,7 @@ public class IRParser {
 
         allblocklist.add(curBlock);  // 塞进去最后一个块
         blockmap.put(curBlock.getLabel(), curBlock);
-        allfunctionlist.add(curFunction);
+//        allfunctionlist.add(curFunction);
     }
 
     // FunctionDecl : "declare" MetadataAttachments OptExternLinkage FunctionHeader
@@ -374,6 +374,8 @@ public class IRParser {
         OptLabelIdent();
         Instructions();
         Terminator();
+
+
     }
 
     //
@@ -691,6 +693,9 @@ public class IRParser {
             case "ret":
                 term = RetTerm();
                 curBlock.addInstr(term);
+
+                //block插入function
+                curFunction.addBlock(curBlock);
                 break;
             case "br":
                 if (symPeek("LABELTK", 1)) {
@@ -700,6 +705,9 @@ public class IRParser {
                     term = CondBrTerm();
                 }
                 curBlock.addInstr(term);
+
+                //block插入function
+                curFunction.addBlock(curBlock);
                 break;
             default:
                 //todo
