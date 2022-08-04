@@ -39,7 +39,7 @@ public abstract class Node {
     static String declType = null;
 
     public String newTemp() {
-        return "%" + labels++;
+        return "%foo" + labels++;
     }
 
     public void setDeclType(String s) {

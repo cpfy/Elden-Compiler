@@ -8,6 +8,16 @@ public abstract class Exp extends Node {
     float valueF;
     public boolean calculated = false;
 
+    public boolean isCanCal() {
+        return canCal;
+    }
+
+    public void setCanCal(boolean canCal) {
+        this.canCal = canCal;
+    }
+
+    public boolean canCal = true;
+
     public int getValue() {
         if (calculated) {
             return value;

@@ -27,9 +27,9 @@ public class Compiler {
                     allb = ip.parseFunc(0);
                     System.out.println(allb.size());
                     for (Function function: allb) {
-                        System.out.println("Func:\t" + function.getBlocklist().size());
+                        System.out.println("Func:\t" + function.getFuncheader().getFname());
                         for (Block block: function.getBlocklist()) {
-                            System.out.println("Block:\t" + block.getInblocklist().size());
+                            System.out.println("Block:\t" + block.getLabel());
                             for (Instr instr: block.getInblocklist()) {
                                 System.out.println(instr.toString());
                             }
