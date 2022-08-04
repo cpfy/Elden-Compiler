@@ -21,6 +21,11 @@ public class GetElementPtrInst extends Instr {
         this.v = v;
     }
 
+    @Override
+    public String toString() {
+        return "getelementptr inbounds " + type1.toString() + ", " + type2.toString() + " " + v.toString();
+    }
+
     public void setValue(Value i) {
         this.v = i;
     }

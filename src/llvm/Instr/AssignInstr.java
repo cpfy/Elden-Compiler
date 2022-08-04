@@ -13,6 +13,11 @@ public class AssignInstr extends Instr {
         this.valueinstr = valueinstr;
     }
 
+    @Override
+    public String toString() {
+        return localident.toString() + " = " + valueinstr.toString();
+    }
+
     public Ident getIdent() {
         return localident;
     }

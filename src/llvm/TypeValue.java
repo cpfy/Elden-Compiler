@@ -6,9 +6,14 @@ public class TypeValue {
     private Type type;
     private Value value;
 
-    public TypeValue(Type type, Value value){
+    public TypeValue(Type type, Value value) {
         this.type = type;
         this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return type.toString() + " " + value.toString();
     }
 
     public Type getType() {
@@ -19,5 +24,7 @@ public class TypeValue {
         return value;
     }
 
-    public void setValue(Value value){this.value = value;}
+    public void setValue(Value value) {
+        this.value = value;
+    }
 }

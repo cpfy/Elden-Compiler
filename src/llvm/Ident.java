@@ -21,6 +21,20 @@ public class Ident {
         this.name = name;
     }
 
+    @Override
+    public String toString() {
+        if (global) {
+            if (isIdent) {
+                return "@" + name;
+            }
+            return "@" + String.valueOf(id);
+        }
+        if (isIdent) {
+            return "%" + name;
+        }
+        return "%" + String.valueOf(id);
+    }
+
     public String getName() {
         return name;
     }
@@ -42,7 +56,11 @@ public class Ident {
         this.type = type;
     }
 
-    public void setName(String name){this.name = name;}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public void setId(int id){this.id = id;}
+    public void setId(int id) {
+        this.id = id;
+    }
 }

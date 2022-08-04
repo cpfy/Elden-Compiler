@@ -7,4 +7,9 @@ public class PointerType extends Type {
         super(typec);
         this.t = t;
     }
+
+    @Override
+    public String toString() {
+        return t.toString() + "*";
+    }
 }

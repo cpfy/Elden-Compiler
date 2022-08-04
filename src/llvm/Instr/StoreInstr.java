@@ -17,6 +17,11 @@ public class StoreInstr extends Instr {
         this.v2 = v2;
     }
 
+    @Override
+    public String toString() {
+        return "store " + t1.toString() + " " + v1.toString() + ", " + t2.toString() + " " + v2.toString();
+    }
+
     public Value getV1() {
         return this.v1;
     }

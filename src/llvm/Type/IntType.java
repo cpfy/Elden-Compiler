@@ -8,4 +8,9 @@ public class IntType extends Type {
         super(typec);
         this.decimal = decimal;
     }
+
+    @Override
+    public String toString() {
+        return "i" + decimal;
+    }
 }

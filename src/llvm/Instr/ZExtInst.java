@@ -15,6 +15,11 @@ public class ZExtInst extends Instr {
         this.v = v;
     }
 
+    @Override
+    public String toString() {
+        return "zext " + t1.toString() + " " + v.toString() + " to " + t2.toString();
+    }
+
     public Value getV() {
         return this.v;
     }

@@ -17,11 +17,10 @@ public class BinaryInst extends Instr {
         this.v2 = v2;
     }
 
-    // to arm 指令
-//    public ArrayList<String> toArm() {
-//
-//    }
-
+    @Override
+    public String toString() {
+        return getInstrname() + " " + t.toString() + " " + v1.toString() + ", " + v2.toString();
+    }
 
     private void ValueInstruction() {
         String sym = "";

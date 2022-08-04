@@ -10,9 +10,18 @@ public class AllocaInst extends Instr {
         this.t = t;
     }
 
+    @Override
+    public String toString() {
+        return "alloca" + t.toString();
+    }
+
     public Type getT() {
         return t;
     }
 
-    public Type getType(){return this.t;}
+    public Type getType() {
+        return this.t;
+    }
+
+
 }

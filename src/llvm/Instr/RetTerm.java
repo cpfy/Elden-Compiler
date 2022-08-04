@@ -19,6 +19,11 @@ public class RetTerm extends Instr {
         this.v = v;
     }
 
+    @Override
+    public String toString() {
+        return "ret " + retype.toString() + " " + v.toString();
+    }
+
     public Type getRetype() {
         return retype;
     }

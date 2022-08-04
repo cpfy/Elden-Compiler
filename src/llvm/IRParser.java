@@ -14,6 +14,7 @@ import llvm.Instr.LoadInst;
 import llvm.Instr.RetTerm;
 import llvm.Instr.StoreInstr;
 import llvm.Instr.ZExtInst;
+import llvm.Type.ArrayType;
 import llvm.Type.IntType;
 import llvm.Type.PointerType;
 import llvm.Type.Type;
@@ -390,10 +391,9 @@ public class IRParser {
         OptLabelIdent();
 
         // 与llvm文法不一致，允许跳Instruction
-        if(symIs("ret")||symIs("br")){
+        if (symIs("ret") || symIs("br")) {
             Terminator();
-        }
-        else{
+        } else {
             Instructions();
             Terminator();
         }
@@ -811,7 +811,7 @@ public class IRParser {
     // CondBrTerm "br" IntType Value "," LabelType LocalIdent "," LabelType LocalIdent OptCommaSepMetadataAttachmentList ;
     private Instr CondBrTerm() {
         match("br");
-        IntType();
+        Type it = IntType();
         Value v = Value();
         match(",");
         LabelType();
@@ -820,7 +820,7 @@ public class IRParser {
         LabelType();
         Ident l2 = LocalIdent();
 
-        Instr i = new CondBrTerm("condbr", v, l1, l2);
+        Instr i = new CondBrTerm("condbr", (IntType) it, v, l1, l2);
         return i;
     }
 
@@ -983,16 +983,14 @@ public class IRParser {
     // ArrayType : "[" int_lit "x" Type "]"
     private Type ArrayType() {
         match("[");
-//        pointercount += 1;
 
         int dim = Integer.parseInt(sym.getTokenValue());
         getsym();
         match("x");
-        Type();         //todo
+        Type t = Type();         //todo
         match("]");
-//        pointercount -= 1;
 
-        Type retype = new Type(TypeC.A);
+        Type retype = new ArrayType(TypeC.A, dim, t);
         return retype;
     }
 

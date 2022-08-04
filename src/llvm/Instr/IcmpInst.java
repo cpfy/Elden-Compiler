@@ -17,6 +17,11 @@ public class IcmpInst extends Instr {
         this.v2 = v2;
     }
 
+    @Override
+    public String toString() {
+        return "icmp " + ipred + " " + t.toString() + " " + v1.toString() + ", " + v2.toString();
+    }
+
     public String getIpred() {
         return ipred;
     }

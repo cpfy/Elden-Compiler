@@ -2,19 +2,27 @@ package llvm.Instr;
 
 import llvm.Ident;
 import llvm.Instr.Instr;
+import llvm.Type.IntType;
 import llvm.Value;
 
 public class CondBrTerm extends Instr {
+    private IntType it;
     private Value v;
     private Ident l1;
     private Ident l2;
 
     // "condbr"
-    public CondBrTerm(String instrname, Value v, Ident l1, Ident l2) {
+    public CondBrTerm(String instrname, IntType it, Value v, Ident l1, Ident l2) {
         super(instrname);
+        this.it = it;
         this.v = v;
         this.l1 = l1;
         this.l2 = l2;
+    }
+
+    @Override
+    public String toString() {
+        return "br " + it.toString() + " " + v.toString() + ", label " + l1.toString() + ", label " + l2.toString();
     }
 
     public Value getV() {

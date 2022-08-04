@@ -15,5 +15,12 @@ public class LoadInst extends Instr {
         this.v = v;
     }
 
-    public Value getV(){return v;}
+    @Override
+    public String toString() {
+        return "load " + t1.toString() + ", " + t2.toString() + " " + v.toString();
+    }
+
+    public Value getV() {
+        return v;
+    }
 }

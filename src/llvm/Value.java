@@ -20,6 +20,14 @@ public class Value {
 
     }
 
+    @Override
+    public String toString() {
+        if(isIdent){
+            return ident.toString();
+        }
+        return String.valueOf(val);
+    }
+
     public Value(Ident ident){
         this.isIdent = true;
         this.ident = ident;

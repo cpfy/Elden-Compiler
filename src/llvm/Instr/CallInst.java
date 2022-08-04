@@ -24,6 +24,19 @@ public class CallInst extends Instr {
         this.standardCall = checkStandardCall(this.funcname);
     }
 
+    @Override
+    public String toString() {
+        String argstr = "";
+        for (TypeValue tv : args) {
+            argstr += tv.toString();
+            argstr += ", ";
+        }
+        if (!argstr.isEmpty()) {
+            argstr = argstr.substring(0, argstr.length() - 2);
+        }
+        return "call " + returntype.toString() + " @" + funcname + "(" + argstr + ")";
+    }
+
     public Type getReturntype() {
         return returntype;
     }
