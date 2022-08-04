@@ -14,6 +14,12 @@ public class ZExtInst extends Instr {
         this.t2 = t2;
         this.v = v;
     }
-    public Value getV(){return this.v;}
-    public void setV(Value v){this.v = v;}
+
+    public Value getV() {
+        return this.v;
+    }
+
+    public void setV(Value v) {
+        this.v = v;
+    }
 }

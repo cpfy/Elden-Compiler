@@ -21,6 +21,11 @@ public class GetElementPtrInst extends Instr {
         this.v = v;
     }
 
-    public void setValue(Value i){this.v = i;}
-    public Value getV(){return this.v;}
+    public void setValue(Value i) {
+        this.v = i;
+    }
+
+    public Value getV() {
+        return this.v;
+    }
 }

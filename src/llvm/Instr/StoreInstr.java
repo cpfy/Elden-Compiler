@@ -3,7 +3,7 @@ package llvm.Instr;
 import llvm.Type.Type;
 import llvm.Value;
 
-public class StoreInstr extends Instr{
+public class StoreInstr extends Instr {
     private Type t1;
     private Type t2;
     private Value v1;
@@ -16,6 +16,12 @@ public class StoreInstr extends Instr{
         this.v1 = v1;
         this.v2 = v2;
     }
-    public Value getV1(){return this.v1;}
-    public Value getV2(){return this.v2;}
+
+    public Value getV1() {
+        return this.v1;
+    }
+
+    public Value getV2() {
+        return this.v2;
+    }
 }

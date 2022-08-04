@@ -21,7 +21,9 @@ public class CondBrTerm extends Instr {
         return v;
     }
 
-    public void setV(Value v){this.v = v;}
+    public void setV(Value v) {
+        this.v = v;
+    }
 
     public Ident getL1() {
         return l1;
@@ -32,14 +34,19 @@ public class CondBrTerm extends Instr {
     }
 
     // 跳转name
-    public String getLabel1Name(){
+    public String getLabel1Name() {
         return String.valueOf(l1.getId());
     }
 
-    public String getLabel2Name(){
+    public String getLabel2Name() {
         return String.valueOf(l2.getId());
     }
 
-    public void setL1(Ident L1){this.l1 = L1;}
-    public void setL2(Ident L2){this.l2 = L2;}
+    public void setL1(Ident L1) {
+        this.l1 = L1;
+    }
+
+    public void setL2(Ident L2) {
+        this.l2 = L2;
+    }
 }

@@ -4,8 +4,10 @@ import llvm.Block;
 import llvm.Function;
 import llvm.Ident;
 import llvm.Instr.AllocaInst;
+import llvm.Instr.AssignInstr;
 import llvm.Instr.BrTerm;
 import llvm.Instr.CallInst;
+import llvm.Instr.IcmpInst;
 import llvm.Instr.Instr;
 import llvm.Instr.RetTerm;
 import llvm.Type.Type;
@@ -62,13 +64,15 @@ public class ArmGenerator {
         add(".extern putarray");
         add(".extern putfarray");
 
-        collectPrintStr();
+//        collectPrintStr();
 
         for (Function f : aflist) {
             if (f.getFuncheader().getFname() != "GlobalContainer") {
                 infuncdef = true;
                 add(".text");
-                add(tab + "b main");
+                //add(tab + "b main");
+
+                addFuncDef(f);
             }
             for (Block b : f.getBlocklist()) {
 
@@ -94,9 +98,13 @@ public class ArmGenerator {
             }
         }
 
-        addProgramEnd();
+//        addProgramEnd();
 
         printout(1);
+    }
+
+    private void addFuncDef(Function f) {
+        add(f.getFuncheader().getFname() + ":");
     }
 
     // block的标签
@@ -115,12 +123,13 @@ public class ArmGenerator {
     private void addBranchStmt(Instr instr) {
         String iname = instr.getInstrname();
         switch (iname) {
-            case "note":
-            case "label":
-                addNotes(instr);
-                break;
+//            case "note":
+//            case "label":
+//                addNotes(instr);
+//            暂未设计note
+//                break;
             case "icmp":
-                addSetCmp(instr);
+                addIcmp(instr);
                 break;
             case "push":
                 addPush(instr);
@@ -154,6 +163,7 @@ public class ArmGenerator {
     }
 
     private void addCondBr(Instr instr) {
+
     }
 
     private void addBr(Instr instr) {
@@ -247,7 +257,7 @@ public class ArmGenerator {
     }
 
     private void addJump(Instr instr) {
-        //
+        //原始 addJump
 
 
         //中的jump
@@ -256,12 +266,17 @@ public class ArmGenerator {
     private void addCompareBranch(Instr instr) {
     }
 
-    private void addSetCmp(Instr instr) {
-//        String cmpinstr = code.getOperator();  //创建ircode时instr存进了operator
-//
-//        Variable oper1 = code.getOper1();
-//        Variable oper2 = code.getOper2();
+    // icmp xx
+    private void addIcmp(Instr instr) {
 
+        // neq, ne等类型
+        String ipred = ((IcmpInst) instr).getIpred();
+        Type t = ((IcmpInst) instr).getT();
+        Value v1 = ((IcmpInst) instr).getV1();
+        Value v2 = ((IcmpInst) instr).getV2();
+
+
+        // 其实无用
         String cmpinstr = "";  //创建ircode时instr存进了operator
 
         Variable oper1 = new Variable("", "");
@@ -465,21 +480,12 @@ public class ArmGenerator {
     private void addCall(Instr instr) {
 
         String callfuncname = ((CallInst) instr).getFuncname();
-        if (isStandardCall(callfuncname)) {
+
+        if (((CallInst) instr).isStandardCall()) {
             addStandardCall(instr);
             return;
         }
         add("bx " + callfuncname);
-    }
-
-    //    #####
-    private boolean isStandardCall(String callfuncname) {
-        return callfuncname.equals("getint") || callfuncname.equals("getch") ||
-                callfuncname.equals("getfloat") || callfuncname.equals("getarray") ||
-                callfuncname.equals("getfarray") ||
-                callfuncname.equals("putint") || callfuncname.equals("putch") ||
-                callfuncname.equals("putfloat") || callfuncname.equals("putarray") ||
-                callfuncname.equals("putfarray");
     }
 
 
@@ -487,6 +493,8 @@ public class ArmGenerator {
     private void addStandardCall(Instr instr) {
         String callfuncname = ((CallInst) instr).getFuncname();
         ArrayList<TypeValue> args = ((CallInst) instr).getArgs();
+        int argLength = args.size();
+
         switch (callfuncname) {
             //todo 补充array处理
 
@@ -508,7 +516,16 @@ public class ArmGenerator {
 
                 break;
             case "putint":
+                for (TypeValue tv : args) {
+                    assert tv.getType().getTypec() == TypeC.I;
+                    Value v = tv.getValue();
+                    if (v.isIdent()) {
+                        //todo: get Reg
 
+                    } else {
+                        add("mov r0, #" + v.getVal());
+                    }
+                }
                 break;
             case "putch":
 
@@ -523,7 +540,7 @@ public class ArmGenerator {
 
                 break;
             case "default":
-                
+
                 break;
         }
     }
@@ -536,16 +553,20 @@ public class ArmGenerator {
 
         } else {
             int num = vret.getVal();
+            add("mov r0, #" + num);
             add("bx lr");//todo
         }
 
     }
 
     private void addAssign(Instr instr) {
+        Ident leftIdent = ((AssignInstr) instr).getIdent();
+        Instr valueinstr = ((AssignInstr) instr).getValueinstr();
+
+        //todo 右侧赋值给左
+
     }
 
-    private void addAssign2(Instr instr) {
-    }
 
     private void addAssignRet(Instr instr) {
     }
@@ -557,14 +578,17 @@ public class ArmGenerator {
     }
 
 
-    private void addNotes(Instr instr) {
-    }
+//    private void addNotes(Instr instr) {
+//    }
 
-    private void addProgramEnd() {
-    }
 
-    private void collectPrintStr() {
-    }
+//    private void addProgramEnd() {
+//    }
+
+
+    // todo 后续可能有用
+//    private void collectPrintStr() {
+//    }
 
     private void printout(int output) {
         if (output == 1) {

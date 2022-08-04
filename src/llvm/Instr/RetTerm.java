@@ -3,7 +3,7 @@ package llvm.Instr;
 import llvm.Type.Type;
 import llvm.Value;
 
-public class RetTerm extends Instr{
+public class RetTerm extends Instr {
     private Type retype;
     private Value v;
 
@@ -26,5 +26,8 @@ public class RetTerm extends Instr{
     public Value getV() {
         return v;
     }
-    public void setV(Value v){this.v = v;}
+
+    public void setV(Value v) {
+        this.v = v;
+    }
 }

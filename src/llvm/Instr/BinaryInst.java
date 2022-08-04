@@ -83,10 +83,15 @@ public class BinaryInst extends Instr {
         return v1;
     }
 
-    public Value getV2(){
+    public Value getV2() {
         return v2;
     }
 
-    public void setV1(Value v1) {this.v1 = v1;}
-    public void setV2(Value v2) {this.v2 = v2;}
+    public void setV1(Value v1) {
+        this.v1 = v1;
+    }
+
+    public void setV2(Value v2) {
+        this.v2 = v2;
+    }
 }
