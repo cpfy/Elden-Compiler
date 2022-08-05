@@ -39,7 +39,13 @@ public abstract class Instr {
 
     public abstract void renameUses(Value newValue, Value oldValue);     //常数传播优化中使用
 
-    public abstract Value mergeConst();
+    public abstract Value mergeConst();                                  //常量折叠使用
+
+    public abstract ArrayList<String> getUses();                        //死代码删除使用
+
+    public abstract String getDef();                            //死代码删除使用
+
+    public abstract ArrayList<String> getRoots();               //死代码删除使用
     /** add by sujunzhe end**/
 
 

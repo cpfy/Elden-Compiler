@@ -3,6 +3,8 @@ package llvm.Instr;
 import llvm.Type.Type;
 import llvm.Value;
 
+import java.util.ArrayList;
+
 
 //    GetElementPtrInst
 //	: "getelementptr" OptInBounds Type "," Type Value OptCommaSepMetadataAttachmentList
@@ -44,5 +46,25 @@ public class GetElementPtrInst extends Instr {
     @Override
     public Value mergeConst() {
         return null;
+    }
+
+    @Override
+    public ArrayList<String> getUses() {
+        //todo
+        ArrayList<String> ans = new ArrayList<>();
+        return ans;
+    }
+
+    @Override
+    public String getDef() {
+        //todo
+        return null;
+    }
+
+    @Override
+    public ArrayList<String> getRoots() {
+        //todo
+        ArrayList<String> ans = new ArrayList<>();
+        return ans;
     }
 }
