@@ -1211,4 +1211,28 @@ public class IRParser {
         return false;
     }
 
+    /* ########################## */
+    public void printllvmOutputs() {
+        System.out.println("【LLVM Print Start.】");
+        for (Function function : allfunctionlist) {
+
+            boolean needprintfunc = !function.getFuncheader().getFname().equals("GlobalContainer");
+            if (needprintfunc) {
+                System.out.println(function.toString() + "{");
+            }
+
+            for (Block block : function.getBlocklist()) {
+                System.out.println(block.getLabel() + ":");
+                for (Instr instr : block.getInblocklist()) {
+                    System.out.println(instr.toString());
+                }
+            }
+            if (needprintfunc) {
+                System.out.println("}");
+            }
+
+        }
+        System.out.println("【LLVM Print End.】");
+    }
+
 }

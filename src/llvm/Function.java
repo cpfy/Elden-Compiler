@@ -12,7 +12,11 @@ public class Function {
     public Function(FuncHeader funcheader) {
         this.funcheader = funcheader;
         this.blocklist = new ArrayList<>();
+    }
 
+    @Override
+    public String toString() {
+        return "define dso_local " + funcheader.toString();
     }
 
     public ArrayList<Block> getBlocklist() {
@@ -33,7 +37,7 @@ public class Function {
 
 
     public void clear() {
-        for (Block block: blocklist) {
+        for (Block block : blocklist) {
             block.clear();
         }
     }

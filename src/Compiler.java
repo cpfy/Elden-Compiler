@@ -13,6 +13,8 @@ import java.util.ArrayList;
 
 public class Compiler {
     public static void main(String[] args) {
+//        boolean llvmtest = true;
+//        boolean armtest = true;
         boolean llvmtest = false;
         boolean armtest = false;
         ArrayList<Function> allb = new ArrayList<>();
@@ -25,17 +27,22 @@ public class Compiler {
                     ArrayList<Token> i = irs.scanfile("txt/llvmir.ll");
                     IRParser ip = new IRParser(i);
                     allb = ip.parseFunc(0);
-                    System.out.println(allb.size());
-                    for (Function function: allb) {
-                        System.out.println("Func:\t" + function.getFuncheader().getFname());
-                        for (Block block: function.getBlocklist()) {
-                            System.out.println("Block:\t" + block.getLabel());
-                            for (Instr instr: block.getInblocklist()) {
-                                System.out.println(instr.toString());
-                            }
-                        }
-                    }
-                    System.out.println("LLVM End.");
+
+//                    System.out.println(allb.size());
+//                    for (Function function: allb) {
+//                        System.out.println("Func:\t" + function.getFuncheader().getFname());
+//                        for (Block block: function.getBlocklist()) {
+//                            System.out.println("Block:\t" + block.getLabel());
+//                            for (Instr instr: block.getInblocklist()) {
+//                                System.out.println(instr.toString());
+//                            }
+//                        }
+//                    }
+//                    System.out.println("LLVM End.");
+
+                    //todo 新增print函数，代替原来输入方法
+                    ip.printllvmOutputs();
+
                     if (armtest) {
                         if (allb.size() == 0) {
                             System.out.println("Err null allb.");

@@ -28,6 +28,19 @@ public class FuncHeader {
         this.paras = paras;
     }
 
+    @Override
+    public String toString() {
+        String parastr = "";
+        for (Ident i : paras) {
+            parastr += i.toString();
+            parastr += ", ";
+        }
+        if (!parastr.isEmpty()) {
+            parastr = parastr.substring(0, parastr.length() - 2);
+        }
+        return type.toString() + " @" + fname + "(" + parastr + ")";
+    }
+
     public Type getType() {
         return type;
     }
