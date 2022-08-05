@@ -23,6 +23,19 @@ public class ExpOp extends Exp {
         addCode(left.addCodePre());
         addCode(right.addCodePre());
         setExpType();
+
+        calculate();
+
+        if (isCanCal()) {
+            if (type.equals("i32")) {
+                temp = String.valueOf(getValue());
+            }
+            else {
+                temp = String.valueOf(getValueF());
+            }
+            return getCodes();
+        }
+
         String l = left.getTemp();
         String r = right.getTemp();
         if (left.getType().equals("i32") && getType().equals("float")) {
@@ -201,6 +214,12 @@ public class ExpOp extends Exp {
 
     @Override
     public void calculate() {
+        left.calculate();
+        right.calculate();
+        if (!left.isCanCal() || !right.isCanCal()) {
+            setCanCal(false);
+            return;
+        }
         left.getValue();
         right.getValue();
         setExpType();

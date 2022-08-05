@@ -28,6 +28,18 @@ public class LVal extends ExpPrimary {
     @Override
     public ArrayList<String> addCodePre() {
         setType(table.getVarType(id.getRawWord().getName()));
+        if (table.getValue(id.getRawWord().getName()).isConst()) {
+            calculate();
+            if (isCanCal()) {
+                if (type.equals("i32")) {
+                    temp = String.valueOf(getValue());
+                }
+                else {
+                    temp = String.valueOf(getValueF());
+                }
+            }
+            return getCodes();
+        }
         if (isAssign) {
             addAsAssign();
         }
@@ -47,7 +59,14 @@ public class LVal extends ExpPrimary {
         setType(table.getVarType(id.getRawWord().getName()));
         ArrayList<Integer> myDims = new ArrayList<>();
         for (Exp exp: dims) {
-            myDims.add(exp.getValue());
+            exp.calculate();
+            if (exp.isCanCal()) {
+                myDims.add(exp.getValue());
+            }
+            else {
+                setCanCal(false);
+                return;
+            }
         }
         int index = table.getIndex(id.getRawWord().getName(), myDims);
         if (type.equals("i32")) {
