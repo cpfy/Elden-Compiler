@@ -13,7 +13,7 @@ public class AllocaInst extends Instr {
 
     @Override
     public String toString() {
-        return "alloca" + t.toString();
+        return "alloca " + t.toString();
     }
 
     public Type getT() {

@@ -669,8 +669,7 @@ public class IRParser {
         if (isConcreteType(sym)) {
             return ArgList();
         }
-        error();
-        return null;
+        return new ArrayList<>();
     }
 
 
@@ -938,10 +937,9 @@ public class IRParser {
         }
         if (Character.isDigit(value.charAt(0))) {
             getsym();
-            Ident idn = new Ident(Integer.parseInt(value));
             //todo
 //            idn.setGlobal()
-            return new Value(idn);
+            return new Value(value);
         }
         // @foo GlobalIdent
         else if (symIs("@")) {
@@ -1192,7 +1190,7 @@ public class IRParser {
             allblocklist.add(curBlock);
             blockmap.put(curBlock.getLabel(), curBlock);
             if (curFunction != null) {
-                curFunction.addBlock(curBlock);
+                //curFunction.addBlock(curBlock);
             }
         }
 

@@ -45,6 +45,8 @@ public class ConstProp {
                 }
             }
         }
+
+        function.clear();
     }
 
     private void rename(Value newValue, Value oldValue) {

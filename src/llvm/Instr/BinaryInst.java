@@ -21,7 +21,7 @@ public class BinaryInst extends Instr {
 
     @Override
     public String toString() {
-        return getInstrname() + " " + t.toString() + " " + v1.toString() + ", " + v2.toString();
+        return op + " " + t.toString() + " " + v1.toString() + ", " + v2.toString();
     }
 
     private void ValueInstruction() {

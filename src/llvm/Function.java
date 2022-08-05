@@ -32,6 +32,11 @@ public class Function {
     }
 
 
+    public void clear() {
+        for (Block block: blocklist) {
+            block.clear();
+        }
+    }
 
     //其他函数
 

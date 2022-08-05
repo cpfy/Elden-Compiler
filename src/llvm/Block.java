@@ -123,7 +123,7 @@ public class Block {
     /*** add end by sujunzhe ***/
 
     // 基本属性2
-    private ArrayList<Phi> phis;    // 基本块的Phi函数
+    private ArrayList<Phi> phis = new ArrayList<>();    // 基本块的Phi函数
     private String instr;   //branch跳转 的bne等类型
     private String jumploc; //branch的跳转位置
 
@@ -177,6 +177,15 @@ public class Block {
     }
 
 
+    public void clear() {
+        ArrayList<Instr> newInblocklist = new ArrayList<>();
+        for (Instr instr: inblocklist) {
+            if (!instr.isCanDelete()) {
+                newInblocklist.add(instr);
+            }
+        }
+        inblocklist = newInblocklist;
+    }
 
 
 

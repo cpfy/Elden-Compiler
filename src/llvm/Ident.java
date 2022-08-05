@@ -67,4 +67,9 @@ public class Ident {
     public void setGlobal(boolean global) {
         this.global = global;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return this.toString().equals(obj.toString());
+    }
 }
