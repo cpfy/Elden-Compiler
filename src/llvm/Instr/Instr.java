@@ -25,7 +25,18 @@ public abstract class Instr {
 
     public boolean global;   //是否全局
 
+    /** add by sujunzhe start**/
+    private boolean canDelete = false;  //优化中使用，如果该指令待删除，则该变量为true
 
+    public boolean isCanDelete() {
+        return canDelete;
+    }
+
+    public void setCanDelete(boolean canDelete) {
+        this.canDelete = canDelete;
+    }
+
+    /** add by sujunzhe end**/
 
 
     private String rawstr;  //输出的ircode字符串格式
