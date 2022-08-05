@@ -32,7 +32,7 @@ public class FuncHeader {
     public String toString() {
         String parastr = "";
         for (Ident i : paras) {
-            parastr += i.toString();
+            parastr += i.getType().toString() + " " + i.toString();
             parastr += ", ";
         }
         if (!parastr.isEmpty()) {

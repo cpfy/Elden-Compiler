@@ -43,6 +43,10 @@ public class Ident {
         return id;
     }
 
+    public Type getType() {
+        return type;
+    }
+
     public boolean isIdent() {
         return isIdent;
     }
