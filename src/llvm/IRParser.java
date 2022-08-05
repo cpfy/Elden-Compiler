@@ -37,6 +37,7 @@ public class IRParser {
     //private Symbol curFunc = null;  //当前调用的函数
     private int funcParaIndex;      //对照参数是否匹配时的index
     //    private int curDimen = 0;           //当前变量数组维度
+
     private boolean isGlobal = true;    //是否为顶层
 
     private final String OUTPUT_DIR = "output.txt";
@@ -115,6 +116,8 @@ public class IRParser {
         while (symCodeIs("AT")) {
             GlobalDef();
         }
+
+        isGlobal = false;
 
         while (symCodeIs("DEFINETK")) {
             FunctionDef();
@@ -227,6 +230,7 @@ public class IRParser {
         String mydefname = sym.getTokenValue();
         getsym();
         Ident g_idn = new Ident(mydefname);
+        g_idn.setGlobal(true);
         return g_idn;
     }
 
@@ -855,12 +859,14 @@ public class IRParser {
             // boolean isdigit = true;
             getsym();
             Ident idn = new Ident(Integer.parseInt(value));
+            idn.setGlobal(false);
             return idn;
 
         } else {
             // boolean isalpha = true;
             getsym();
             Ident idn = new Ident(value);
+            idn.setGlobal(false);
             return idn;
         }
     }
@@ -933,6 +939,8 @@ public class IRParser {
         if (Character.isDigit(value.charAt(0))) {
             getsym();
             Ident idn = new Ident(Integer.parseInt(value));
+            //todo
+//            idn.setGlobal()
             return new Value(idn);
         }
         // @foo GlobalIdent

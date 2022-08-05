@@ -63,4 +63,8 @@ public class Ident {
     public void setId(int id) {
         this.id = id;
     }
+
+    public void setGlobal(boolean global) {
+        this.global = global;
+    }
 }
