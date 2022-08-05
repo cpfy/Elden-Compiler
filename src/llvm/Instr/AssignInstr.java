@@ -3,6 +3,8 @@ package llvm.Instr;
 import llvm.Ident;
 import llvm.Value;
 
+import java.util.ArrayList;
+
 public class AssignInstr extends Instr {
     private Ident localident;
     private Instr valueinstr;
@@ -39,5 +41,25 @@ public class AssignInstr extends Instr {
     @Override
     public Value mergeConst() {
         return valueinstr.mergeConst();
+    }
+
+    @Override
+    public ArrayList<String> getUses() {
+        return valueinstr.getUses();
+    }
+
+    @Override
+    public String getDef() {
+        return localident.toString();
+    }
+
+    @Override
+    public ArrayList<String> getRoots() {
+        ArrayList<String> ans = new ArrayList<>();
+        if (valueinstr instanceof CallInst) {
+            ans.add(localident.toString());
+        }
+        ans.addAll(valueinstr.getRoots());
+        return ans;
     }
 }

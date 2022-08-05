@@ -79,4 +79,31 @@ public class CallInst extends Instr {
     public Value mergeConst() {
         return null;
     }
+
+    @Override
+    public ArrayList<String> getUses() {
+        ArrayList<String> ans = new ArrayList<>();
+        for (TypeValue typeValue: args) {
+            if (typeValue.getValue().isIdent()) {
+                ans.add(typeValue.getValue().getIdent().toString());
+            }
+        }
+        return ans;
+    }
+
+    @Override
+    public String getDef() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<String> getRoots() {
+        ArrayList<String> ans = new ArrayList<>();
+        for (TypeValue typeValue: args) {
+            if (typeValue.getValue().isIdent()) {
+                ans.add(typeValue.getValue().getIdent().toString());
+            }
+        }
+        return ans;
+    }
 }

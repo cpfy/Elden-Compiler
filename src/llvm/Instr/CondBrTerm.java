@@ -5,6 +5,8 @@ import llvm.Instr.Instr;
 import llvm.Type.IntType;
 import llvm.Value;
 
+import java.util.ArrayList;
+
 public class CondBrTerm extends Instr {
     private IntType it;
     private Value v;
@@ -68,5 +70,28 @@ public class CondBrTerm extends Instr {
     @Override
     public Value mergeConst() {
         return null;
+    }
+
+    @Override
+    public ArrayList<String> getUses() {
+        ArrayList<String> ans = new ArrayList<>();
+        if (v.isIdent()) {
+            ans.add(v.getIdent().toString());
+        }
+        return ans;
+    }
+
+    @Override
+    public String getDef() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<String> getRoots() {
+        ArrayList<String> ans = new ArrayList<>();
+        if (v.isIdent()) {
+            ans.add(v.getIdent().toString());
+        }
+        return ans;
     }
 }

@@ -3,6 +3,8 @@ package llvm.Instr;
 import llvm.Type.Type;
 import llvm.Value;
 
+import java.util.ArrayList;
+
 public class LoadInst extends Instr {
     private Type t1;
     private Type t2;
@@ -34,5 +36,28 @@ public class LoadInst extends Instr {
     @Override
     public Value mergeConst() {
         return null;
+    }
+
+    @Override
+    public ArrayList<String> getUses() {
+        ArrayList<String> ans = new ArrayList<>();
+        if (v.isIdent()) {
+            ans.add(v.getIdent().toString());
+        }
+        return ans;
+    }
+
+    @Override
+    public String getDef() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<String> getRoots() {
+        ArrayList<String> ans = new ArrayList<>();
+        if (v.isIdent()) {
+            ans.add(v.getIdent().toString());
+        }
+        return ans;
     }
 }

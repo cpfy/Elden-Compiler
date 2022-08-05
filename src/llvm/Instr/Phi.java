@@ -58,4 +58,26 @@ public class Phi extends Instr{
         return null;
     }
 
+    @Override
+    public ArrayList<String> getUses() {
+        ArrayList<String> ans = new ArrayList<>();
+        for (Value v: params.values()) {
+            if (v.isIdent()) {
+                ans.add(v.getIdent().toString());
+            }
+        }
+        return ans;
+    }
+
+    @Override
+    public String getDef() {
+        return value.getIdent().toString();
+    }
+
+    @Override
+    public ArrayList<String> getRoots() {
+        ArrayList<String> ans = new ArrayList<>();
+        return ans;
+    }
+
 }

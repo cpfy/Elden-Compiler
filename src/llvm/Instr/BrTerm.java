@@ -1,7 +1,10 @@
 package llvm.Instr;
 
 import llvm.Ident;
+import llvm.TypeValue;
 import llvm.Value;
+
+import java.util.ArrayList;
 
 public class BrTerm extends Instr {
     private Ident li;
@@ -38,5 +41,22 @@ public class BrTerm extends Instr {
     @Override
     public Value mergeConst() {
         return null;
+    }
+
+    @Override
+    public ArrayList<String> getUses() {
+        ArrayList<String> ans = new ArrayList<>();
+        return ans;
+    }
+
+    @Override
+    public String getDef() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<String> getRoots() {
+        ArrayList<String> ans = new ArrayList<>();
+        return ans;
     }
 }
