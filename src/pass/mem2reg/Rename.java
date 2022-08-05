@@ -1,11 +1,9 @@
 package pass.mem2reg;
 
-import backend.Phi;
-import backend.Variable;
+import llvm.Instr.Phi;
 import llvm.*;
 import llvm.Instr.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Stack;

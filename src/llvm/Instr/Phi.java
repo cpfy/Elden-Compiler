@@ -1,16 +1,17 @@
-package backend;
+package llvm.Instr;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import llvm.Block;
 import llvm.Value;
 
-public class Phi {
+public class Phi extends Instr{
     // 基本块的Phi函数
     private Value value;
     //<label,value>键值对,由于block决定value名，因此block的label为key。
     private HashMap<Block,Value> params = new HashMap();
-    public Phi (Value value, ArrayList<Block> blocks){
+    public Phi (String instrname, Value value, ArrayList<Block> blocks){
+        super(instrname);
         this.value = value;
         for (Block i : blocks){
             params.put(i,value);

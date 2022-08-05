@@ -1,8 +1,7 @@
 package pass.mem2reg;
 
 
-import backend.Phi;
-import backend.Variable;
+import llvm.Instr.Phi;
 import llvm.Block;
 import llvm.Function;
 import llvm.Instr.AllocaInst;
@@ -52,7 +51,7 @@ public class InsertPhi {
             Block i = workList.pop();
             for(Block j:i.getDominatorFrontiers()){
                 if(!hasPhi.get(j)){
-                    Phi phi = new Phi(var,j.getPreBlocks());
+                    Phi phi = new Phi("phi",var,j.getPreBlocks());
                     j.addPhi(phi);
                     hasPhi.put(j,true);
                     if(!processed.get(j)){
