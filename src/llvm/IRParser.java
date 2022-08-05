@@ -19,6 +19,7 @@ import llvm.Type.IntType;
 import llvm.Type.PointerType;
 import llvm.Type.Type;
 import llvm.Type.TypeC;
+import llvm.Type.VoidType;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -955,7 +956,7 @@ public class IRParser {
         String typestr = sym.getTokenValue();
         if (symIs("void")) {
             getsym();
-            return new Type(TypeC.V);
+            return new VoidType(TypeC.V);
         }
         return FirstClassType();
     }
