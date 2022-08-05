@@ -29,4 +29,21 @@ public class StoreInstr extends Instr {
     public Value getV2() {
         return this.v2;
     }
+
+    @Override
+    public void renameUses(Value newValue, Value oldValue) {
+        if (v1.isIdent() && v1.getIdent().equals(oldValue.getIdent())) {
+            v1 = newValue;
+        }
+        if (v2.isIdent() && v2.getIdent().equals(oldValue.getIdent())) {
+            v2 = newValue;
+        }
+    }
+
+    @Override
+    public Value mergeConst() {
+        return null;
+    }
+
+
 }

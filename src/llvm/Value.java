@@ -10,7 +10,10 @@ public class Value {
     private Ident ident;
 
     public Value(String str) {
-        if (str.charAt(0) == '0') {
+        if (str.length() == 1) {
+            this.hex = false;
+            this.val = Integer.parseInt(str);
+        } else if (str.charAt(0) == '0') {
             this.hex = true;
             this.hexVal = str;
         } else {

@@ -23,4 +23,16 @@ public class LoadInst extends Instr {
     public Value getV() {
         return v;
     }
+
+    @Override
+    public void renameUses(Value newValue, Value oldValue) {
+        if (v.isIdent() && v.getIdent().equals(oldValue.getIdent())) {
+            v = newValue;
+        }
+    }
+
+    @Override
+    public Value mergeConst() {
+        return null;
+    }
 }

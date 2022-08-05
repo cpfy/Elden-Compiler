@@ -1,6 +1,7 @@
 package llvm.Instr;
 
 import llvm.Ident;
+import llvm.Value;
 
 public class AssignInstr extends Instr {
     private Ident localident;
@@ -28,5 +29,15 @@ public class AssignInstr extends Instr {
 
     public Instr getValueinstr() {
         return valueinstr;
+    }
+
+    @Override
+    public void renameUses(Value newValue, Value oldValue) {
+        valueinstr.renameUses(newValue, oldValue);
+    }
+
+    @Override
+    public Value mergeConst() {
+        return valueinstr.mergeConst();
     }
 }

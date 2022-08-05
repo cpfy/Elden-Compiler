@@ -1,6 +1,7 @@
 package llvm.Instr;
 
 import llvm.Ident;
+import llvm.Value;
 
 public class BrTerm extends Instr {
     private Ident li;
@@ -27,5 +28,15 @@ public class BrTerm extends Instr {
     // 跳转name
     public String getLabelName() {
         return String.valueOf(li.getId());
+    }
+
+    @Override
+    public void renameUses(Value newValue, Value oldValue) {
+
+    }
+
+    @Override
+    public Value mergeConst() {
+        return null;
     }
 }

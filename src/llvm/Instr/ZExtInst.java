@@ -27,4 +27,16 @@ public class ZExtInst extends Instr {
     public void setV(Value v) {
         this.v = v;
     }
+
+    @Override
+    public void renameUses(Value newValue, Value oldValue) {
+        if (v.isIdent() && v.getIdent().equals(oldValue.getIdent())) {
+            v = newValue;
+        }
+    }
+
+    @Override
+    public Value mergeConst() {
+        return null;
+    }
 }

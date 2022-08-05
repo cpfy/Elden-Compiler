@@ -6,12 +6,14 @@ import llvm.Value;
 import java.util.ArrayList;
 
 public class BinaryInst extends Instr {
+    private String op;      //运算符
     private Type t;
     private Value v1;
     private Value v2;
 
-    public BinaryInst(String instrname, Type t, Value v1, Value v2) {
+    public BinaryInst(String instrname, String op, Type t, Value v1, Value v2) {
         super(instrname);
+        this.op = op;
         this.t = t;
         this.v1 = v1;
         this.v2 = v2;
@@ -92,5 +94,56 @@ public class BinaryInst extends Instr {
 
     public void setV2(Value v2) {
         this.v2 = v2;
+    }
+
+    @Override
+    public void renameUses(Value newValue, Value oldValue) {
+        if (v1.isIdent() && v1.getIdent().equals(oldValue.getIdent())) {
+            v1 = newValue;
+        }
+        if (v2.isIdent() && v2.getIdent().equals(oldValue.getIdent())) {
+            v2 = newValue;
+        }
+    }
+
+    @Override
+    public Value mergeConst() {
+        //todo 浮点数未处理
+        if (v1.isIdent() || v2.isIdent()) {
+            return null;
+        }
+        Value value = null;
+        switch (op) {
+            case "add":
+                value = new Value(String.valueOf(v1.getVal() + v2.getVal()));
+                break;
+            case "fadd":
+                value = null;
+                break;
+            case "sub":
+                value = new Value(String.valueOf(v1.getVal() - v2.getVal()));
+                break;
+            case "fsub":
+                value = null;
+                break;
+            case "mul":
+                value = new Value(String.valueOf(v1.getVal() * v2.getVal()));
+                break;
+            case "fmul":
+                value = null;
+                break;
+            case "sdiv":
+                value = new Value(String.valueOf(v1.getVal() / v2.getVal()));
+                break;
+            case "fdiv":
+                value = null;
+                break;
+            case "srem":
+                value = new Value(String.valueOf(v1.getVal() % v2.getVal()));
+                break;
+            default:
+                break;
+        }
+        return value;
     }
 }

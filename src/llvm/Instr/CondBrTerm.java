@@ -57,4 +57,16 @@ public class CondBrTerm extends Instr {
     public void setL2(Ident L2) {
         this.l2 = L2;
     }
+
+    @Override
+    public void renameUses(Value newValue, Value oldValue) {
+        if (v.isIdent() && v.getIdent().equals(oldValue.getIdent())) {
+            v = newValue;
+        }
+    }
+
+    @Override
+    public Value mergeConst() {
+        return null;
+    }
 }

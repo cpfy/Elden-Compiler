@@ -620,7 +620,7 @@ public class IRParser {
         match(",");
         Value v2 = Value();
 
-        Instr bi = new BinaryInst(instrname, t, v1, v2);
+        Instr bi = new BinaryInst("binary", instrname, t, v1, v2);
         return bi;
     }
 

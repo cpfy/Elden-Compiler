@@ -46,4 +46,65 @@ public class IcmpInst extends Instr {
         this.v2 = v2;
     }
 
+    @Override
+    public void renameUses(Value newValue, Value oldValue) {
+        if (v1.isIdent() && v1.getIdent().equals(oldValue.getIdent())) {
+            v1 = newValue;
+        }
+        if (v2.isIdent() && v2.getIdent().equals(oldValue.getIdent())) {
+            v2 = newValue;
+        }
+    }
+
+    @Override
+    public Value mergeConst() {
+        if (v1.isIdent() || v2.isIdent()) {
+            return null;
+        }
+        Value value = null;
+        if (ipred.equals("ne")) {
+            String s = "0";
+            if (v1.getVal() != v2.getVal()) {
+                s = "1";
+            }
+            value = new Value(s);
+        }
+        else if (ipred.equals("eq")) {
+            String s = "0";
+            if (v1.getVal() == v2.getVal()) {
+                s = "1";
+            }
+            value = new Value(s);
+
+        }
+        else if (ipred.equals("sle")) {
+            String s = "0";
+            if (v1.getVal() <= v2.getVal()) {
+                s = "1";
+            }
+            value = new Value(s);
+        }
+        else if (ipred.equals("slt")) {
+            String s = "0";
+            if (v1.getVal() < v2.getVal()) {
+                s = "1";
+            }
+            value = new Value(s);
+        }
+        else if (ipred.equals("sge")) {
+            String s = "0";
+            if (v1.getVal() >= v2.getVal()) {
+                s = "1";
+            }
+            value = new Value(s);
+        }
+        else if (ipred.equals("sgt")) {
+            String s = "0";
+            if (v1.getVal() > v2.getVal()) {
+                s = "1";
+            }
+            value = new Value(s);
+        }
+        return value;
+    }
 }

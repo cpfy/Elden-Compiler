@@ -1,6 +1,7 @@
 package llvm.Instr;
 
 import llvm.Type.Type;
+import llvm.Value;
 
 public class AllocaInst extends Instr {
     private Type t;
@@ -24,4 +25,13 @@ public class AllocaInst extends Instr {
     }
 
 
+    @Override
+    public void renameUses(Value newValue, Value oldValue) {
+
+    }
+
+    @Override
+    public Value mergeConst() {
+        return null;
+    }
 }

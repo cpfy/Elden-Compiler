@@ -42,4 +42,20 @@ public class Phi extends Instr{
     public void setValue(Value value){this.value = value;}
     public void reName(Value value,Block block){params.put(block,value);}
     public void reName(Value value){this.value = value;}
+
+    @Override
+    public void renameUses(Value newValue, Value oldValue) {
+        for (Block block: params.keySet()) {
+            Value v = params.get(block);
+            if (v.isIdent() && v.getIdent().equals(oldValue.getIdent())) {
+                params.put(block, newValue);
+            }
+        }
+    }
+
+    @Override
+    public Value mergeConst() {
+        return null;
+    }
+
 }

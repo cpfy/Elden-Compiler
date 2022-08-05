@@ -2,6 +2,7 @@ package llvm.Instr;
 
 import backend.Variable;
 import llvm.Ident;
+import llvm.Value;
 
 import java.util.ArrayList;
 
@@ -36,6 +37,9 @@ public abstract class Instr {
         this.canDelete = canDelete;
     }
 
+    public abstract void renameUses(Value newValue, Value oldValue);     //常数传播优化中使用
+
+    public abstract Value mergeConst();
     /** add by sujunzhe end**/
 
 

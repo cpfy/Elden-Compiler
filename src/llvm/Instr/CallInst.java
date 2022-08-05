@@ -3,6 +3,7 @@ package llvm.Instr;
 import llvm.Ident;
 import llvm.Type.Type;
 import llvm.TypeValue;
+import llvm.Value;
 
 import java.util.ArrayList;
 
@@ -64,4 +65,18 @@ public class CallInst extends Instr {
     }
 
 
+    @Override
+    public void renameUses(Value newValue, Value oldValue) {
+        for (TypeValue typeValue: args) {
+            Value v = typeValue.getValue();
+            if (v.isIdent() && v.getIdent().equals(oldValue.getIdent())) {
+                typeValue.setValue(newValue);
+            }
+        }
+    }
+
+    @Override
+    public Value mergeConst() {
+        return null;
+    }
 }
