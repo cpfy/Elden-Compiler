@@ -8,6 +8,7 @@ import llvm.Instr.BrTerm;
 import llvm.Instr.CallInst;
 import llvm.Instr.CondBrTerm;
 import llvm.Instr.GetElementPtrInst;
+import llvm.Instr.GlobalDefInst;
 import llvm.Instr.IcmpInst;
 import llvm.Instr.Instr;
 import llvm.Instr.LoadInst;
@@ -116,6 +117,9 @@ public class IRParser {
         while (symCodeIs("AT")) {
             GlobalDef();
         }
+        //把curblock塞进去
+        curFunction.addBlock(curBlock);
+
 
         isGlobal = false;
 
@@ -160,11 +164,12 @@ public class IRParser {
         OptUnnamedAddr();   // "unnamed_addr"
         Immutable();    // "constant"或"global"
         Type t = Type();
-        Constant();     // zeroinitializer 可处理
+        Value v = Constant();     // zeroinitializer 可处理
         GlobalAttrs();  // 处理Align等
         FuncAttrs();
 
-
+        Instr gdfinstr = new GlobalDefInst("globaldef", g_idn, t, v);
+        curBlock.addInstr(gdfinstr);
     }
 
     // GlobalAttrs: empty| "," GlobalAttrList;
@@ -1216,19 +1221,21 @@ public class IRParser {
         System.out.println("【LLVM Print Start.】");
         for (Function function : allfunctionlist) {
 
-            boolean needprintfunc = !function.getFuncheader().getFname().equals("GlobalContainer");
-            if (needprintfunc) {
+            boolean globalContainer = function.getFuncheader().getFname().equals("GlobalContainer");
+            if (!globalContainer) {
                 System.out.println(function.toString() + "{");
-            }
+                for (Block block : function.getBlocklist()) {
+                    System.out.println(block.getLabel() + ":");
+                    for (Instr instr : block.getInblocklist()) {
+                        System.out.println(instr.toString());
+                    }
+                }
+                System.out.println("}");
 
-            for (Block block : function.getBlocklist()) {
-                System.out.println(block.getLabel() + ":");
-                for (Instr instr : block.getInblocklist()) {
+            } else {    // Global只输出@a
+                for (Instr instr : function.getBlocklist().get(0).getInblocklist()) {
                     System.out.println(instr.toString());
                 }
-            }
-            if (needprintfunc) {
-                System.out.println("}");
             }
 
         }

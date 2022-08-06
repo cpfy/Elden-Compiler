@@ -7,6 +7,7 @@ import llvm.Instr.AllocaInst;
 import llvm.Instr.AssignInstr;
 import llvm.Instr.BrTerm;
 import llvm.Instr.CallInst;
+import llvm.Instr.GlobalDefInst;
 import llvm.Instr.IcmpInst;
 import llvm.Instr.Instr;
 import llvm.Instr.LoadInst;
@@ -71,6 +72,14 @@ public class ArmGenerator {
 //        collectPrintStr();
 
         for (Function f : aflist) {
+            // GlobalDef特判
+            if (f.getFuncheader().getFname() == "GlobalContainer") {
+                for (Instr i : f.getBlocklist().get(0).getInblocklist()) {
+                    addGlobalDef(i);
+                }
+                continue;
+            }
+
             if (f.getFuncheader().getFname() != "GlobalContainer") {
                 infuncdef = true;
                 add(".text");
@@ -101,10 +110,9 @@ public class ArmGenerator {
 //                        addDeclStmt(i);
 //                    }
 
-                    if(inmain || infuncdef){
+                    if (inmain || infuncdef) {
                         addInstr(i);
-                    }
-                    else{
+                    } else {
                         // global ident
                         addGlobalDef(i);
                     }
@@ -119,7 +127,9 @@ public class ArmGenerator {
     }
 
     private void addGlobalDef(Instr i) {
-        add("")
+        Ident gi = ((GlobalDefInst) i).getGi();
+        Value value = ((GlobalDefInst) i).getV();
+        add(gi.getName() + ": .word " + value.toString());
     }
 
     private void addFuncDef(Function f) {
@@ -585,7 +595,7 @@ public class ArmGenerator {
         }
 
         //统一
-        add("bl "+callfuncname);
+        add("bl " + callfuncname);
     }
 
     private void addReturn(Instr instr) {
