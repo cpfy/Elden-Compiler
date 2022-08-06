@@ -170,4 +170,8 @@ public class BinaryInst extends Instr {
         ArrayList<String> ans = new ArrayList<>();
         return ans;
     }
+
+    public String getOp() {
+        return op;
+    }
 }
