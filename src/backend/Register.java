@@ -1,5 +1,7 @@
 package backend;
 
+import llvm.Ident;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -8,16 +10,16 @@ public class Register {
     private HashMap<String, Integer> regNameMap;
 
     private ArrayList<Integer> freeRegList;
-    private HashMap<Integer, Variable> varAllocMap;
+    private HashMap<Integer, Ident> identAllocMap;
     private ArrayList<Integer> activeRegList;   //当前活跃的变量占用的、已分配出的reg
-    private ArrayList<Variable> varRegUsageList;
+    private ArrayList<Ident> identRegUsageList;
 
     public Register() {
         this.regMap = new HashMap<>();
         this.regNameMap = new HashMap<>();
 
         this.freeRegList = new ArrayList<>();
-        this.varAllocMap = new HashMap<>();
+        this.identAllocMap = new HashMap<>();
         this.activeRegList = new ArrayList<>();
 
         initRegMap();
@@ -81,48 +83,37 @@ public class Register {
         return regNameMap.get(name);
     }
 
+    public String applyRegister(Variable v){
+        return "";
+    }
+
+    public String applyRegister(Symbol v){
+        return "";
+    }
+
     //临时变量-申请寄存器
-    public String applyRegister(Variable v) {
+    public String applyRegister(Ident i) {
         int no;
 
         if (!freeRegList.isEmpty()) {
             no = freeRegList.get(0);
 
-            varAllocMap.put(no, v);
+            identAllocMap.put(no, i);
             freeRegList.remove(0);
-            v.setCurReg(no);
+//            i.setCurReg(no);
             addActiveListNoRep(no);     //无重复加入activeregList 活跃变量表
 
         } else {    //todo 无空寄存器
-            System.err.println("No free Reg! Alloc $v1.");
-            no = 3;
+            System.err.println("No free Reg! Alloc $r0.");
+            no = 0;
         }
 
-        System.out.println("Alloc Reg $" + regMap.get(no) + " to variable " + v.toString());
+        System.out.println("Alloc Reg $" + regMap.get(no) + " to Ident " + i.toString());
 
         return regMap.get(no);
     }
 
-    //定义变量-申请寄存器
-    public String applyRegister(Symbol s) {
-        int no;
-        if (!freeRegList.isEmpty()) {
-            no = freeRegList.get(0);
-
-            freeRegList.remove(0);
-            s.setCurReg(no);
-            addActiveListNoRep(no);     //无重复加入activeregList 活跃变量表
-
-        } else {    //todo 无空寄存器
-            System.err.println("No free Reg! Alloc $v1.");
-            no = 3;
-        }
-
-        System.out.println("Alloc Reg $" + regMap.get(no) + " to symbol " + s.getName());
-        return regMap.get(no);
-    }
-
-    //申请临时存器
+    //申请临时寄存器
     public int applyTmpRegister() {
         int regno;
         if (!freeRegList.isEmpty()) {
@@ -130,9 +121,9 @@ public class Register {
             freeRegList.remove(0);
             addActiveListNoRep(regno);     //无重复加入activeregList 活跃变量表
 
-        } else {    //todo 无空寄存器,分$v1
-            System.err.println("No free Reg! Alloc $v1.");
-            regno = 3;
+        } else {    //todo 无空寄存器
+            System.err.println("No free Reg! Alloc $r0.");
+            regno = 0;
         }
 
         System.out.println("Alloc Reg $" + regMap.get(regno) + " to Tmp");
@@ -140,15 +131,9 @@ public class Register {
     }
 
     public void freeTmpRegister(int regno) {
-//        if (regno < 8 || regno == 29 || regno == 31) {
-//            System.err.println("Register freeTmpRegister() : Error free tmp Reg No!! regno = " + regno);
-//
-//        }
-        if(regno > 15){
+        if (regno > 15) {
             System.err.println("Register freeTmpRegister() : Error free tmp Reg No!! regno = " + regno);
-        }
-
-        else if (!freeRegList.contains(regno)) {
+        } else if (!freeRegList.contains(regno)) {
             removeActiveRegList(regno);     //删除变量in activeregList 活跃变量表
             freeRegList.add(regno);
             System.out.println("Free Reg $" + regMap.get(regno) + " from Tmp");
@@ -208,9 +193,22 @@ public class Register {
     //reset全部寄存器状态
     public void resetAllReg() {
         freeRegList.clear();
-        varAllocMap.clear();
+        identAllocMap.clear();
         activeRegList.clear();
 
         initFreeRegList();
     }
+
+
+
+
+
+
+
+    // 此处新加BiSh用
+//    public String searchIdentRegName(Ident i){
+//        return;
+//    }
+
+
 }
