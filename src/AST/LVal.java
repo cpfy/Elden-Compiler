@@ -57,6 +57,10 @@ public class LVal extends ExpPrimary {
     @Override
     public void calculate() {
         setType(table.getVarType(id.getRawWord().getName()));
+        if (!table.getValue(id.getRawWord().getName()).isConst()) {
+            setCanCal(false);
+            return;
+        }
         ArrayList<Integer> myDims = new ArrayList<>();
         for (Exp exp: dims) {
             exp.calculate();

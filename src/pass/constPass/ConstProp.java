@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-/*** 常量传播、常量折叠 ***/
+/*** 常量传播、常量折叠、死代码删除 ***/
 public class ConstProp {
     private Function function;
     private LinkedList<Instr> instrs = new LinkedList<>();
@@ -26,6 +26,14 @@ public class ConstProp {
     private void execute() {
         initList();     //获取函数中的指令
         constProp();    //常量折叠
+
+        initList();
+        deadCodeKill(); //死代码删除
+
+        for (Block block: function.getBlocklist()) {
+            new CSE(block); //公共子表达式删除.2963
+
+        }
 
         initList();
         deadCodeKill(); //死代码删除
