@@ -26,7 +26,7 @@ public class ArmGenerator {
     private ArrayList<String> armlist;
     private Register register;
     private HashMap<IRCode, String> printstrMap;
-    private static String OUTPUT_DIR = "testfile.s";
+    private static String OUTPUT_DIR = "testcase.s";
 
 
     private int tabcount = 0;
