@@ -13,9 +13,9 @@ import java.util.ArrayList;
 
 public class Compiler {
     public static void main(String[] args) {
-//        boolean llvmtest = true;
+        boolean llvmtest = true;
 //        boolean armtest = true;
-        boolean llvmtest = false;
+//        boolean llvmtest = false;
         boolean armtest = false;
         ArrayList<Function> allb = new ArrayList<>();
 
@@ -63,7 +63,7 @@ public class Compiler {
                 long startTime = System.currentTimeMillis(); //获取结束时间
 
                 PrintStream printStream = new PrintStream("txt/output.txt");
-                Lexer lexer = new Lexer("txt/testfile.sy");
+                Lexer lexer = new Lexer("txt/testcase.sy");
 
                 lexer.output1(printStream);
                 Parser parser = new Parser(lexer.getRawWords());

@@ -9,6 +9,7 @@ import llvm.Instr.BrTerm;
 import llvm.Instr.CallInst;
 import llvm.Instr.IcmpInst;
 import llvm.Instr.Instr;
+import llvm.Instr.LoadInst;
 import llvm.Instr.RetTerm;
 import llvm.Type.Type;
 import llvm.Type.TypeC;
@@ -21,12 +22,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static java.lang.System.exit;
+
 public class ArmGenerator {
     private ArrayList<Function> aflist;
     private ArrayList<String> armlist;
     private Register register;
     private HashMap<IRCode, String> printstrMap;
-    private static String OUTPUT_DIR = "testfile.s";
+    private static String OUTPUT_DIR = "testcase.s";
 
 
     private int tabcount = 0;
@@ -52,6 +55,7 @@ public class ArmGenerator {
     }
 
     public void convertarm() {
+        add("/* -- testcase.s */");
         add(".data");
         add(".extern getint");
         add(".extern getch");
@@ -70,37 +74,52 @@ public class ArmGenerator {
             if (f.getFuncheader().getFname() != "GlobalContainer") {
                 infuncdef = true;
                 add(".text");
-                //add(tab + "b main");
+                add(tab + "b main");
 
-                addFuncDef(f);
+                if (f.getFuncheader().getFname().equals("main")) {
+                    inmain = true;
+                    add(".global main");
+                    add("main:");
+                    tabcount += 1;
+
+                } else {
+                    addFuncDef(f);  // 就是个label
+                }
             }
             for (Block b : f.getBlocklist()) {
-
                 addBlockLabel(b);
                 for (Instr i : b.getInblocklist()) {
-                    if (inmain) {
-                        addBranchStmt(i);    //todo 不包括常量、函数定义相关
 
-                    } else if (infuncdef) {
-                        addFuncdefStmt(i);
 
-//                    if (i.getType().equals("note") && i.getRawstr().equals("#Start MainFunc")) {
-//                        inmain = true;
-//                        add("main:");
-//                        tabcount += 1;
+//                    if (inmain) {
+//                        addBranchStmt(i);    //todo 不包括常量、函数定义相关
+//
+//                    } else if (infuncdef) {
+//                        addFuncdefStmt(i);
+//
+//                    } else {    //表明位于 indecl
+//                        addDeclStmt(i);
 //                    }
 
-                    } else {    //表明位于 indecl
-                        addDeclStmt(i);
+                    if(inmain || infuncdef){
+                        addInstr(i);
                     }
-                }
+                    else{
+                        // global ident
+                        addGlobalDef(i);
+                    }
 
+                }
             }
         }
 
-//        addProgramEnd();
+        addProgramEnd();
 
         printout(1);
+    }
+
+    private void addGlobalDef(Instr i) {
+        add("")
     }
 
     private void addFuncDef(Function f) {
@@ -120,7 +139,7 @@ public class ArmGenerator {
     private void addFuncdefStmt(Instr i) {
     }
 
-    private void addBranchStmt(Instr instr) {
+    private void addInstr(Instr instr) {
         String iname = instr.getInstrname();
         switch (iname) {
 //            case "note":
@@ -128,6 +147,9 @@ public class ArmGenerator {
 //                addNotes(instr);
 //            暂未设计note
 //                break;
+            case "load":
+                addLoad(instr);
+                break;
             case "icmp":
                 addIcmp(instr);
                 break;
@@ -160,6 +182,17 @@ public class ArmGenerator {
             default:
                 break;
         }
+    }
+
+    private void addLoad(Instr instr) {
+        Value loadvalue = ((LoadInst) instr).getV();
+        if (loadvalue.isIdent()) {
+
+
+        } else {    // digit
+
+        }
+
     }
 
     private void addCondBr(Instr instr) {
@@ -517,20 +550,27 @@ public class ArmGenerator {
                 break;
             case "putint":
                 for (TypeValue tv : args) {
+                    //todo more than r0
+
                     assert tv.getType().getTypec() == TypeC.I;
                     Value v = tv.getValue();
                     if (v.isIdent()) {
-                        //todo: get Reg
+                        String reg = searchRegName(v.getIdent());
+                        add("mov r0, " + reg);
 
                     } else {
                         add("mov r0, #" + v.getVal());
                     }
                 }
+                // add("bl putint");        //最后统一弄
+
                 break;
             case "putch":
 
+
                 break;
             case "putfloat":
+
 
                 break;
             case "putarray":
@@ -543,25 +583,34 @@ public class ArmGenerator {
 
                 break;
         }
+
+        //统一
+        add("bl "+callfuncname);
     }
 
     private void addReturn(Instr instr) {
         Value vret = ((RetTerm) instr).getV();
         if (vret.isIdent()) {
             Ident vident = vret.getIdent();
+            String targetReg = searchRegName(vident);
+
+            add("mov r0, " + targetReg);
             // todo load
 
         } else {
             int num = vret.getVal();
             add("mov r0, #" + num);
-            add("bx lr");//todo
+            //todo
         }
-
+        add("bx lr");
     }
 
     private void addAssign(Instr instr) {
         Ident leftIdent = ((AssignInstr) instr).getIdent();
         Instr valueinstr = ((AssignInstr) instr).getValueinstr();
+
+        //addBinary(valueinstr);
+        String leftreg = register.applyRegister(leftIdent);
 
         //todo 右侧赋值给左
 
@@ -582,8 +631,10 @@ public class ArmGenerator {
 //    }
 
 
-//    private void addProgramEnd() {
-//    }
+    private void addProgramEnd() {
+        // return from main
+        add("bx lr");
+    }
 
 
     // todo 后续可能有用
@@ -637,7 +688,7 @@ public class ArmGenerator {
             System.out.println(s);
         }
         System.out.println("Error at next!");
-        System.exit(0);
+        exit(0);
     }
 
     private String reverseCompareInstr(String instr) {
@@ -678,6 +729,21 @@ public class ArmGenerator {
         return "0x" + Integer.toHexString(intaddr);
     }
 
+    // 右值，必定有结果
+    private String searchRegName(Ident i) {
+        String regname;
+        if (i.getNo() == -1) {
+            System.err.println("Error! Not assign Reg No.");
+            exit(0);
+            return null;
+
+        } else {
+            regname = register.getRegisterNameFromNo(i.getNo());
+            return regname;
+        }
+    }
+
+    // 应废弃
     private String searchRegName(Variable v) {
         String regname;
 

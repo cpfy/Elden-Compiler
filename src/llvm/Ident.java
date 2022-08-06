@@ -11,6 +11,9 @@ public class Ident {
     private String name;
     private int id;
 
+    // Reg用，分配寄存器编号
+    private int no = -1;
+
     public Ident(int id) {
         this.isIdent = false;
         this.id = id;
@@ -75,5 +78,14 @@ public class Ident {
     @Override
     public boolean equals(Object obj) {
         return this.toString().equals(obj.toString());
+    }
+
+
+    public int getNo() {
+        return no;
+    }
+
+    public void setNo(int no) {
+        this.no = no;
     }
 }

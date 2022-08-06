@@ -20,18 +20,17 @@ public class Value {
             this.hex = false;
             this.val = Integer.parseInt(str);
         }
-
     }
 
     @Override
     public String toString() {
-        if(isIdent){
+        if (isIdent) {
             return ident.toString();
         }
         return String.valueOf(val);
     }
 
-    public Value(Ident ident){
+    public Value(Ident ident) {
         this.isIdent = true;
         this.ident = ident;
     }
