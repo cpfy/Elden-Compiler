@@ -8,12 +8,15 @@ import llvm.Instr.AssignInstr;
 import llvm.Instr.BinaryInst;
 import llvm.Instr.BrTerm;
 import llvm.Instr.CallInst;
+import llvm.Instr.CondBrTerm;
 import llvm.Instr.GlobalDefInst;
 import llvm.Instr.IcmpInst;
 import llvm.Instr.Instr;
 import llvm.Instr.LoadInst;
 import llvm.Instr.RetTerm;
 import llvm.Instr.StoreInstr;
+import llvm.Instr.ZExtInst;
+import llvm.Type.IntType;
 import llvm.Type.Type;
 import llvm.Type.TypeC;
 import llvm.TypeValue;
@@ -26,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import static java.lang.System.exit;
+import static java.lang.System.in;
 
 public class ArmGenerator {
     private ArrayList<Function> aflist;
@@ -124,18 +128,10 @@ public class ArmGenerator {
     private void addInstr(Instr instr) {
         String iname = instr.getInstrname();
         switch (iname) {
-//            case "note":
-//            case "label":
-//                addNotes(instr);
-//            暂未设计note
-//                break;
-
             case "store":
                 addStore(instr);
                 break;
-            case "icmp":
-                addIcmp(instr);
-                break;
+
             case "push":
                 addPush(instr);
                 break;
@@ -157,7 +153,6 @@ public class ArmGenerator {
                 break;
             case "condbr":
                 addCondBr(instr);
-//                addJump(code);
                 break;
             case "ret":          //函数内return返回值
                 addReturn(instr);
@@ -165,6 +160,25 @@ public class ArmGenerator {
             default:
                 break;
         }
+    }
+
+    private void addZext(Instr instr, Ident dest) {
+        Type t1 = ((ZExtInst) instr).getT1();
+        Type t2 = ((ZExtInst) instr).getT2();
+        Value v = ((ZExtInst) instr).getV();
+
+        String destreg = register.applyRegister(dest);
+
+        if (v.isIdent()) {
+            Ident i = v.getIdent();
+            String reg = searchRegName(i);
+            add("mov " + destreg + ", " + reg);
+
+        } else {
+            //todo 应该不可能是digit
+        }
+
+//        register.freeTmp(reg);
     }
 
     private void addAssign(Instr instr) {
@@ -178,6 +192,12 @@ public class ArmGenerator {
                 break;
             case "binary":
                 addBinary(valueinstr, dest);
+                break;
+            case "icmp":
+                addIcmp(valueinstr, dest);
+                break;
+            case "zext":
+                addZext(valueinstr, dest);
                 break;
             default:
                 break;
@@ -327,7 +347,18 @@ public class ArmGenerator {
         }
     }
 
+    // br i1 %7, label %8, label %27
     private void addCondBr(Instr instr) {
+        IntType it = ((CondBrTerm) instr).getIt();
+        Value v = ((CondBrTerm) instr).getV();
+        Ident i1 = ((CondBrTerm) instr).getI1();
+        Ident i2 = ((CondBrTerm) instr).getI2();
+
+        Ident i = v.getIdent();
+        String reg = searchRegName(i);
+        add("cmp " + reg + ", #1");
+        add("beq " + i1.getId());
+        add("bne " + i2.getId());
 
     }
 
@@ -432,208 +463,40 @@ public class ArmGenerator {
     }
 
     // icmp xx
-    private void addIcmp(Instr instr) {
-
+    private void addIcmp(Instr instr, Ident dest) {
         // neq, ne等类型
         String ipred = ((IcmpInst) instr).getIpred();
         Type t = ((IcmpInst) instr).getT();
         Value v1 = ((IcmpInst) instr).getV1();
         Value v2 = ((IcmpInst) instr).getV2();
 
+        String destreg = register.applyRegister(dest);
 
-        // 其实无用
-        String cmpinstr = "";  //创建ircode时instr存进了operator
+        String reg1, reg2;
+        if (v1.isIdent()) {
+            Ident i1 = v1.getIdent();
+            reg1 = searchRegName(i1);
 
-        Variable oper1 = new Variable("", "");
-        Variable oper2 = new Variable("", "");
-
-
-        String type1 = oper1.getType();
-        String type2 = oper2.getType();
-
-//        Variable dest = code.getDest();
-
-        Variable dest = new Variable("", "");
-        String destreg = searchRegName(dest);
-
-        if (type1.equals("var") && type2.equals("var")) {
-            String op1reg = "null_reg!!";
-            String op2reg = "null_reg!!";
-            boolean op1registmp = false;
-            boolean op2registmp = false;
-
-            int tmpregforop1 = 0;
-            int tmpregforop2 = 0;
-
-            //todo 判定有隐患
-            if (oper1.isKindofsymbol()) {
-                Symbol oper1symbol = oper1.getSymbol();
-                if (innerfunc && !oper1symbol.isGlobal()) {    //函数内+symbol需要lw
-                    tmpregforop1 = register.applyTmpRegister();
-                    op1reg = register.getRegisterNameFromNo(tmpregforop1);
-                    op1registmp = true;
-
-                    loadWordOfInfuncVarFromSpToReg(oper1, op1reg);       //包装从函数体sp读取到reg过程
-
-                    //register.freeTmpRegister(tmpregforop1);
-                    // todo 有隐患，但理论上可以此时释放【答】不行，可能与oper2冲突。md，先不还了
-
-                } else if (oper1symbol.isGlobal() && oper1symbol.getType() != Symbol.TYPE.F) {  //还要判断不是func返回值
-                    String globalvarname = oper1symbol.getName();
-                    op1reg = searchRegName(oper1);
-                    add("lw $" + op1reg + ", Global_" + globalvarname);
-
-                } else {
-                    op1reg = searchRegName(oper1);
-                    loadWordOfLocalMainfuncVarSymbolFromSpToReg(op1reg, oper1symbol);
-                }
-            } else {
-                op1reg = searchRegName(oper1);
-            }
-
-            //todo 判定有隐患
-            if (oper2.isKindofsymbol()) {
-                Symbol oper2symbol = oper2.getSymbol();
-                if (innerfunc && !oper2symbol.isGlobal()) {    //函数内+symbol需要lw
-                    tmpregforop2 = register.applyTmpRegister();
-                    op2reg = register.getRegisterNameFromNo(tmpregforop2);
-                    op2registmp = true;
-
-                    loadWordOfInfuncVarFromSpToReg(oper2, op2reg);       //包装从函数体sp读取到reg过程
-
-                } else if (oper2symbol.isGlobal() && oper2symbol.getType() != Symbol.TYPE.F) {  //还要判断不是func返回值
-                    String globalvarname = oper2symbol.getName();
-                    op2reg = searchRegName(oper2);
-                    add("lw $" + op2reg + ", Global_" + globalvarname);
-
-                } else {
-                    op2reg = searchRegName(oper2);
-                    loadWordOfLocalMainfuncVarSymbolFromSpToReg(op2reg, oper2symbol);
-                }
-            } else {
-                op2reg = searchRegName(oper2);
-            }
-
-            add(cmpinstr + " $" + destreg + ", $" + op1reg + ", $" + op2reg);
-
-            if (op1registmp) {
-                register.freeTmpRegister(tmpregforop1);
-            } else {
-                register.freeRegister(oper1);     //理论上需要判定活跃性，或是否为tmp
-            }
-
-            if (op2registmp) {
-                register.freeTmpRegister(tmpregforop2);
-            } else {
-                register.freeRegister(oper2);     //理论上需要判定活跃性，或是否为tmp
-            }
-
-        } else if ((type1.equals("var") && type2.equals("num")) || (type1.equals("num") && type2.equals("var"))) {
-            boolean reverse = false;
-            if (type1.equals("num") && type2.equals("var")) {
-                Variable opertmp = oper1;
-                oper1 = oper2;
-                oper2 = opertmp;
-                reverse = true;
-            }
-            int op2num = oper2.getNum();
-
-            String op1reg = "null_reg!!";
-            boolean op1registmp = false;
-            int tmpregforop1 = 0;
-
-            //todo 判定有隐患
-            if (oper1.isKindofsymbol()) {
-                Symbol oper1symbol = oper1.getSymbol();
-                if (innerfunc && !oper1symbol.isGlobal()) {    //函数内+symbol需要lw
-                    tmpregforop1 = register.applyTmpRegister();
-                    op1reg = register.getRegisterNameFromNo(tmpregforop1);
-                    op1registmp = true;
-
-                    loadWordOfInfuncVarFromSpToReg(oper1, op1reg);       //包装从函数体sp读取到reg过程
-
-                    //register.freeTmpRegister(tmpregforop1);
-                    // todo 有隐患，但理论上可以此时释放【答】不行，可能与oper2冲突。md，先不还了
-
-                } else if (oper1symbol.isGlobal() && oper1symbol.getType() != Symbol.TYPE.F) {  //还要判断不是func返回值
-                    String globalvarname = oper1symbol.getName();
-                    op1reg = searchRegName(oper1);
-                    add("lw $" + op1reg + ", Global_" + globalvarname);
-
-                } else {
-                    op1reg = searchRegName(oper1);
-                    loadWordOfLocalMainfuncVarSymbolFromSpToReg(op1reg, oper1symbol);
-                }
-            } else {
-                op1reg = searchRegName(oper1);
-            }
-
-            if (reverse) {
-                cmpinstr = reverseCompareInstr(cmpinstr);
-            }
-
-            int tmpregforop2 = register.applyTmpRegister();
-            String op2reg = register.getRegisterNameFromNo(tmpregforop2);
-
-            add("li $" + op2reg + ", " + op2num);
-            add(cmpinstr + " $" + destreg + ", $" + op1reg + ", $" + op2reg);
-
-            if (op1registmp) {
-                register.freeTmpRegister(tmpregforop1);
-            } else {
-                register.freeRegister(oper1);     //理论上需要判定活跃性，或是否为tmp
-            }
-
-            register.freeTmpRegister(tmpregforop2);
-
-        } else {    //两个均为数字
-            int num1 = oper1.getNum();
-            int num2 = oper2.getNum();
-
-            boolean reljudge = false;   //判定RelExp是否成立
-            switch (cmpinstr) {
-                case "sge":
-                    if (num1 >= num2) {
-                        reljudge = true;
-                    }
-                    break;
-                case "sgt":
-                    if (num1 > num2) {
-                        reljudge = true;
-                    }
-                    break;
-                case "sle":
-                    if (num1 <= num2) {
-                        reljudge = true;
-                    }
-                    break;
-                case "slt":
-                    if (num1 < num2) {
-                        reljudge = true;
-                    }
-                    break;
-                case "seq":
-                    if (num1 == num2) {
-                        reljudge = true;
-                    }
-                    break;
-                case "sne": //暂无用
-                    if (num1 != num2) {
-                        reljudge = true;
-                    }
-                    break;
-                default:
-                    break;
-            }
-
-            if (reljudge) {
-                add("# RelExp judge always true.");
-                add("li $" + destreg + ", 1");
-            } else {
-                add("# RelExp judge always false.");
-                add("li $" + destreg + ", 0");
-            }
+        } else {
+            reg1 = "#" + v1.getVal();
         }
+
+        if (v2.isIdent()) {
+            Ident i2 = v2.getIdent();
+            reg2 = searchRegName(i2);
+
+        } else {
+            reg2 = "#" + v2.getVal();
+        }
+
+        String movestr = ((IcmpInst) instr).predToBr();
+        String oppomovestr = ((IcmpInst) instr).predToOppoBr();
+        add("cmp " + reg1 + ", " + reg2);
+        add("mov" + movestr + " " + destreg + ", #1");
+        add("mov" + oppomovestr + " " + destreg + ", #0");
+
+        //见：https://stackoverflow.com/questions/54237061/when-comparing-numbers-in-arm-assembly-is-there-a-correct-way-to-store-the-value
+        //参考2：http://cration.rcstech.org/embedded/2014/03/02/arm-conditional-execution/
     }
 
     private void addGetint(Instr instr) {
@@ -734,7 +597,8 @@ public class ArmGenerator {
             add("mov r0, #" + num);
             //todo
         }
-        add("bx lr");
+//        add("bx lr");
+        add("mov pc, lr");
     }
 
     private void addAssignRet(Instr instr) {
