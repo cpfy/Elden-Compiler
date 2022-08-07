@@ -11,6 +11,9 @@ public class Ident {
     private String name;
     private int id;
 
+    // 初始化为0
+    private boolean zeroinit = false;
+
     // Reg用，分配寄存器编号
     // 没用，不是同一个对象。在register static里面记
 //    private int no = -1;
@@ -74,6 +77,10 @@ public class Ident {
 
     public void setGlobal(boolean global) {
         this.global = global;
+    }
+
+    public void setZeroinit(boolean zeroinit) {
+        this.zeroinit = zeroinit;
     }
 
     @Override

@@ -12,4 +12,9 @@ public class PointerType extends Type {
     public String toString() {
         return t.toString() + "*";
     }
+
+    @Override
+    public int getSpace() {
+        return 0;
+    }
 }

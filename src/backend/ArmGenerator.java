@@ -273,8 +273,17 @@ public class ArmGenerator {
 
     private void addGlobalDef(Instr i) {
         Ident gi = ((GlobalDefInst) i).getGi();
+        Type t = ((GlobalDefInst) i).getT();
         Value value = ((GlobalDefInst) i).getV();
-        add(gi.getName() + ": .word " + value.toString());
+
+        if (t.getTypec() == TypeC.I) {
+            add(gi.getName() + ": .word " + value.toString());
+
+        } else if (t.getTypec() == TypeC.A) {
+            add(gi.getName() + ": .skip " + t.getSpace());
+        }
+        //todo other format
+
     }
 
     private void addFuncDef(Function f) {

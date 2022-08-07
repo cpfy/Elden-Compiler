@@ -14,12 +14,24 @@ import java.util.ArrayList;
 public class Compiler {
     public static void main(String[] args) {
         boolean llvmtest = true;
-//        boolean armtest = true;
+        boolean armtest = true;
 //        boolean llvmtest = false;
-        boolean armtest = false;
+//        boolean armtest = false;
         ArrayList<Function> allb = new ArrayList<>();
 
         try {
+            //要测的程序或方法
+            long startTime = System.currentTimeMillis(); //获取结束时间
+
+            PrintStream printStream = new PrintStream("txt/output.txt");
+            Lexer lexer = new Lexer("txt/testcase.sy");
+
+            lexer.output1(printStream);
+            Parser parser = new Parser(lexer.getRawWords());
+
+            long endTime = System.currentTimeMillis(); //获取结束时间
+            System.out.println("程序运行时间： " + (endTime - startTime) + "ms");
+
             if (llvmtest) {
                 IRScanner irs = new IRScanner();
 
@@ -27,18 +39,6 @@ public class Compiler {
                     ArrayList<Token> i = irs.scanfile("txt/llvmir.ll");
                     IRParser ip = new IRParser(i);
                     allb = ip.parseFunc(0);
-
-//                    System.out.println(allb.size());
-//                    for (Function function: allb) {
-//                        System.out.println("Func:\t" + function.getFuncheader().getFname());
-//                        for (Block block: function.getBlocklist()) {
-//                            System.out.println("Block:\t" + block.getLabel());
-//                            for (Instr instr: block.getInblocklist()) {
-//                                System.out.println(instr.toString());
-//                            }
-//                        }
-//                    }
-//                    System.out.println("LLVM End.");
 
                     //todo 新增print函数，代替原来输入方法
                     ip.printllvmOutputs();
@@ -57,20 +57,8 @@ public class Compiler {
                     e.printStackTrace();
                 }
 
-            } else {
-
-                //要测的程序或方法
-                long startTime = System.currentTimeMillis(); //获取结束时间
-
-                PrintStream printStream = new PrintStream("txt/output.txt");
-                Lexer lexer = new Lexer("txt/testcase.sy");
-
-                lexer.output1(printStream);
-                Parser parser = new Parser(lexer.getRawWords());
-
-                long endTime = System.currentTimeMillis(); //获取结束时间
-                System.out.println("程序运行时间： " + (endTime - startTime) + "ms");
             }
+
 
         } catch (FileNotFoundException e) {
             e.printStackTrace();

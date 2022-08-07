@@ -16,6 +16,7 @@ import llvm.Instr.RetTerm;
 import llvm.Instr.StoreInstr;
 import llvm.Instr.ZExtInst;
 import llvm.Type.ArrayType;
+import llvm.Type.FloatType;
 import llvm.Type.IntType;
 import llvm.Type.PointerType;
 import llvm.Type.Type;
@@ -753,7 +754,7 @@ public class IRParser {
         match("ret");
         if (symIs("void")) {
             getsym();
-            Instr i = new RetTerm("ret", new Type(TypeC.V));
+            Instr i = new RetTerm("ret", new VoidType(TypeC.V));
             return i;
 
         } else {
@@ -800,7 +801,7 @@ public class IRParser {
                 return IntType();
             case "float":
                 getsym();
-                return new Type(TypeC.F);
+                return new FloatType(TypeC.F);
             default:
                 error();
                 return null;
@@ -939,6 +940,10 @@ public class IRParser {
         String value = sym.getTokenValue();
         if (symIs("zeroinitializer")) {
             match("zeroinitializer");   //	| ZeroInitializerConst
+            Ident i = new Ident(value);
+            i.setZeroinit(true);
+            // 暂时没用到
+            return new ZeroInitializerConst();
         }
         if (Character.isDigit(value.charAt(0))) {
             getsym();
@@ -1180,7 +1185,7 @@ public class IRParser {
 
     //创建container函数块
     private Function createFunction(String fname) {
-        FuncHeader fh = new FuncHeader(fname, new Type(TypeC.V), new ArrayList<>());
+        FuncHeader fh = new FuncHeader(fname, new VoidType(TypeC.V), new ArrayList<>());
 
         Function nf = new Function(fh);
         allfunctionlist.add(nf);
