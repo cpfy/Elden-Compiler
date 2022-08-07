@@ -221,9 +221,18 @@ public class ExpOp extends Exp {
 
     @Override
     public void calculate() {
-        left.calculate();
-        right.calculate();
         if (!left.isCanCal() || !right.isCanCal()) {
+            setCanCal(false);
+            return;
+        }
+        left.calculate();
+
+        if (!left.isCanCal()) {
+            setCanCal(false);
+            return;
+        }
+        right.calculate();
+        if (!right.isCanCal()) {
             setCanCal(false);
             return;
         }

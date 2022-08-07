@@ -9,9 +9,7 @@ public abstract class Node {
 
     static String getFloatString(float in) {
         String s = Integer.toHexString(Float.floatToIntBits(in));
-        Long l = Long.parseLong(s, 16);
-        Float f = Float.intBitsToFloat(l.intValue());
-        return String.valueOf(f);
+        return s;
     }
 
     static int labels = 0;
