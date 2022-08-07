@@ -31,19 +31,19 @@ public class ExpOp extends Exp {
                 temp = String.valueOf(getValue());
             }
             else {
-                temp = String.valueOf(getValueF());
+                temp = getFloatString(getValueF());
             }
             return getCodes();
         }
 
         String l = left.getTemp();
         String r = right.getTemp();
-        if (left.getType().equals("i32") && getType().equals("float")) {
+        if (left.getType().equals("i32") && right.getType().equals("float")) {
             String newTmp = newTemp();
             addCode(newTmp + " = sitofp i32 " + l + " to float\n");
             l = newTmp;
         }
-        if (right.getType().equals("i32") && getType().equals("float")) {
+        if (right.getType().equals("i32") && left.getType().equals("float")) {
             String newTmp = newTemp();
             addCode(newTmp + " = sitofp i32 " + r + " to float\n");
             r = newTmp;
@@ -112,91 +112,98 @@ public class ExpOp extends Exp {
         }
 
         else if (op == WordType.NEQ) {                    // !=
-            if (getType().equals("i32")) {
+            if (!left.getType().equals("float") && !right.getType().equals("float")) {
                 opString = "icmp ne";
+                addCode(this.temp + " = " + opString + " " + "i32" + " " + l + ", " + r + "\n");
             }
-            else if (getType().equals("float")) {
+            else if (true) {
                 opString = "fcmp une";
+                addCode(this.temp + " = " + opString + " " + "float" + " " + l + ", " + r + "\n");
             }
             else {
                 System.out.println("\nError in ExpOP!!!\n");
             }
-            addCode(this.temp + " = " + opString + " " + getType() + " " + l + ", " + r + "\n");
+
             String t = this.temp;
             this.temp = newTemp();
             addCode(this.temp + " = zext i1 " + t + " to i32\n");
         }
         else if (op == WordType.EQL || op == WordType.NOT) {                    // ==
-            if (getType().equals("i32")) {
+            if (!left.getType().equals("float") && !right.getType().equals("float")) {
                 opString = "icmp eq";
+                addCode(this.temp + " = " + opString + " " + "i32" + " " + l + ", " + r + "\n");
             }
-            else if (getType().equals("float")) {
+            else if (true) {
                 opString = "fcmp oeq";
+                addCode(this.temp + " = " + opString + " " + "float" + " " + l + ", " + r + "\n");
             }
             else {
                 System.out.println("\nError in ExpOP!!!\n");
             }
-            addCode(this.temp + " = " + opString + " " + getType() + " " + l + ", " + r + "\n");
             String t = this.temp;
             this.temp = newTemp();
             addCode(this.temp + " = zext i1 " + t + " to i32\n");
         }
         else if (op == WordType.LEQ) {                    // <=
-            if (getType().equals("i32")) {
+            if (!left.getType().equals("float") && !right.getType().equals("float")) {
                 opString = "icmp sle";
+                addCode(this.temp + " = " + opString + " " + "i32" + " " + l + ", " + r + "\n");
             }
-            else if (getType().equals("float")) {
+            else if (true) {
                 opString = "fcmp ole";
+                addCode(this.temp + " = " + opString + " " + "float" + " " + l + ", " + r + "\n");
             }
             else {
                 System.out.println("\nError in ExpOP!!!\n");
             }
-            addCode(this.temp + " = " + opString + " " + getType() + " " + l + ", " + r + "\n");
             String t = this.temp;
             this.temp = newTemp();
             addCode(this.temp + " = zext i1 " + t + " to i32\n");
         }
         else if (op == WordType.LSS) {                    // <
-            if (getType().equals("i32")) {
+            if (!left.getType().equals("float") && !right.getType().equals("float")) {
                 opString = "icmp slt";
+                addCode(this.temp + " = " + opString + " " + "i32" + " " + l + ", " + r + "\n");
             }
-            else if (getType().equals("float")) {
+            else if (true) {
                 opString = "fcmp olt";
+                addCode(this.temp + " = " + opString + " " + "float" + " " + l + ", " + r + "\n");
             }
             else {
                 System.out.println("\nError in ExpOP!!!\n");
             }
-            addCode(this.temp + " = " + opString + " " + getType() + " " + l + ", " + r + "\n");
             String t = this.temp;
             this.temp = newTemp();
             addCode(this.temp + " = zext i1 " + t + " to i32\n");
         }
         else if (op == WordType.GEQ) {                    // >=
-            if (getType().equals("i32")) {
+            if (!left.getType().equals("float") && !right.getType().equals("float")) {
                 opString = "icmp sge";
+                addCode(this.temp + " = " + opString + " " + "i32" + " " + l + ", " + r + "\n");
             }
-            else if (getType().equals("float")) {
+            else if (true) {
                 opString = "fcmp oge";
+                addCode(this.temp + " = " + opString + " " + "float" + " " + l + ", " + r + "\n");
             }
             else {
                 System.out.println("\nError in ExpOP!!!\n");
             }
-            addCode(this.temp + " = " + opString + " " + getType() + " " + l + ", " + r + "\n");
             String t = this.temp;
             this.temp = newTemp();
             addCode(this.temp + " = zext i1 " + t + " to i32\n");
         }
         else if (op == WordType.GRE) {                    // >
-            if (getType().equals("i32")) {
+            if (!left.getType().equals("float") && !right.getType().equals("float")) {
                 opString = "icmp sgt";
+                addCode(this.temp + " = " + opString + " " + "i32" + " " + l + ", " + r + "\n");
             }
-            else if (getType().equals("float")) {
+            else if (true) {
                 opString = "fcmp ogt";
+                addCode(this.temp + " = " + opString + " " + "float" + " " + l + ", " + r + "\n");
             }
             else {
                 System.out.println("\nError in ExpOP!!!\n");
             }
-            addCode(this.temp + " = " + opString + " " + getType() + " " + l + ", " + r + "\n");
             String t = this.temp;
             this.temp = newTemp();
             addCode(this.temp + " = zext i1 " + t + " to i32\n");

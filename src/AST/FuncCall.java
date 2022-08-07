@@ -77,7 +77,7 @@ public class FuncCall extends ExpUnary {
 
     @Override
     public void calculate() {
-
+        setCanCal(false);
     }
 
     @Override

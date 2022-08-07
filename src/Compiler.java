@@ -12,68 +12,29 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 
 public class Compiler {
-    public static void main(String[] args) {
-        boolean llvmtest = true;
-//        boolean armtest = true;
-//        boolean llvmtest = false;
-        boolean armtest = false;
-        ArrayList<Function> allb = new ArrayList<>();
-
-        try {
-            if (llvmtest) {
-                IRScanner irs = new IRScanner();
-
-                try {
-                    ArrayList<Token> i = irs.scanfile("txt/llvmir.ll");
-                    IRParser ip = new IRParser(i);
-                    allb = ip.parseFunc(0);
-
-//                    System.out.println(allb.size());
-//                    for (Function function: allb) {
-//                        System.out.println("Func:\t" + function.getFuncheader().getFname());
-//                        for (Block block: function.getBlocklist()) {
-//                            System.out.println("Block:\t" + block.getLabel());
-//                            for (Instr instr: block.getInblocklist()) {
-//                                System.out.println(instr.toString());
-//                            }
-//                        }
-//                    }
-//                    System.out.println("LLVM End.");
-
-                    //todo 新增print函数，代替原来输入方法
-                    ip.printllvmOutputs();
-
-                    if (armtest) {
-                        if (allb.size() == 0) {
-                            System.out.println("Err null allb.");
-
-                        } else {
-                            ArmGenerator ag = new ArmGenerator(allb);
-                            ag.convertarm();
-                        }
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            } else {
-
-                //要测的程序或方法
-                long startTime = System.currentTimeMillis(); //获取结束时间
-
-                PrintStream printStream = new PrintStream("txt/output.txt");
-                Lexer lexer = new Lexer("txt/testcase.sy");
-
-                lexer.output1(printStream);
-                Parser parser = new Parser(lexer.getRawWords());
-
-                long endTime = System.currentTimeMillis(); //获取结束时间
-                System.out.println("程序运行时间： " + (endTime - startTime) + "ms");
-            }
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+    public static void main(String[] args) throws FileNotFoundException {
+        String testFile = args[2];
+        String outputFile = args[3];
+        boolean optimize = false;
+        if (args.length == 5) {
+            optimize = true;
         }
+
+        frontend(testFile);
+        midend(optimize);
+        backend(outputFile);
+    }
+
+    private static void frontend(String inputName) throws FileNotFoundException {
+        Lexer lexer = new Lexer(inputName);
+        Parser parser = new Parser(lexer.getRawWords());
+    }
+
+    private static void midend(boolean optimize) {
+        //todo 添加中端相关处理，若optimize为true，则启动优化
+    }
+
+    private static void backend(String outputFile) {
+        //todo 添加相关后端相关处理
     }
 }

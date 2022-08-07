@@ -119,7 +119,7 @@ public class ArmGenerator {
     }
 
     private void addGlobalDef(Instr i) {
-        add("")
+        add("");
     }
 
     private void addFuncDef(Function f) {

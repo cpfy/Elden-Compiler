@@ -25,13 +25,13 @@ public class VarDef extends Def {
                     if (getDeclType().equals("i32")) {
                         addCode(tempName + " = dso_local global i32 " + initVal.getInit(null, 0).get(0).getValue() + "\n");
                     } else {
-                        addCode(tempName + " = dso_local global float " + initVal.getInit(null, 0).get(0).getValueF() + "\n");
+                        addCode(tempName + " = dso_local global float " + getFloatString(initVal.getInit(null, 0).get(0).getValueF()) + "\n");
                     }
                 } else {
                     if (getDeclType().equals("i32")) {
                         addCode(tempName + " = dso_local global i32 0\n");
                     } else {
-                        addCode(tempName + " = dso_local global float 0.000000e+00\n");
+                        addCode(tempName + " = dso_local global float 0x00000000\n");
                     }
                 }
             } else {

@@ -59,9 +59,6 @@ public class Lexer {
     }
 
     private String toFloat(String s) {
-        //todo 浮点数常数
-        String ans = null;
-
         return s;
     }
     public ArrayList<RawWord> getRawWords() {

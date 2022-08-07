@@ -17,7 +17,7 @@ public class ConstFloat extends MyNumber {
 
     @Override
     public String getTemp() {
-        return String.valueOf(constFloat);
+        return getFloatString(constFloat);
     }
 
     @Override

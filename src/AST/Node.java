@@ -6,6 +6,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public abstract class Node {
+
+    static String getFloatString(float in) {
+        String s = Integer.toHexString(Float.floatToIntBits(in));
+        Long l = Long.parseLong(s, 16);
+        Float f = Float.intBitsToFloat(l.intValue());
+        return "0.0";
+    }
+
     static int labels = 0;
 
     static int reloadNum = 0;

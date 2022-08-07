@@ -59,9 +59,16 @@ public class LAndExp extends Node {
     public void addMidCodePre() {
         for (Exp exp: exps) {
             exp.addCodePre();
+
+            String tt = exp.getTemp();
+            if (exp.getType().equals("float")) {
+                tt = newTemp();
+                exp.getCodes().add(tt + " = fptosi float " + exp.getTemp() + " to i32\n");
+            }
             String t = newTemp();
             temps.add(t);
-            exp.getCodes().add(t + " = icmp ne i32 " + exp.getTemp() + ", 0\n");
+
+            exp.getCodes().add(t + " = icmp ne i32 " + tt + ", 0\n");
             lables.add(newLable());
 //            exp.generate();
         }

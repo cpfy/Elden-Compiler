@@ -35,7 +35,7 @@ public class LVal extends ExpPrimary {
                     temp = String.valueOf(getValue());
                 }
                 else {
-                    temp = String.valueOf(getValueF());
+                    temp = getFloatString(getValueF());
                 }
             }
             return getCodes();
