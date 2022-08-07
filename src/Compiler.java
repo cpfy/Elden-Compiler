@@ -24,7 +24,7 @@ public class Compiler {
             long startTime = System.currentTimeMillis(); //获取结束时间
 
             PrintStream printStream = new PrintStream("txt/output.txt");
-            Lexer lexer = new Lexer("txt/testcase.sy");
+            Lexer lexer = new Lexer("testcase.sy");
 
             lexer.output1(printStream);
             Parser parser = new Parser(lexer.getRawWords());
