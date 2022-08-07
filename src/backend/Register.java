@@ -10,7 +10,7 @@ public class Register {
     private HashMap<String, Integer> regNameMap;
 
     private ArrayList<Integer> freeRegList;
-    private HashMap<Integer, Ident> identAllocMap;
+    private HashMap<String, Integer> identAllocMap;
     private ArrayList<Integer> activeRegList;   //当前活跃的变量占用的、已分配出的reg
     private ArrayList<Ident> identRegUsageList;
 
@@ -66,10 +66,8 @@ public class Register {
     }
 
     private void initFreeRegList() {
-        for (int i = 8; i < 32; i++) {
-            if (i != 29 && i != 31) {
-                freeRegList.add(i);
-            }
+        for (int i = 0; i < 13; i++) {
+            freeRegList.add(i);
         }
     }
 
@@ -83,11 +81,11 @@ public class Register {
         return regNameMap.get(name);
     }
 
-    public String applyRegister(Variable v){
+    public String applyRegister(Variable v) {
         return "";
     }
 
-    public String applyRegister(Symbol v){
+    public String applyRegister(Symbol v) {
         return "";
     }
 
@@ -98,9 +96,19 @@ public class Register {
         if (!freeRegList.isEmpty()) {
             no = freeRegList.get(0);
 
-            identAllocMap.put(no, i);
+            // 映射名称
+            String mapname = i.getMapname();
+
+//            if(i.isGlobal()){
+//                mapname = i.getName();
+//            }else{
+//                mapname = String.valueOf(i.getId());
+//            }
+
+            identAllocMap.put(mapname, no);
             freeRegList.remove(0);
-//            i.setCurReg(no);
+
+//            System.out.println("Set " + i.toString() + "(" + i.getMapname() + ")" + " regno " + no);
             addActiveListNoRep(no);     //无重复加入activeregList 活跃变量表
 
         } else {    //todo 无空寄存器
@@ -108,12 +116,13 @@ public class Register {
             no = 0;
         }
 
-        System.out.println("Alloc Reg $" + regMap.get(no) + " to Ident " + i.toString());
+        System.out.println("Info: Alloc Reg $" + regMap.get(no) + " to Ident " + i.toString());
 
         return regMap.get(no);
     }
 
     //申请临时寄存器
+    // 废弃
     public int applyTmpRegister() {
         int regno;
         if (!freeRegList.isEmpty()) {
@@ -130,6 +139,7 @@ public class Register {
         return regno;
     }
 
+    // // 废弃
     public void freeTmpRegister(int regno) {
         if (regno > 15) {
             System.err.println("Register freeTmpRegister() : Error free tmp Reg No!! regno = " + regno);
@@ -137,6 +147,33 @@ public class Register {
             removeActiveRegList(regno);     //删除变量in activeregList 活跃变量表
             freeRegList.add(regno);
             System.out.println("Free Reg $" + regMap.get(regno) + " from Tmp");
+        }//todo 其它的free寄存器都得检查是否重复！
+    }
+
+    public String applyTmp() {
+        int regno;
+        if (!freeRegList.isEmpty()) {
+            regno = freeRegList.get(0);
+            freeRegList.remove(0);
+            addActiveListNoRep(regno);     //无重复加入activeregList 活跃变量表
+
+        } else {    //todo 无空寄存器
+            System.err.println("No free Reg! Alloc $r0.");
+            regno = 0;
+        }
+
+        System.out.println("Alloc Reg $" + regMap.get(regno) + " to Tmp");
+        return this.regMap.get(regno);
+    }
+
+    public void freeTmp(String reg) {
+        int no = this.regNameMap.get(reg);
+        if (no > 15) {
+            System.err.println("Register freeTmpRegister() : Error free tmp Reg No!! regno = " + no);
+        } else if (!freeRegList.contains(no)) {
+            removeActiveRegList(no);     //删除变量in activeregList 活跃变量表
+            freeRegList.add(no);
+            System.out.println("Free Reg $" + regMap.get(no) + " from Tmp");
         }//todo 其它的free寄存器都得检查是否重复！
     }
 
@@ -200,15 +237,20 @@ public class Register {
     }
 
 
-
-
-
-
-
     // 此处新加BiSh用
-//    public String searchIdentRegName(Ident i){
-//        return;
-//    }
+    public int searchIdentRegNo(Ident i) {
+        String mapname = i.getMapname();
+        if (identAllocMap.containsKey(mapname)) {
+            return identAllocMap.get(mapname);
+        }
+        return -1;
+        // 表示error
+    }
+
+    // name是否已经分配reg
+    public boolean allocated(String name) {
+        return identAllocMap.containsKey(name);
+    }
 
 
 }

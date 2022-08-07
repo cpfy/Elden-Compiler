@@ -25,6 +25,30 @@ public class BinaryInst extends Instr {
         return op + " " + t.toString() + " " + v1.toString() + ", " + v2.toString();
     }
 
+    public String getOp() {
+        return op;
+    }
+
+    public Type getT() {
+        return t;
+    }
+
+    public Value getV1() {
+        return v1;
+    }
+
+    public Value getV2() {
+        return v2;
+    }
+
+    public void setV1(Value v1) {
+        this.v1 = v1;
+    }
+
+    public void setV2(Value v2) {
+        this.v2 = v2;
+    }
+
     private void ValueInstruction() {
         String sym = "";
         switch (sym) {
@@ -79,22 +103,6 @@ public class BinaryInst extends Instr {
     }
 
     private void AddInst() {
-    }
-
-    public Value getV1() {
-        return v1;
-    }
-
-    public Value getV2() {
-        return v2;
-    }
-
-    public void setV1(Value v1) {
-        this.v1 = v1;
-    }
-
-    public void setV2(Value v2) {
-        this.v2 = v2;
     }
 
     @Override
@@ -169,9 +177,5 @@ public class BinaryInst extends Instr {
     public ArrayList<String> getRoots() {
         ArrayList<String> ans = new ArrayList<>();
         return ans;
-    }
-
-    public String getOp() {
-        return op;
     }
 }

@@ -24,6 +24,14 @@ public class StoreInstr extends Instr {
         return "store " + t1.toString() + " " + v1.toString() + ", " + t2.toString() + " " + v2.toString();
     }
 
+    public Type getT1() {
+        return t1;
+    }
+
+    public Type getT2() {
+        return t2;
+    }
+
     public Value getV1() {
         return this.v1;
     }

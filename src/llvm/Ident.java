@@ -12,7 +12,8 @@ public class Ident {
     private int id;
 
     // Reg用，分配寄存器编号
-    private int no = -1;
+    // 没用，不是同一个对象。在register static里面记
+//    private int no = -1;
 
     public Ident(int id) {
         this.isIdent = false;
@@ -80,12 +81,11 @@ public class Ident {
         return this.toString().equals(obj.toString());
     }
 
-
-    public int getNo() {
-        return no;
-    }
-
-    public void setNo(int no) {
-        this.no = no;
+    // Reg分配时的key
+    public String getMapname() {
+        if (this.global) {
+            return this.name;
+        }
+        return String.valueOf(this.id);
     }
 }

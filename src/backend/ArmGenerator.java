@@ -5,6 +5,7 @@ import llvm.Function;
 import llvm.Ident;
 import llvm.Instr.AllocaInst;
 import llvm.Instr.AssignInstr;
+import llvm.Instr.BinaryInst;
 import llvm.Instr.BrTerm;
 import llvm.Instr.CallInst;
 import llvm.Instr.GlobalDefInst;
@@ -12,6 +13,7 @@ import llvm.Instr.IcmpInst;
 import llvm.Instr.Instr;
 import llvm.Instr.LoadInst;
 import llvm.Instr.RetTerm;
+import llvm.Instr.StoreInstr;
 import llvm.Type.Type;
 import llvm.Type.TypeC;
 import llvm.TypeValue;
@@ -31,6 +33,7 @@ public class ArmGenerator {
     private Register register;
     private HashMap<IRCode, String> printstrMap;
     private static String OUTPUT_DIR = "testcase.s";
+    private ArrayList<Instr> gbdeflist;
 
 
     private int tabcount = 0;
@@ -53,6 +56,7 @@ public class ArmGenerator {
         this.armlist = new ArrayList<>();
         this.printstrMap = new HashMap<>();
         this.register = new Register();
+        this.gbdeflist = new ArrayList<>();
     }
 
     public void convertarm() {
@@ -68,6 +72,7 @@ public class ArmGenerator {
         add(".extern putfloat");
         add(".extern putarray");
         add(".extern putfarray");
+        add("");
 
 //        collectPrintStr();
 
@@ -99,24 +104,13 @@ public class ArmGenerator {
                 addBlockLabel(b);
                 for (Instr i : b.getInblocklist()) {
 
-
-//                    if (inmain) {
-//                        addBranchStmt(i);    //todo 不包括常量、函数定义相关
-//
-//                    } else if (infuncdef) {
-//                        addFuncdefStmt(i);
-//
-//                    } else {    //表明位于 indecl
-//                        addDeclStmt(i);
-//                    }
-
                     if (inmain || infuncdef) {
                         addInstr(i);
                     } else {
                         // global ident
                         addGlobalDef(i);
+                        this.gbdeflist.add(i);
                     }
-
                 }
             }
         }
@@ -124,29 +118,6 @@ public class ArmGenerator {
         addProgramEnd();
 
         printout(1);
-    }
-
-    private void addGlobalDef(Instr i) {
-        Ident gi = ((GlobalDefInst) i).getGi();
-        Value value = ((GlobalDefInst) i).getV();
-        add(gi.getName() + ": .word " + value.toString());
-    }
-
-    private void addFuncDef(Function f) {
-        add(f.getFuncheader().getFname() + ":");
-    }
-
-    // block的标签
-    private void addBlockLabel(Block b) {
-        tabcount -= 1;
-        add(b.getLabel() + ":");
-        tabcount += 1;
-    }
-
-    private void addDeclStmt(Instr i) {
-    }
-
-    private void addFuncdefStmt(Instr i) {
     }
 
     private void addInstr(Instr instr) {
@@ -157,8 +128,9 @@ public class ArmGenerator {
 //                addNotes(instr);
 //            暂未设计note
 //                break;
-            case "load":
-                addLoad(instr);
+
+            case "store":
+                addStore(instr);
                 break;
             case "icmp":
                 addIcmp(instr);
@@ -194,15 +166,155 @@ public class ArmGenerator {
         }
     }
 
-    private void addLoad(Instr instr) {
-        Value loadvalue = ((LoadInst) instr).getV();
-        if (loadvalue.isIdent()) {
+    private void addAssign(Instr instr) {
+        Ident dest = ((AssignInstr) instr).getIdent();
+        Instr valueinstr = ((AssignInstr) instr).getValueinstr();
+        String iname = valueinstr.getInstrname();
 
+        switch (iname) {
+            case "load":
+                addLoad(valueinstr, dest);
+                break;
+            case "binary":
+                addBinary(valueinstr, dest);
+                break;
+            default:
+                break;
+        }
+    }
 
-        } else {    // digit
+    private void addBinary(Instr instr, Ident dest) {
+        String op = ((BinaryInst) instr).getOp();
 
+        switch (op) {
+            case "add":
+            case "sub":
+            case "mul":
+            case "sdiv":
+                addOp(instr, dest);
+                break;
+
+            //todo
+            case "fadd":
+            case "fsub":
+            case "fmul":
+            case "fdiv":
+//                addFop(instr,dest);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void addOp(Instr instr, Ident dest) {
+        String op = ((BinaryInst) instr).getOp();
+        Type t = ((BinaryInst) instr).getT();
+        Value v1 = ((BinaryInst) instr).getV1();
+        Value v2 = ((BinaryInst) instr).getV2();
+
+        String reg1;
+        String reg2;
+        //v1
+        if (v1.isIdent()) {
+            Ident i = v1.getIdent();
+            reg1 = searchRegName(i);
+
+        } else {
+            reg1 = register.applyTmp();
+            add("mov " + reg1 + ", #" + v1.getVal());
         }
 
+        //v2
+        if (v2.isIdent()) {
+            Ident i = v2.getIdent();
+            reg2 = searchRegName(i);
+
+        } else {
+            reg2 = register.applyTmp();
+            add("mov " + reg2 + ", #" + v2.getVal());
+        }
+
+        String destreg = register.applyRegister(dest);
+
+        add(op + " " + destreg + ", " + reg1 + ", " + reg2);
+        if (!v1.isIdent()) register.freeTmp(reg1);
+        if (!v2.isIdent()) register.freeTmp(reg2);
+
+    }
+
+    // store i32 5, i32* %1
+    private void addStore(Instr instr) {
+        Type t1 = ((StoreInstr) instr).getT1();
+        Type t2 = ((StoreInstr) instr).getT2();
+        Value v1 = ((StoreInstr) instr).getV1();
+        Value v2 = ((StoreInstr) instr).getV2();
+
+        // v2是否分配
+        Ident i2 = v2.getIdent();
+        String reg2;
+        if (checkReg(i2)) {
+            reg2 = searchRegName(i2);
+        } else {
+            reg2 = register.applyRegister(i2);
+        }
+
+        // v1存到v2里
+        if (v1.isIdent()) {
+            Ident i1 = v1.getIdent();
+            String reg1 = searchRegName(i1);
+            add("mov " + reg2 + ", " + reg1);
+
+        } else {
+            int val = v1.getVal();
+            add("mov " + reg2 + ", #" + val);
+
+        }
+    }
+
+    private void addGlobalDef(Instr i) {
+        Ident gi = ((GlobalDefInst) i).getGi();
+        Value value = ((GlobalDefInst) i).getV();
+        add(gi.getName() + ": .word " + value.toString());
+    }
+
+    private void addFuncDef(Function f) {
+        add(f.getFuncheader().getFname() + ":");
+    }
+
+    // block的标签
+    private void addBlockLabel(Block b) {
+        tabcount -= 1;
+        add(b.getLabel() + ":");
+        tabcount += 1;
+    }
+
+    private void addDeclStmt(Instr i) {
+    }
+
+    private void addFuncdefStmt(Instr i) {
+    }
+
+    // %2 = load i32, i32* %1
+    // %3 = load i32, i32* @b
+    private void addLoad(Instr instr, Ident dest) {
+        Type t1 = ((LoadInst) instr).getT1();
+        Type t2 = ((LoadInst) instr).getT2();
+        Value v = ((LoadInst) instr).getV();
+
+        // dest是否分配（必然未分配）
+        String reg = register.applyRegister(dest);
+
+        // reg存到dest里
+        if (v.isIdent()) {
+            Ident i = v.getIdent();
+            String reg_i = searchRegName(i);
+            add("mov " + reg + ", " + reg_i);
+
+        } else {
+            int val = v.getVal();
+            add("mov " + reg + ", #" + val);
+
+        }
     }
 
     private void addCondBr(Instr instr) {
@@ -615,18 +727,6 @@ public class ArmGenerator {
         add("bx lr");
     }
 
-    private void addAssign(Instr instr) {
-        Ident leftIdent = ((AssignInstr) instr).getIdent();
-        Instr valueinstr = ((AssignInstr) instr).getValueinstr();
-
-        //addBinary(valueinstr);
-        String leftreg = register.applyRegister(leftIdent);
-
-        //todo 右侧赋值给左
-
-    }
-
-
     private void addAssignRet(Instr instr) {
     }
 
@@ -644,6 +744,14 @@ public class ArmGenerator {
     private void addProgramEnd() {
         // return from main
         add("bx lr");
+
+        tabcount -= 1;
+        add("");
+        for (Instr i : this.gbdeflist) {
+            String name = ((GlobalDefInst) i).getGi().getName();
+            add("addr_of_" + name + ": .word " + name);
+        }
+
     }
 
 
@@ -666,7 +774,7 @@ public class ArmGenerator {
         FileWriter writer = new FileWriter(file);
         for (String a : armlist) {
             writer.write(a + "\n");
-            System.out.println(a);
+//            System.out.println(a);
         }
         writer.flush();
         writer.close();
@@ -737,20 +845,6 @@ public class ArmGenerator {
     //一个10进制int类型地址转Hex格式的小函数
     private String convertIntAddrToHex(int intaddr) {
         return "0x" + Integer.toHexString(intaddr);
-    }
-
-    // 右值，必定有结果
-    private String searchRegName(Ident i) {
-        String regname;
-        if (i.getNo() == -1) {
-            System.err.println("Error! Not assign Reg No.");
-            exit(0);
-            return null;
-
-        } else {
-            regname = register.getRegisterNameFromNo(i.getNo());
-            return regname;
-        }
     }
 
     // 应废弃
@@ -1097,6 +1191,42 @@ public class ArmGenerator {
         }
 
         return op0reg;
+    }
+
+
+    /**********Reg 处理**********/
+    // 右值，必定有结果
+    private String searchRegName(Ident i) {
+        String regname;
+        int no = register.searchIdentRegNo(i);
+        if (no == -1) {
+            // global则加载进来
+            if (i.isGlobal()) {
+                regname = register.applyRegister(i);
+                add("ldr " + regname + ", addr_of_" + i.getName());
+                add("ldr " + regname + ", [" + regname + "]");
+                return regname;
+            }
+
+            System.err.println("Error! Not assign Reg No.(" + i.toString() + ")");
+            exit(0);
+            return null;
+
+        } else {
+            regname = register.getRegisterNameFromNo(no);
+            return regname;
+        }
+    }
+
+    private boolean checkReg(Ident i) {
+        String name;
+        if (i.isGlobal()) {
+            name = i.getName();
+        } else {
+            name = String.valueOf(i.getId());
+        }
+        return register.allocated(name);
+
     }
 
 }
