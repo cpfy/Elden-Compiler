@@ -87,13 +87,14 @@ public class ArmGenerator {
                 for (Instr i : f.getBlocklist().get(0).getInblocklist()) {
                     addGlobalDef(i);
                 }
+                add("return: .word 0");
                 continue;
             }
 
             if (f.getFuncheader().getFname() != "GlobalContainer") {
                 infuncdef = true;
                 add(".text");
-                add(tab + "b main");
+                //add(tab + "b main");
 
                 if (f.getFuncheader().getFname().equals("main")) {
                     inmain = true;
@@ -513,7 +514,10 @@ public class ArmGenerator {
             addStandardCall(instr);
             return;
         }
-        add("bx " + callfuncname);
+
+        add("push {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}");
+        add("bl " + callfuncname);
+        add("pop {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,pc}");
     }
 
 
@@ -522,6 +526,8 @@ public class ArmGenerator {
         String callfuncname = ((CallInst) instr).getFuncname();
         ArrayList<TypeValue> args = ((CallInst) instr).getArgs();
         int argLength = args.size();
+
+        add("push {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}");
 
         switch (callfuncname) {
             //todo 补充array处理
@@ -581,6 +587,8 @@ public class ArmGenerator {
 
         //统一
         add("bl " + callfuncname);
+
+        add("pop {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,pc}");
     }
 
     private void addReturn(Instr instr) {
@@ -617,6 +625,8 @@ public class ArmGenerator {
 
     private void addProgramEnd() {
         // return from main
+        add("ldr lr, address_of_return");
+        add("ldr lr, [lr]");
         add("bx lr");
 
         tabcount -= 1;
@@ -625,6 +635,7 @@ public class ArmGenerator {
             String name = ((GlobalDefInst) i).getGi().getName();
             add("addr_of_" + name + ": .word " + name);
         }
+        add("address_of_return : .word return");
 
     }
 
