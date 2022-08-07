@@ -12,6 +12,9 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 
 public class Compiler {
+
+    private static ArrayList<Function> allb = new ArrayList<>();
+
     public static void main(String[] args) throws FileNotFoundException {
         String testFile = args[2];
         String outputFile = args[3];
@@ -32,9 +35,31 @@ public class Compiler {
 
     private static void midend(boolean optimize) {
         //todo 添加中端相关处理，若optimize为true，则启动优化
+
+        IRScanner irs = new IRScanner();
+        try {
+            ArrayList<Token> i = irs.scanfile("llvmir.ll");
+            IRParser ip = new IRParser(i);
+            allb = ip.parseFunc(0);
+
+            //增print函数，代替原来输入方法
+            ip.printllvmOutputs();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void backend(String outputFile) {
         //todo 添加相关后端相关处理
+
+        if (allb.size() == 0) {
+            System.out.println("Err null allb.");
+
+        } else {
+            ArmGenerator ag = new ArmGenerator(allb, outputFile);
+            ag.convertarm();
+        }
+
     }
 }

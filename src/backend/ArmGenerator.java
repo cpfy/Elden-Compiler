@@ -32,7 +32,7 @@ public class ArmGenerator {
     private ArrayList<String> armlist;
     private Register register;
     private HashMap<IRCode, String> printstrMap;
-    private static String OUTPUT_DIR = "testcase.s";
+    private static String OUTPUT_DIR;
     private ArrayList<Instr> gbdeflist;
 
 
@@ -51,12 +51,13 @@ public class ArmGenerator {
 
     //
 
-    public ArmGenerator(ArrayList<Function> allfunclist) {
+    public ArmGenerator(ArrayList<Function> allfunclist, String outputfile) {
         this.aflist = allfunclist;
         this.armlist = new ArrayList<>();
         this.printstrMap = new HashMap<>();
         this.register = new Register();
         this.gbdeflist = new ArrayList<>();
+        OUTPUT_DIR = outputfile;
     }
 
     public void convertarm() {
