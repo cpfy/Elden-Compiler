@@ -160,10 +160,10 @@ public class Rename {
                 case "condbr":
                     CondBrTerm ins10 = (CondBrTerm) i;
                     renameLabel(ins10.getLabel1Name(),String.valueOf(version));
-                    ins10.setL1(new Ident(version));
+                    ins10.setI1(new Ident(version));
                     version++;
                     renameLabel(ins10.getLabel1Name(),String.valueOf(version));
-                    ins10.setL2(new Ident(version));
+                    ins10.setI2(new Ident(version));
                     version++;
                     if(valueList.containsKey(ins10.getV())){
                         ins10.setV(valueList.get(ins10.getV()).get(block));
