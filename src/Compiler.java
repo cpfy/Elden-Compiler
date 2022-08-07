@@ -16,8 +16,8 @@ public class Compiler {
     private static ArrayList<Function> allb = new ArrayList<>();
 
     public static void main(String[] args) throws FileNotFoundException {
-        String testFile = args[2];
-        String outputFile = args[3];
+        String testFile = args[3];
+        String outputFile = args[2];
         boolean optimize = false;
         if (args.length == 5) {
             optimize = true;

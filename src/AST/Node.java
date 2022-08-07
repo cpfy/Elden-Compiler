@@ -11,7 +11,7 @@ public abstract class Node {
         String s = Integer.toHexString(Float.floatToIntBits(in));
         Long l = Long.parseLong(s, 16);
         Float f = Float.intBitsToFloat(l.intValue());
-        return "0.0";
+        return String.valueOf(f);
     }
 
     static int labels = 0;
