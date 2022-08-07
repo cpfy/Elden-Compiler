@@ -26,4 +26,11 @@ public class ArrayType extends Type {
     public String toString() {
         return "[" + String.valueOf(int_lit) + " x " + t.toString() + "]";
     }
+
+
+    // get space
+    public int getSpace() {
+        return int_lit * this.t.getSpace();
+    }
+
 }

@@ -13,4 +13,9 @@ public class IntType extends Type {
     public String toString() {
         return "i" + decimal;
     }
+
+    @Override
+    public int getSpace() {
+        return decimal / 8;
+    }
 }

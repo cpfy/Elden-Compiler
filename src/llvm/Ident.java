@@ -11,8 +11,12 @@ public class Ident {
     private String name;
     private int id;
 
+    // 初始化为0
+    private boolean zeroinit = false;
+
     // Reg用，分配寄存器编号
-    private int no = -1;
+    // 没用，不是同一个对象。在register static里面记
+//    private int no = -1;
 
     public Ident(int id) {
         this.isIdent = false;
@@ -75,17 +79,20 @@ public class Ident {
         this.global = global;
     }
 
+    public void setZeroinit(boolean zeroinit) {
+        this.zeroinit = zeroinit;
+    }
+
     @Override
     public boolean equals(Object obj) {
         return this.toString().equals(obj.toString());
     }
 
-
-    public int getNo() {
-        return no;
-    }
-
-    public void setNo(int no) {
-        this.no = no;
+    // Reg分配时的key
+    public String getMapname() {
+        if (this.global) {
+            return this.name;
+        }
+        return String.valueOf(this.id);
     }
 }

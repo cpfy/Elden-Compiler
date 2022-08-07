@@ -10,6 +10,8 @@ public class LoadInst extends Instr {
     private Type t2;
     private Value v;
 
+    // %2 = load i32, i32* %1
+    // %3 = load i32, i32* @b
     public LoadInst(String instrname, Type t1, Type t2, Value v) {
         super(instrname);
         this.t1 = t1;
@@ -20,6 +22,14 @@ public class LoadInst extends Instr {
     @Override
     public String toString() {
         return "load " + t1.toString() + ", " + t2.toString() + " " + v.toString();
+    }
+
+    public Type getT1() {
+        return t1;
+    }
+
+    public Type getT2() {
+        return t2;
     }
 
     public Value getV() {

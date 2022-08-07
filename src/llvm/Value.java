@@ -9,6 +9,14 @@ public class Value {
     private boolean isIdent = false;  // 是否ident
     private Ident ident;
 
+    // Zeroinitailizer
+    private boolean keys = false;
+
+    // Zeroinitailizer 用
+    public Value() {
+        this.keys = true;
+    }
+
     public Value(String str) {
         if (str.length() == 1) {
             this.hex = false;
@@ -22,17 +30,17 @@ public class Value {
         }
     }
 
+    public Value(Ident ident) {
+        this.isIdent = true;
+        this.ident = ident;
+    }
+
     @Override
     public String toString() {
         if (isIdent) {
             return ident.toString();
         }
         return String.valueOf(val);
-    }
-
-    public Value(Ident ident) {
-        this.isIdent = true;
-        this.ident = ident;
     }
 
     public boolean isHex() {

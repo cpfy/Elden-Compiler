@@ -1,18 +1,20 @@
 package llvm.Type;
 
-public class VoidType extends Type{
+public class FloatType extends Type{
 
-    public VoidType(TypeC typec){
+    public FloatType(TypeC typec){
         super(typec);
     }
 
     @Override
     public String toString() {
-        return "void";
+        return "float";
     }
 
     @Override
     public int getSpace() {
-        return 0;
+        return 4;
     }
+
+    //todo
 }
