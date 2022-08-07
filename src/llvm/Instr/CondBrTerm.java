@@ -1,7 +1,6 @@
 package llvm.Instr;
 
 import llvm.Ident;
-import llvm.Instr.Instr;
 import llvm.Type.IntType;
 import llvm.Value;
 
@@ -10,21 +9,25 @@ import java.util.ArrayList;
 public class CondBrTerm extends Instr {
     private IntType it;
     private Value v;
-    private Ident l1;
-    private Ident l2;
+    private Ident i1;
+    private Ident i2;
 
     // "condbr"
-    public CondBrTerm(String instrname, IntType it, Value v, Ident l1, Ident l2) {
+    public CondBrTerm(String instrname, IntType it, Value v, Ident i1, Ident i2) {
         super(instrname);
         this.it = it;
         this.v = v;
-        this.l1 = l1;
-        this.l2 = l2;
+        this.i1 = i1;
+        this.i2 = i2;
     }
 
     @Override
     public String toString() {
-        return "br " + it.toString() + " " + v.toString() + ", label " + l1.toString() + ", label " + l2.toString();
+        return "br " + it.toString() + " " + v.toString() + ", label " + i1.toString() + ", label " + i2.toString();
+    }
+
+    public IntType getIt() {
+        return it;
     }
 
     public Value getV() {
@@ -35,29 +38,29 @@ public class CondBrTerm extends Instr {
         this.v = v;
     }
 
-    public Ident getL1() {
-        return l1;
+    public Ident getI1() {
+        return i1;
     }
 
-    public Ident getL2() {
-        return l2;
+    public Ident getI2() {
+        return i2;
     }
 
     // 跳转name
     public String getLabel1Name() {
-        return String.valueOf(l1.getId());
+        return String.valueOf(i1.getId());
     }
 
     public String getLabel2Name() {
-        return String.valueOf(l2.getId());
+        return String.valueOf(i2.getId());
     }
 
-    public void setL1(Ident L1) {
-        this.l1 = L1;
+    public void setI1(Ident i1) {
+        this.i1 = i1;
     }
 
-    public void setL2(Ident L2) {
-        this.l2 = L2;
+    public void setI2(Ident i2) {
+        this.i2 = i2;
     }
 
     @Override

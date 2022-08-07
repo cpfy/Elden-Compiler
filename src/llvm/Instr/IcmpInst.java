@@ -48,6 +48,56 @@ public class IcmpInst extends Instr {
         this.v2 = v2;
     }
 
+    // llvm 的ipred转为bne、beq等
+    public String predToBr() {
+        switch (ipred) {
+            case "eq":
+                return "eq";
+            case "ne":
+                return "ne";
+            case "sge":
+                return "ge";
+            case "sgt":
+                return "gt";
+            case "sle":
+                return "le";
+            case "slt":
+                return "lt";
+            case "uge":
+            case "ugt":
+            case "ule":
+            case "ult":
+            default:
+                return "qqqq";
+            //todo
+        }
+    }
+
+    // llvm 的ipred转为相反的ne、eq等
+    public String predToOppoBr() {
+        switch (ipred) {
+            case "eq":
+                return "ne";
+            case "ne":
+                return "eq";
+            case "sge":
+                return "lt";
+            case "sgt":
+                return "le";
+            case "sle":
+                return "gt";
+            case "slt":
+                return "ge";
+            case "uge":
+            case "ugt":
+            case "ule":
+            case "ult":
+            default:
+                return "qqqq";
+            //todo
+        }
+    }
+
     @Override
     public void renameUses(Value newValue, Value oldValue) {
         if (v1.isIdent() && v1.getIdent().equals(oldValue.getIdent())) {
@@ -70,37 +120,32 @@ public class IcmpInst extends Instr {
                 s = "1";
             }
             value = new Value(s);
-        }
-        else if (ipred.equals("eq")) {
+        } else if (ipred.equals("eq")) {
             String s = "0";
             if (v1.getVal() == v2.getVal()) {
                 s = "1";
             }
             value = new Value(s);
 
-        }
-        else if (ipred.equals("sle")) {
+        } else if (ipred.equals("sle")) {
             String s = "0";
             if (v1.getVal() <= v2.getVal()) {
                 s = "1";
             }
             value = new Value(s);
-        }
-        else if (ipred.equals("slt")) {
+        } else if (ipred.equals("slt")) {
             String s = "0";
             if (v1.getVal() < v2.getVal()) {
                 s = "1";
             }
             value = new Value(s);
-        }
-        else if (ipred.equals("sge")) {
+        } else if (ipred.equals("sge")) {
             String s = "0";
             if (v1.getVal() >= v2.getVal()) {
                 s = "1";
             }
             value = new Value(s);
-        }
-        else if (ipred.equals("sgt")) {
+        } else if (ipred.equals("sgt")) {
             String s = "0";
             if (v1.getVal() > v2.getVal()) {
                 s = "1";

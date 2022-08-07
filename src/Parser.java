@@ -13,14 +13,12 @@ public class Parser {
     private CompUnit compUnit;
 
 
-
-
     public Parser(ArrayList<RawWord> rawWords) throws FileNotFoundException {
         this.rawWords = rawWords;
         compUnit = getCompUnit();
         compUnit.addMidCode();
         PrintStream printStream = new PrintStream("llvmir.ll");
-        for (String s: compUnit.getLLVMIR()) {
+        for (String s : compUnit.getLLVMIR()) {
             printStream.print(s);
         }
 
@@ -61,19 +59,17 @@ public class Parser {
         ArrayList<FuncDef> funcDefs = new ArrayList<>();
         MainFuncDef mainFuncDef = null;
         while (true) {
-           if (seeNextWord().getType() == WordType.CONSTTK
+            if (seeNextWord().getType() == WordType.CONSTTK
                     || (seeNextWord().getType() == WordType.INTTK && seeThirdWord().getType() != WordType.LPARENT)
                     || (seeNextWord().getType() == WordType.FLOATTK && seeThirdWord().getType() != WordType.LPARENT)) {
-               decls.add(getDecl());
-           }
-           else if (seeNextWord().getType() == WordType.VOIDTK
+                decls.add(getDecl());
+            } else if (seeNextWord().getType() == WordType.VOIDTK
                     || (seeNextWord().getType() == WordType.INTTK && seeSecondWord().getType() != WordType.MAINTK && seeThirdWord().getType() == WordType.LPARENT)
                     || (seeNextWord().getType() == WordType.FLOATTK && seeSecondWord().getType() != WordType.MAINTK && seeThirdWord().getType() == WordType.LPARENT)) {
-               funcDefs.add(getFuncDef());
-           }
-           else {
-               break;
-           }
+                funcDefs.add(getFuncDef());
+            } else {
+                break;
+            }
         }
         mainFuncDef = getMainFuncDef();
         outputs.add("<CompUnit>");
@@ -85,12 +81,10 @@ public class Parser {
         Decl decl = null;
         if (seeNextWord().getType() == WordType.CONSTTK) {
             decl = getConstDecl();
-        }
-        else if (seeNextWord().getType() == WordType.INTTK
+        } else if (seeNextWord().getType() == WordType.INTTK
                 || seeNextWord().getType() == WordType.FLOATTK) {
             decl = getVarDecl();
-        }
-        else {
+        } else {
             error();
         }
         //outputs.add("<Decl>");
@@ -109,12 +103,10 @@ public class Parser {
                 constDefs.add(getConstDef());
             }
             if (getNextWord().getType() == WordType.SEMICN) {
-            }
-            else {
+            } else {
                 error();
             }
-        }
-        else {
+        } else {
             error();
         }
         outputs.add("<ConstDecl>");
@@ -127,12 +119,10 @@ public class Parser {
         if (seeNextWord().getType() == WordType.INTTK) {
             getNextWord();
             type = "i32";
-        }
-        else if (seeNextWord().getType() == WordType.FLOATTK) {
+        } else if (seeNextWord().getType() == WordType.FLOATTK) {
             getNextWord();
             type = "float";
-        }
-        else {
+        } else {
             error();
         }
         //outputs.add("<BType>");
@@ -151,8 +141,7 @@ public class Parser {
                 dims.add(getConstExp());
                 if (getNextWord().getType() == WordType.RBRACK) {
 
-                }
-                else {
+                } else {
                     error();
                 }
             }
@@ -160,12 +149,10 @@ public class Parser {
 
                 constInitVal = getConstInitVal();
 
-            }
-            else {
+            } else {
                 error();
             }
-        }
-        else {
+        } else {
             error();
         }
         outputs.add("<ConstDef>");
@@ -181,28 +168,24 @@ public class Parser {
             if (seeNextWord().getType() != WordType.RBRACE) {
                 if (seeNextWord().getType() == WordType.LBRACE) {
                     initValues.add(getConstInitVal());
-                }
-                else {
+                } else {
                     initValues.add(getConstExp());
                 }
                 while (seeNextWord().getType() == WordType.COMMA) {
                     getNextWord();
                     if (seeNextWord().getType() == WordType.LBRACE) {
                         initValues.add(getConstInitVal());
-                    }
-                    else {
+                    } else {
                         initValues.add(getConstExp());
                     }
                 }
             }
             if (getNextWord().getType() == WordType.RBRACE) {
 
-            }
-            else {
+            } else {
                 error();
             }
-        }
-        else {
+        } else {
             initValues.add(getConstExp());
         }
         outputs.add("<ConstInitVal>");
@@ -222,8 +205,7 @@ public class Parser {
         }
         if (getNextWord().getType() == WordType.SEMICN) {
 
-        }
-        else {
+        } else {
             error();
         }
         outputs.add("<VarDecl>");
@@ -244,8 +226,7 @@ public class Parser {
                 dims.add(getConstExp());
                 if (getNextWord().getType() == WordType.RBRACK) {
 
-                }
-                else {
+                } else {
                     error();
                 }
             }
@@ -259,7 +240,7 @@ public class Parser {
     }
 
     //InitVal → Exp | '{' [ InitVal { ',' InitVal } ] '}'
-    private InitVal getInitVal () {
+    private InitVal getInitVal() {
         ArrayList<Object> initValues = new ArrayList<>();
         if (seeNextWord().getType() == WordType.LBRACE) {
             getNextWord();
@@ -272,12 +253,10 @@ public class Parser {
             }
             if (getNextWord().getType() == WordType.RBRACE) {
 
-            }
-            else {
+            } else {
                 error();
             }
-        }
-        else {
+        } else {
             initValues.add(getExp());
         }
         outputs.add("<InitVal>");
@@ -334,16 +313,13 @@ public class Parser {
         if (seeNextWord().getType() == WordType.VOIDTK) {
             getNextWord();
             type = "void";
-        }
-        else if (seeNextWord().getType() == WordType.INTTK) {
+        } else if (seeNextWord().getType() == WordType.INTTK) {
             getNextWord();
             type = "i32";
-        }
-        else if (seeNextWord().getType() == WordType.FLOATTK) {
+        } else if (seeNextWord().getType() == WordType.FLOATTK) {
             getNextWord();
             type = "float";
-        }
-        else {
+        } else {
             error();
         }
         outputs.add("<FuncType>");
@@ -412,8 +388,7 @@ public class Parser {
                 || seeNextWord().getType() == WordType.INTTK
                 || seeNextWord().getType() == WordType.FLOATTK) {
             blockItem = getDecl();
-        }
-        else {
+        } else {
             blockItem = getStmt();
         }
         //outputs.add("<BlockItem>");
@@ -523,13 +498,10 @@ public class Parser {
         //Block
         else if (seeNextWord().getType() == WordType.LBRACE) {
             stmt = getBlock();
-        }
-
-        else if (seeNextWord().getType() == WordType.SEMICN) {
+        } else if (seeNextWord().getType() == WordType.SEMICN) {
             getNextWord();
             stmt = new StmtExp(null);
-        }
-        else if (seeNextWord().getType() == WordType.INTCON
+        } else if (seeNextWord().getType() == WordType.INTCON
                 || seeNextWord().getType() == WordType.FLOATCON
                 || seeNextWord().getType() == WordType.PLUS
                 || seeNextWord().getType() == WordType.MINU
@@ -542,8 +514,7 @@ public class Parser {
                 error();
             }
             stmt = new StmtExp(exp);
-        }
-        else {
+        } else {
             LVal lVal = null;
             lVal = getLVal();
             if (getNextWord().getType() != WordType.ASSIGN) {
@@ -578,7 +549,7 @@ public class Parser {
 
     private boolean isLVal() {
         int a = 0;
-        for (int i = point;;i++) {
+        for (int i = point; ; i++) {
             if (rawWords.get(i).getType() == WordType.ASSIGN) {
                 a = 1;
             }
@@ -616,12 +587,10 @@ public class Parser {
             if (getNextWord().getType() != WordType.RPARENT) {
                 error();
             }
-        }
-        else if (seeNextWord().getType() == WordType.INTCON
+        } else if (seeNextWord().getType() == WordType.INTCON
                 || seeNextWord().getType() == WordType.FLOATCON) {
             exp = getNumber();
-        }
-        else {
+        } else {
             exp = getLVal();
         }
         outputs.add("<PrimaryExp>");
@@ -633,11 +602,9 @@ public class Parser {
         MyNumber number = null;
         if (seeNextWord().getType() == WordType.INTCON) {
             number = new ConstInt(Integer.parseInt(getNextWord().getName()));
-        }
-        else if (seeNextWord().getType() == WordType.FLOATCON) {
+        } else if (seeNextWord().getType() == WordType.FLOATCON) {
             number = new ConstFloat(Float.parseFloat(getNextWord().getName()));
-        }
-        else {
+        } else {
             error();
         }
         outputs.add("<Number>");
@@ -654,8 +621,7 @@ public class Parser {
             WordType op = getUnaryOp();
             Exp exp1 = getUnaryExp();
             exp = new ExpOp(op, new ConstInt(0), exp1);
-        }
-        else if (seeNextWord().getType() == WordType.IDENFR
+        } else if (seeNextWord().getType() == WordType.IDENFR
                 && seeSecondWord().getType() == WordType.LPARENT) {
             ArrayList<Exp> params = new ArrayList<>();
             ID id = new ID(getNextWord());
@@ -667,8 +633,7 @@ public class Parser {
                 error();
             }
             exp = new FuncCall(id, params);
-        }
-        else {
+        } else {
             exp = getPrimaryExp();
         }
         outputs.add("<UnaryExp>");
@@ -682,8 +647,7 @@ public class Parser {
                 || seeNextWord().getType() == WordType.MINU
                 || seeNextWord().getType() == WordType.NOT) {
             op = getNextWord().getType();
-        }
-        else {
+        } else {
             error();
         }
         outputs.add("<UnaryOp>");
@@ -716,8 +680,7 @@ public class Parser {
                 Exp exp2 = getUnaryExp();
                 exp = new ExpOp(op, exp, exp2);
             }
-        }
-        else {
+        } else {
             exp = exp;
         }
         outputs.add("<MulExp>");
@@ -736,8 +699,7 @@ public class Parser {
                 Exp exp2 = getMulExp();
                 exp = new ExpOp(op, exp, exp2);
             }
-        }
-        else {
+        } else {
             exp = exp;
         }
         outputs.add("<AddExp>");
@@ -760,8 +722,7 @@ public class Parser {
                 Exp exp2 = getAddExp();
                 exp = new ExpOp(op, exp, exp2);
             }
-        }
-        else {
+        } else {
             exp = exp;
         }
         outputs.add("<RelExp>");
@@ -780,8 +741,7 @@ public class Parser {
                 Exp exp2 = getRelExp();
                 exp = new ExpOp(op, exp, exp2);
             }
-        }
-        else {
+        } else {
             exp = exp;
         }
         outputs.add("<EqExp>");
@@ -822,7 +782,7 @@ public class Parser {
     }
 
     public void output2(PrintStream printStream) {
-        for (String s: outputs) {
+        for (String s : outputs) {
             printStream.println(s);
         }
     }

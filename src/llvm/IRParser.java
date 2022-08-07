@@ -825,12 +825,12 @@ public class IRParser {
         Value v = Value();
         match(",");
         LabelType();
-        Ident l1 = LocalIdent();
+        Ident i1 = LocalIdent();
         match(",");
         LabelType();
-        Ident l2 = LocalIdent();
+        Ident i2 = LocalIdent();
 
-        Instr i = new CondBrTerm("condbr", (IntType) it, v, l1, l2);
+        Instr i = new CondBrTerm("condbr", (IntType) it, v, i1, i2);
         return i;
     }
 
