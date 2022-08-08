@@ -1,0 +1,27 @@
+/* -- testcase.s */
+.data
+.extern getint
+.extern getch
+.extern getfloat
+.extern getarray
+.extern getfarray
+.extern putint
+.extern putch
+.extern putfloat
+.extern putarray
+.extern putfarray
+
+.text
+	b main
+.global main
+main:
+0:
+	mov r0, #3
+	bl putint
+	mov r0, #3
+	mov pc, lr
+1:
+	mov r0, #0
+	mov pc, lr
+	bx lr
+

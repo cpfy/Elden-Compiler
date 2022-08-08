@@ -1,6 +1,9 @@
 package llvm;
 
+import backend.backendTable.GenerateTable;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Function {
 
@@ -13,6 +16,30 @@ public class Function {
         this.funcheader = funcheader;
         this.blocklist = new ArrayList<>();
     }
+
+    /*** add start by sujunzhe ***/
+        private HashMap<String, Integer> offsetTable; //记录变量名对应的偏移量
+
+        private int funcSize = 0;       //函数需要分配的大小
+
+        public void addVar(String s, int n) {
+            offsetTable.put(s, funcSize);
+            funcSize += n;
+        }
+
+        public void initOffsetTable() {         //调用初始化列表
+            offsetTable = new HashMap<>();
+            new GenerateTable(this);
+        }
+
+        public int getOffsetByName(String s) {  //通过变量名获取地址
+            return offsetTable.get(s);
+        }
+
+
+    /*** add end by sujunzhe ***/
+
+
 
     @Override
     public String toString() {
