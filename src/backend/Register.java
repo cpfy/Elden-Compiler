@@ -81,14 +81,6 @@ public class Register {
         return regNameMap.get(name);
     }
 
-    public String applyRegister(Variable v) {
-        return "";
-    }
-
-    public String applyRegister(Symbol v) {
-        return "";
-    }
-
     //临时变量-申请寄存器
     public String applyRegister(Ident i) {
         int no;
@@ -98,13 +90,6 @@ public class Register {
 
             // 映射名称
             String mapname = i.getMapname();
-
-//            if(i.isGlobal()){
-//                mapname = i.getName();
-//            }else{
-//                mapname = String.valueOf(i.getId());
-//            }
-
             identAllocMap.put(mapname, no);
             freeRegList.remove(0);
 
@@ -119,35 +104,6 @@ public class Register {
         System.out.println("Info: Alloc Reg $" + regMap.get(no) + " to Ident " + i.toString());
 
         return regMap.get(no);
-    }
-
-    //申请临时寄存器
-    // 废弃
-    public int applyTmpRegister() {
-        int regno;
-        if (!freeRegList.isEmpty()) {
-            regno = freeRegList.get(0);
-            freeRegList.remove(0);
-            addActiveListNoRep(regno);     //无重复加入activeregList 活跃变量表
-
-        } else {    //todo 无空寄存器
-            System.err.println("No free Reg! Alloc $r0.");
-            regno = 0;
-        }
-
-        System.out.println("Alloc Reg $" + regMap.get(regno) + " to Tmp");
-        return regno;
-    }
-
-    // // 废弃
-    public void freeTmpRegister(int regno) {
-        if (regno > 15) {
-            System.err.println("Register freeTmpRegister() : Error free tmp Reg No!! regno = " + regno);
-        } else if (!freeRegList.contains(regno)) {
-            removeActiveRegList(regno);     //删除变量in activeregList 活跃变量表
-            freeRegList.add(regno);
-            System.out.println("Free Reg $" + regMap.get(regno) + " from Tmp");
-        }//todo 其它的free寄存器都得检查是否重复！
     }
 
     public String applyTmp() {
@@ -181,30 +137,6 @@ public class Register {
         int regno = regNameMap.get(regname);
         freeTmpRegister(regno);
     }
-
-    //释放寄存器
-    public void freeRegister(Variable v) {
-        if (v.isKindofsymbol()) {
-            Symbol s = v.getSymbol();
-            Assert.check(s);
-            int regno = s.getCurReg();
-            //freeRegList.add(regno);
-            freeTmpRegister(regno);
-
-            s.setCurReg(-1);    //reg使用状态回到未分配的-1
-
-            removeActiveRegList(regno);     //删除变量in activeregList 活跃变量表
-            System.out.println("Free Reg $" + regMap.get(regno) + " from " + s.getName());
-
-        } else {
-            int regno = v.getCurReg();
-            //freeRegList.add(regno);
-            freeTmpRegister(regno);
-            removeActiveRegList(regno);     //删除变量in activeregList 活跃变量表
-            System.out.println("Free Reg $" + regMap.get(regno) + " from " + v.toString());
-        }
-    }
-
 
     //查询是否有空闲寄存器
     public boolean hasSpareRegister() {
@@ -252,5 +184,65 @@ public class Register {
         return identAllocMap.containsKey(name);
     }
 
+    // 废弃
+    public String applyRegister(Variable v) {
+        return "";
+    }
+
+    public String applyRegister(Symbol v) {
+        return "";
+    }
+
+    //申请临时寄存器
+    // 废弃
+    public int applyTmpRegister() {
+        int regno;
+        if (!freeRegList.isEmpty()) {
+            regno = freeRegList.get(0);
+            freeRegList.remove(0);
+            addActiveListNoRep(regno);     //无重复加入activeregList 活跃变量表
+
+        } else {    //todo 无空寄存器
+            System.err.println("No free Reg! Alloc $r0.");
+            regno = 0;
+        }
+
+        System.out.println("Alloc Reg $" + regMap.get(regno) + " to Tmp");
+        return regno;
+    }
+
+    // // 废弃
+    public void freeTmpRegister(int regno) {
+        if (regno > 15) {
+            System.err.println("Register freeTmpRegister() : Error free tmp Reg No!! regno = " + regno);
+        } else if (!freeRegList.contains(regno)) {
+            removeActiveRegList(regno);     //删除变量in activeregList 活跃变量表
+            freeRegList.add(regno);
+            System.out.println("Free Reg $" + regMap.get(regno) + " from Tmp");
+        }//todo 其它的free寄存器都得检查是否重复！
+    }
+
+    //释放寄存器
+    public void freeRegister(Variable v) {
+        if (v.isKindofsymbol()) {
+            Symbol s = v.getSymbol();
+            Assert.check(s);
+            int regno = s.getCurReg();
+            //freeRegList.add(regno);
+            freeTmpRegister(regno);
+
+            s.setCurReg(-1);    //reg使用状态回到未分配的-1
+
+            removeActiveRegList(regno);     //删除变量in activeregList 活跃变量表
+            System.out.println("Free Reg $" + regMap.get(regno) + " from " + s.getName());
+
+        } else {
+            int regno = v.getCurReg();
+            //freeRegList.add(regno);
+            freeTmpRegister(regno);
+            removeActiveRegList(regno);     //删除变量in activeregList 活跃变量表
+            System.out.println("Free Reg $" + regMap.get(regno) + " from " + v.toString());
+        }
+    }
 
 }

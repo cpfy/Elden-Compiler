@@ -137,7 +137,6 @@ public class ArmGenerator {
             case "store":
                 addStore(instr);
                 break;
-
             case "push":
                 addPush(instr);
                 break;
@@ -168,18 +167,21 @@ public class ArmGenerator {
         Type t2 = ((ZExtInst) instr).getT2();
         Value v = ((ZExtInst) instr).getV();
 
-        String destreg = register.applyRegister(dest);
+//        String destreg = register.applyRegister(dest);
+
+        String regt = register.applyTmp();
 
         if (v.isIdent()) {
             Ident i = v.getIdent();
             String reg = searchRegName(i);
-            add("mov " + destreg + ", " + reg);
+            add("mov " + regt + ", " + reg);
 
         } else {
-            //todo 应该不可能是digit
+            //todo 不可能是digit
         }
 
-//        register.freeTmp(reg);
+        storeValue(regt, dest);
+        register.freeTmp(regt);
     }
 
     private void addAssign(Instr instr) {
@@ -209,28 +211,57 @@ public class ArmGenerator {
             default:
                 break;
         }
+
+
     }
 
     // %2 = getelementptr inbounds [x x [y x i32]], [x x [y x i32]]* %1, i32 a, i32 b
-    // %2 = %1 + a * x * y * 4 + b * y * 4
+    // %2 = %1 + a * (x * y * 4) + b * (y * 4)
     private void addGetelementptr(Instr instr, Ident dest) {
-        Type t1 = ((GetElementPtrInst) instr).getT1();
-        Type t2 = ((GetElementPtrInst) instr).getT2();
-        Value v = ((GetElementPtrInst) instr).getV();
+        Type t1 = ((GetElementPtrInst) instr).getT1();  // off1
+        Type t2 = ((GetElementPtrInst) instr).getT2();  // off2
+        Value v = ((GetElementPtrInst) instr).getV();   // %1
+        Value v3 = ((GetElementPtrInst) instr).getV3(); // a
+        int val3 = v3.getVal(), val4;
 
+        String destreg = register.applyRegister(dest);
 
-        Value v3 = ((GetElementPtrInst) instr).getV3();
-        int val3 = v3.getVal();
-        int val4;
+        int off1 = t1.getOffset();
+        int off2 = t2.getOffset();
+        if (v3.isIdent()) {
+            String rega = searchRegName(v3.getIdent());
+            // mul a, a, off1
+            add("mul " + rega + ", " + rega + ", #" + off1);
+            add("add " + destreg + ", " + destreg + ", " + rega);
+
+        } else {
+            int mulAOff1 = v3.getVal() * off1;
+            add("add " + destreg + ", " + destreg + ", #" + mulAOff1);
+        }
 
         if (((GetElementPtrInst) instr).hasFourth()) {
             Value v4 = ((GetElementPtrInst) instr).getV4();
             val4 = v4.getVal();
-        } else {
-            val4 = 0;
+
+            if (v4.isIdent()) {
+                String regb = searchRegName(v4.getIdent());
+                // mul b, b, off2
+                add("mul " + regb + ", " + regb + ", #" + off2);
+                add("add " + destreg + ", " + destreg + ", " + regb);
+
+            } else {
+                int mulAOff2 = v4.getVal() * off2;
+                add("add " + destreg + ", " + destreg + ", #" + mulAOff2);
+            }
+
         }
 
+        storeValue(destreg, dest);
 
+        // 否则无事发生
+//        else {
+//            val4 = 0;
+//        }
     }
 
     private void addBinary(Instr instr, Ident dest) {
@@ -287,38 +318,47 @@ public class ArmGenerator {
         String destreg = register.applyRegister(dest);
 
         add(op + " " + destreg + ", " + reg1 + ", " + reg2);
+        storeValue(destreg, dest);
+
         if (!v1.isIdent()) register.freeTmp(reg1);
         if (!v2.isIdent()) register.freeTmp(reg2);
 
     }
 
     // store i32 5, i32* %1
+    // %1永远表示要存值的地址
     private void addStore(Instr instr) {
         Type t1 = ((StoreInstr) instr).getT1();
         Type t2 = ((StoreInstr) instr).getT2();
         Value v1 = ((StoreInstr) instr).getV1();
         Value v2 = ((StoreInstr) instr).getV2();
 
-        // v2是否分配
-        Ident i2 = v2.getIdent();
-        String reg2;
-        if (checkReg(i2)) {
-            reg2 = searchRegName(i2);
-        } else {
-            reg2 = register.applyRegister(i2);
-        }
+        String regt = register.applyTmp();
 
         // v1存到v2里
         if (v1.isIdent()) {
             Ident i1 = v1.getIdent();
             String reg1 = searchRegName(i1);
-            add("mov " + reg2 + ", " + reg1);
+            add("mov " + regt + ", " + reg1);
 
         } else {
             int val = v1.getVal();
-            add("mov " + reg2 + ", #" + val);
+            add("mov " + regt + ", #" + val);
 
         }
+
+        int off = curFunc.getOffsetByName(v2.toString());
+        add("str " + regt + ", [sp, #" + off + "]");
+        storeValue(regt, v2.getIdent());
+
+        // v2是否分配
+//        Ident i2 = v2.getIdent();
+//        String reg2;
+//        if (checkReg(i2)) {
+//            reg2 = searchRegName(i2);
+//        } else {
+//            reg2 = register.applyRegister(i2);
+//        }
     }
 
     private void addGlobalDef(Instr i) {
@@ -363,7 +403,7 @@ public class ArmGenerator {
         // dest是否分配（必然未分配）
         String reg = register.applyRegister(dest);
 
-        // reg存到dest里
+        // 值存到dest reg里
         if (v.isIdent()) {
             Ident i = v.getIdent();
             String reg_i = searchRegName(i);
@@ -374,6 +414,11 @@ public class ArmGenerator {
             add("mov " + reg + ", #" + val);
 
         }
+
+        // 值存到cache里
+//        int off = curFunc.getOffsetByName(v.toString());
+//        add("str " + reg + ", [sp, #" + off + "]");
+        storeValue(reg, v.getIdent());
     }
 
     // br i1 %7, label %8, label %27
@@ -402,13 +447,21 @@ public class ArmGenerator {
     // %2 = alloca [4 * i32]就分配20字节的空间，%2这个变量里面存的是%2的绝对地址+4
     private void addAlloca(Instr instr, Ident dest) {
         Type t = ((AllocaInst) instr).getT();
-        if (t.getTypec() == TypeC.A) {
-            addAllocaArray(instr, dest);
-        } else if (t.getTypec() == TypeC.I) {
-            addAllocaInt(instr, dest);
-        } else {
-            error();
-        }
+//        if (t.getTypec() == TypeC.A) {
+//            addAllocaArray(instr, dest);
+//        } else if (t.getTypec() == TypeC.I) {
+//            addAllocaInt(instr, dest);
+//        } else {
+//            error();
+//        }
+
+        // 地址 &1+4 存到%1 对应的cache里
+        String regt = register.applyTmp();
+        int off = curFunc.getOffsetByName(dest.toString());
+        add("mov " + regt + ", sp");
+        add("add " + regt + ", " + regt + ", #" + (off + 4));
+        add("str " + regt + ", [sp, #" + off + "]");
+        register.freeTmp(regt);
     }
 
     private void addAllocaInt(Instr instr, Ident dest) {
@@ -463,6 +516,7 @@ public class ArmGenerator {
         add("cmp " + reg1 + ", " + reg2);
         add("mov" + movestr + " " + destreg + ", #1");
         add("mov" + oppomovestr + " " + destreg + ", #0");
+        storeValue(destreg, dest);
 
         //见：https://stackoverflow.com/questions/54237061/when-comparing-numbers-in-arm-assembly-is-there-a-correct-way-to-store-the-value
         //参考2：http://cration.rcstech.org/embedded/2014/03/02/arm-conditional-execution/
@@ -1060,11 +1114,16 @@ public class ArmGenerator {
                 add("ldr " + regname + ", addr_of_" + i.getName());
                 add("ldr " + regname + ", [" + regname + "]");
                 return regname;
+
+            } else {
+                String regt = register.applyTmp();
+                loadValue(regt, i);
+                return regt;
             }
 
-            System.err.println("Error! Not assign Reg No.(" + i.toString() + ")");
-            exit(0);
-            return null;
+//            System.err.println("Error! Not assign Reg No.(" + i.toString() + ")");
+//            exit(0);
+//            return null;
 
         } else {
             regname = register.getRegisterNameFromNo(no);
@@ -1081,6 +1140,16 @@ public class ArmGenerator {
         }
         return register.allocated(name);
 
+    }
+
+    private void loadValue(String regName, Ident destIdent) {
+        int off = curFunc.getOffsetByName(destIdent.toString());
+        add("ldr " + regName + ", [sp, #" + off + "]");
+    }
+
+    private void storeValue(String regName, Ident destIdent) {
+        int off = curFunc.getOffsetByName(destIdent.toString());
+        add("str " + regName + ", [sp, #" + off + "]");
     }
 
 }
