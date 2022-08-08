@@ -657,7 +657,7 @@ public class ArmGenerator {
             add("mov r0, #" + num);
         }
 
-        add("add sp, sp, " + curFunc.getFuncSize());
+        add("add sp, sp, #" + curFunc.getFuncSize());
         add("bx lr");
     }
 
