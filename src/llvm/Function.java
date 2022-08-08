@@ -18,9 +18,8 @@ public class Function {
     }
 
     /*** add start by sujunzhe ***/
-    private HashMap<String, Integer> offsetTable; //记录变量名对应的偏移量
-
     private int funcSize = 0;       //函数需要分配的大小
+    private HashMap<String, Integer> offsetTable; //记录变量名对应的偏移量
 
     public void addVar(String s, int n) {
         offsetTable.put(s, funcSize);
@@ -36,6 +35,9 @@ public class Function {
         return offsetTable.get(s);
     }
 
+    public int getFuncSize() {
+        return funcSize;
+    }
 
     /*** add end by sujunzhe ***/
 

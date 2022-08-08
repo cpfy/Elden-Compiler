@@ -50,6 +50,10 @@ public class CallInst extends Instr {
         return args;
     }
 
+    public int getArgsNum() {
+        return args.size();
+    }
+
     public boolean isStandardCall() {
         return standardCall;
     }
@@ -67,7 +71,7 @@ public class CallInst extends Instr {
 
     @Override
     public void renameUses(Value newValue, Value oldValue) {
-        for (TypeValue typeValue: args) {
+        for (TypeValue typeValue : args) {
             Value v = typeValue.getValue();
             if (v.isIdent() && v.getIdent().equals(oldValue.getIdent())) {
                 typeValue.setValue(newValue);
@@ -83,7 +87,7 @@ public class CallInst extends Instr {
     @Override
     public ArrayList<String> getUses() {
         ArrayList<String> ans = new ArrayList<>();
-        for (TypeValue typeValue: args) {
+        for (TypeValue typeValue : args) {
             if (typeValue.getValue().isIdent()) {
                 ans.add(typeValue.getValue().getIdent().toString());
             }
@@ -99,7 +103,7 @@ public class CallInst extends Instr {
     @Override
     public ArrayList<String> getRoots() {
         ArrayList<String> ans = new ArrayList<>();
-        for (TypeValue typeValue: args) {
+        for (TypeValue typeValue : args) {
             if (typeValue.getValue().isIdent()) {
                 ans.add(typeValue.getValue().getIdent().toString());
             }
