@@ -403,6 +403,7 @@ public class IRParser {
 
         // 与llvm文法不一致，允许跳Instruction
         if (symIs("ret") || symIs("br")) {
+            curBlock.setDirty(true);
             Terminator();
         } else {
             Instructions();

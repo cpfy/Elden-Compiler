@@ -84,13 +84,14 @@ public class ArmGenerator {
 
         for (Function f : aflist) {
             f.initOffsetTable();    // 初始化偏移计算
+            curFunc = f;
 
             // GlobalDef特判
             if (f.getFuncheader().getFname() == "GlobalContainer") {
                 for (Instr i : f.getBlocklist().get(0).getInblocklist()) {
                     addGlobalDef(i);
                 }
-                add("return: .word 0");
+//                add("return: .word 0");
                 continue;
             }
 
@@ -110,6 +111,7 @@ public class ArmGenerator {
                 }
             }
             for (Block b : f.getBlocklist()) {
+                if (b.isDirty()) continue;
                 addBlockLabel(b);
                 for (Instr i : b.getInblocklist()) {
 
@@ -397,6 +399,7 @@ public class ArmGenerator {
 
     // %1 = alloca [4 x [2 x i32]]
     // 对于%1 = alloca i32，给%1赋的值是%1的绝对地址+4
+    // %2 = alloca [4 * i32]就分配20字节的空间，%2这个变量里面存的是%2的绝对地址+4
     private void addAlloca(Instr instr, Ident dest) {
         Type t = ((AllocaInst) instr).getT();
         if (t.getTypec() == TypeC.A) {
@@ -569,8 +572,8 @@ public class ArmGenerator {
             add("mov r0, #" + num);
             //todo
         }
-//        add("bx lr");
-        add("mov pc, lr");
+        add("bx lr");
+//        add("mov pc, lr");
     }
 
     private void addAssignRet(Instr instr) {
@@ -589,9 +592,9 @@ public class ArmGenerator {
 
     private void addProgramEnd() {
         // return from main
-        add("ldr lr, address_of_return");
-        add("ldr lr, [lr]");
-        add("bx lr");
+//        add("ldr lr, address_of_return");
+//        add("ldr lr, [lr]");
+//        add("bx lr");
 
         tabcount -= 1;
         add("");
@@ -599,7 +602,7 @@ public class ArmGenerator {
             String name = ((GlobalDefInst) i).getGi().getName();
             add("addr_of_" + name + ": .word " + name);
         }
-        add("address_of_return : .word return");
+//        add("address_of_return : .word return");
 
     }
 

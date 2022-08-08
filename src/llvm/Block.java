@@ -13,8 +13,7 @@ public class Block {
     private String label;   // 标签名
     private int num;    // 按顺序基本块编号1-n
 
-
-    /***** 此处几个还todo ****/
+    private boolean dirty = false;  // 是否arm生成时丢弃
 
 //    private int instrnum;   // b内指令条数
 
@@ -154,7 +153,9 @@ public class Block {
         return num;
     }
 
-    public ArrayList<Phi> getPhis() { return phis; }
+    public ArrayList<Phi> getPhis() {
+        return phis;
+    }
 
     public String getInnerfunc() {
         return innerfunc;
@@ -172,14 +173,21 @@ public class Block {
         this.label = label;
     }
 
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+
     public void addInstr(Instr instr) {
         this.inblocklist.add(instr);
     }
 
-
     public void clear() {
         ArrayList<Instr> newInblocklist = new ArrayList<>();
-        for (Instr instr: inblocklist) {
+        for (Instr instr : inblocklist) {
             if (!instr.isCanDelete()) {
                 newInblocklist.add(instr);
             }
@@ -188,21 +196,7 @@ public class Block {
     }
 
 
-
-
-
-
-    // arm转化
-//    public ArrayList<String> toarm() {
-//        ArrayList<String> armlist = new ArrayList<>();
-//        for (Instr i : inblocklist) {
-//            armlist.addAll(i.toarm());
-//        }
-//        return armlist;
-//    }
-
-
-    public void addPhi(Phi phi){
+    public void addPhi(Phi phi) {
         phis.add(phi);
     }
 }
