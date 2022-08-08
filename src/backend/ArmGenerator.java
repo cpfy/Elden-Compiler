@@ -641,7 +641,7 @@ public class ArmGenerator {
         //统一
         add("bl " + callfuncname);
 
-        add("pop {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,pc}");
+        add("pop {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}");
     }
 
     private void addReturn(Instr instr) {
