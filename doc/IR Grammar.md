@@ -768,6 +768,39 @@ CommaSepTypeValueList
 TypeValue
 	: Type Value
 ;
+
+OptCommaSepMetadataAttachmentList
+	: empty
+	| "," CommaSepMetadataAttachmentList
+;
+
+CommaSepMetadataAttachmentList
+	: MetadataAttachment
+	| CommaSepMetadataAttachmentList "," MetadataAttachment
+;
+```
+
+##### Meta系列
+
+应该无用
+
+```
+MetadataAttachment
+	: MetadataName MDNode
+;
+
+MetadataName
+	: metadata_name
+;
+
+MDNode
+	// !{ ... }
+	: MDTuple
+	// !42
+	| MetadataID
+	| SpecializedMDNode
+;
+
 ```
 
 

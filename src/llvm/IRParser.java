@@ -410,10 +410,7 @@ public class IRParser {
         }
     }
 
-    //
-//    OptLabelIdent
-//	: empty
-//	| LabelIdent
+    // OptLabelIdent : empty | LabelIdent
     private void OptLabelIdent() {
         if (symPeek("COLON", 1)) {
             LabelIdent();
@@ -456,7 +453,7 @@ public class IRParser {
 
 
     // Instruction : StoreInst [ | FenceInst | CmpXchgInst | AtomicRMWInst]
-//	| LocalIdent "=" ValueInstruction | ValueInstruction
+    //	| LocalIdent "=" ValueInstruction | ValueInstruction
     private void Instruction() {
         if (symIs("store")) {
             Instr i = StoreInst();    // curBlock.addInstr(vi)函数内已完成
@@ -888,26 +885,36 @@ public class IRParser {
         Value v = Value();
         if (symIs(",")) {
             getsym();
-            CommaSepTypeValueList();
+            ArrayList<TypeValue> commas = CommaSepTypeValueList();
+            Instr gepi = new GetElementPtrInst("getelementptr", t1, t2, v, commas);
+            return gepi;
         }
 
-        Instr gepi = new GetElementPtrInst("getelementptr", t1, t2, v);
-        return gepi;
+        error();
+        return null;
+
+//        Instr gepi = new GetElementPtrInst("getelementptr", t1, t2, v);
+//        return gepi;
     }
 
     // CommaSepTypeValueList: TypeValue| CommaSepTypeValueList "," TypeValue    ;
-    private void CommaSepTypeValueList() {
-        TypeValue();
+    private ArrayList<TypeValue> CommaSepTypeValueList() {
+        ArrayList<TypeValue> commas = new ArrayList<>();
+        TypeValue tv = TypeValue();
+        commas.add(tv);
         while (symIs(",")) {
             getsym();
-            TypeValue();
+            tv = TypeValue();
+            commas.add(tv);
         }
+        return commas;
     }
 
     // TypeValue: Type Value
-    private void TypeValue() {
-        Type();
-        Value();
+    private TypeValue TypeValue() {
+        Type t = Type();
+        Value v = Value();
+        return new TypeValue(t, v);
     }
 
 
@@ -985,12 +992,9 @@ public class IRParser {
     // PointerType : Type OptAddrSpace "*"
     // todo 假装i_pointer
     private Type PointerType() {
-//        getsym();
-//        int decimal = Integer.parseInt(sym.getTokenValue());
-//        getsym();
-//        Type t = new IntType(TypeC.I, decimal);
 
         Type t = Type();
+        t.setInpointer(true);
 
         match("*");
 
@@ -1041,15 +1045,8 @@ public class IRParser {
         }
     }
 
-    //    OptUnnamedAddr
-//	: empty
-//	| UnnamedAddr
-//    ;
-//
-//    UnnamedAddr
-//	: "local_unnamed_addr"
-//            | "unnamed_addr"
-//    ;
+    // OptUnnamedAddr : empty | UnnamedAddr ;
+    // UnnamedAddr : "local_unnamed_addr" | "unnamed_addr" ;
     private void OptUnnamedAddr() {
         if (symIs("local_unnamed_addr") || symIs("unnamed_addr")) {
             getsym();

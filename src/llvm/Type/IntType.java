@@ -16,6 +16,12 @@ public class IntType extends Type {
 
     @Override
     public int getSpace() {
-        return decimal / 8;
+        //return (decimal + 7) / 8;
+        return 4;
+    }
+
+    @Override
+    public int getOffset() {
+        return 4;
     }
 }

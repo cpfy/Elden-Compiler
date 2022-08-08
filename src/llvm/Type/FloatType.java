@@ -16,5 +16,10 @@ public class FloatType extends Type{
         return 4;
     }
 
+    @Override
+    public int getOffset() {
+        return 4;
+    }
+
     //todo
 }

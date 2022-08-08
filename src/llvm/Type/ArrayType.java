@@ -27,10 +27,16 @@ public class ArrayType extends Type {
         return "[" + String.valueOf(int_lit) + " x " + t.toString() + "]";
     }
 
-
     // get space
     public int getSpace() {
         return int_lit * this.t.getSpace();
     }
 
+    @Override
+    public int getOffset() {
+        if (super.isInpointer()) {
+            return t.getOffset();
+        }
+        return int_lit * t.getOffset();
+    }
 }

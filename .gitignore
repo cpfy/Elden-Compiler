@@ -30,3 +30,7 @@ replay_pid*
 Elden Compiler.iml
 txt/
 ll_test/
+testcase.s
+llvmir.ll
+*.ll
+*.s

@@ -15,4 +15,9 @@ public class VoidType extends Type{
     public int getSpace() {
         return 0;
     }
+
+    @Override
+    public int getOffset() {
+        return 0;
+    }
 }

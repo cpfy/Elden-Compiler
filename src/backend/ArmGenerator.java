@@ -9,6 +9,7 @@ import llvm.Instr.BinaryInst;
 import llvm.Instr.BrTerm;
 import llvm.Instr.CallInst;
 import llvm.Instr.CondBrTerm;
+import llvm.Instr.GetElementPtrInst;
 import llvm.Instr.GlobalDefInst;
 import llvm.Instr.IcmpInst;
 import llvm.Instr.Instr;
@@ -48,12 +49,12 @@ public class ArmGenerator {
     private boolean infuncdef = false;
     private boolean inmain = false;     //放到global主要用于main函数return 0时的判断
 
-    private int spoffset = 0;           // 正数，统一度量衡了
+    //    private int spoffset = 0;           // 正数，统一度量衡了
     private boolean innerfunc = false;  // 标记此时在函数体内
-    private int infuncoffset = 0;   // 正数, func内的偏移
-    private Function curFunc;       // 当前函数
+//    private int infuncoffset = 0;   // 正数, func内的偏移
 
-    //
+
+    private Function curFunc;       // 当前函数，读取offset时用
 
     public ArmGenerator(ArrayList<Function> allfunclist, String outputfile) {
         this.aflist = allfunclist;
@@ -82,6 +83,8 @@ public class ArmGenerator {
 //        collectPrintStr();
 
         for (Function f : aflist) {
+            f.initOffsetTable();    // 初始化偏移计算
+
             // GlobalDef特判
             if (f.getFuncheader().getFname() == "GlobalContainer") {
                 for (Instr i : f.getBlocklist().get(0).getInblocklist()) {
@@ -142,11 +145,6 @@ public class ArmGenerator {
             case "assign":
                 addAssign(instr);
                 break;
-            case "alloca":
-                addAlloca(instr);
-//                addArrayDecl(code);
-//                addIntDecl(code);
-                break;
 
             // Terminal() 系列
             case "br":
@@ -188,6 +186,9 @@ public class ArmGenerator {
         String iname = valueinstr.getInstrname();
 
         switch (iname) {
+            case "alloca":
+                addAlloca(valueinstr, dest);
+                break;
             case "load":
                 addLoad(valueinstr, dest);
                 break;
@@ -200,9 +201,34 @@ public class ArmGenerator {
             case "zext":
                 addZext(valueinstr, dest);
                 break;
+            case "getelementptr":
+                addGetelementptr(valueinstr, dest);
+                break;
             default:
                 break;
         }
+    }
+
+    // %2 = getelementptr inbounds [x x [y x i32]], [x x [y x i32]]* %1, i32 a, i32 b
+    // %2 = %1 + a * x * y * 4 + b * y * 4
+    private void addGetelementptr(Instr instr, Ident dest) {
+        Type t1 = ((GetElementPtrInst) instr).getT1();
+        Type t2 = ((GetElementPtrInst) instr).getT2();
+        Value v = ((GetElementPtrInst) instr).getV();
+
+
+        Value v3 = ((GetElementPtrInst) instr).getV3();
+        int val3 = v3.getVal();
+        int val4;
+
+        if (((GetElementPtrInst) instr).hasFourth()) {
+            Value v4 = ((GetElementPtrInst) instr).getV4();
+            val4 = v4.getVal();
+        } else {
+            val4 = 0;
+        }
+
+
     }
 
     private void addBinary(Instr instr, Ident dest) {
@@ -369,85 +395,24 @@ public class ArmGenerator {
         add("b " + labelname);
     }
 
-    private void addAlloca(Instr instr) {
+    // %1 = alloca [4 x [2 x i32]]
+    // 对于%1 = alloca i32，给%1赋的值是%1的绝对地址+4
+    private void addAlloca(Instr instr, Ident dest) {
         Type t = ((AllocaInst) instr).getT();
         if (t.getTypec() == TypeC.A) {
-            addAllocaArray(instr);
+            addAllocaArray(instr, dest);
         } else if (t.getTypec() == TypeC.I) {
-            addAllocaInt(instr);
+            addAllocaInt(instr, dest);
         } else {
             error();
         }
     }
 
-    private void addAllocaInt(Instr instr) {
-//        String name = code.getName();
-        String name = "";
+    private void addAllocaInt(Instr instr, Ident dest) {
 
-        if (instr.isGlobal()) {  //全局int变量存.data段
-            String intDeclWordInitStr = "Global_" + name + ": .word ";
-            tabcount += 1;
-            add(intDeclWordInitStr + "0:1");
-            tabcount -= 1;
-
-        } else {    //局部int变量分寄存器或存sp段
-//            SymbolTable.Scope scope = code.getScope();  //修改后可获取到。！！！此处一定Main内也要这样处理！！！
-//            scope.inblockoffset += 4;   //记录目前block内偏移
-
-//            if (innerfunc) {   //在函数体内部定义intDecl表现不同
-////                add("addi $sp, $sp, -4");
-//                add("sub sp, sp, #4");
-//
-//                //todo 函数体内的decl不能与symbol绑定，最好不分寄存器，否则还得处理寄存器取入sp
-//                infuncoffset += 4;
-//                Symbol symbol = code.getSymbol();
-//                Assert.check(symbol, "MIPSTranslator / addIntDecl()");  //todo 取symbol存疑
-//                symbol.addrOffsetDec = -infuncoffset;    ///todo 记录的偏移量是此时相对于函数头的偏移，后续还要运算
-//
-//                if (code.init) {    //init则需要存数到$sp
-//                    int regno = register.applyTmpRegister();
-//                    String regname = register.getRegisterNameFromNo(regno);
-//
-//                    int num = code.getNum();        //todo 存疑
-//                    add("li $" + regname + ", " + num);
-//                    add("sw $" + regname + ", 0($sp)");
-//
-//                    register.freeTmpRegister(regno);
-//                }   //todo 否则当0就行？不太对吧
-//
-//
-//            } else {   //正常Main内部定义的intDecl
-//                add("addi $sp, $sp, -4");
-//                spoffset += 4;
-//
-//                Symbol symbol = code.getSymbol();
-//                Assert.check(symbol, "MIPSTranslator / addIntDecl()");//todo 取symbol存疑
-//                symbol.addrOffsetDec = -spoffset;    ///todo 记录地址【完成！】
-//
-//                /*if (register.hasSpareRegister()) {
-//                    String regname = register.applyRegister(symbol);
-//                    if (code.init) {
-//                        add("li $" + regname + ", " + code.getNum());
-//                    }
-//
-//                } else*/
-//                //无多余寄存器
-//                if (code.init) {    //init则需要存数到$sp
-//                    int regno = register.applyTmpRegister();
-//                    String regname = register.getRegisterNameFromNo(regno);
-//
-//                    int num = code.getNum();        //todo 存疑
-//                    add("li $" + regname + ", " + num);
-//                    add("sw $" + regname + ", 0($sp)");
-//
-//                    register.freeTmpRegister(regno);
-//                }//否则当0就行
-//
-//            }
-        }
     }
 
-    private void addAllocaArray(Instr code) {
+    private void addAllocaArray(Instr instr, Ident dest) {
     }
 
     private void addPrints(Instr instr) {
@@ -531,7 +496,6 @@ public class ArmGenerator {
 
         switch (callfuncname) {
             //todo 补充array处理
-
 
             case "getint":
 
@@ -768,16 +732,18 @@ public class ArmGenerator {
 
     //计算一个函数参数的偏移量
     private int calcuFuncParaOffset(String name) {
-        int paraorder = curFunc.varnameOrderInFuncPara(name);   //范围是1-n共n个参数
-        int parafullnum = curFunc.getParaNum();
-        int funcparaoffset = infuncoffset + 4 + (parafullnum - paraorder) * 4;
-        return funcparaoffset;
+//        int paraorder = curFunc.varnameOrderInFuncPara(name);   //范围是1-n共n个参数
+//        int parafullnum = curFunc.getParaNum();
+//        int funcparaoffset = infuncoffset + 4 + (parafullnum - paraorder) * 4;
+//        return funcparaoffset;
+        return 0;
     }
 
     //计算一个函数内局部变量的偏移量
     private int calcuFuncLocalVarOffset(Symbol symbol) {
-        int localvaraddr = infuncoffset + symbol.addrOffsetDec;
-        return localvaraddr;
+//        int localvaraddr = infuncoffset + symbol.addrOffsetDec;
+//        return localvaraddr;
+        return 0;
     }
 
     //将函数 存在sp的内容加载到寄存器
