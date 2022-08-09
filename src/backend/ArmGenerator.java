@@ -61,6 +61,9 @@ public class ArmGenerator {
         Function mainFunc = allfunclist.get(allfunclist.size() - 1);
         allfunclist.remove(allfunclist.size() - 1);
         allfunclist.add(0, mainFunc);
+        for (Function function: allfunclist) {
+            function.initOffsetTable();
+        }
         this.aflist = allfunclist;
         this.armlist = new ArrayList<>();
         this.printstrMap = new HashMap<>();
@@ -89,7 +92,7 @@ public class ArmGenerator {
 //        collectPrintStr();
 
         for (Function f : aflist) {
-            f.initOffsetTable();    // 初始化偏移计算
+//            f.initOffsetTable();    // 初始化偏移计算
             curFunc = f;
 
             // GlobalDef特判
@@ -463,7 +466,15 @@ public class ArmGenerator {
         // sp移动
         tabcount += 1;
 //        add("sub sp, sp,  #" + f.getFuncSize());
-        selfSubImm("sp", f.getFuncSize());
+
+
+
+        if (curFunc.getFuncheader().getFname().equals("main")) {
+            selfSubImm("sp", f.getFuncSize());
+        }
+
+
+        add("mov r7, sp");
         tabcount -= 1;
     }
 
@@ -552,12 +563,12 @@ public class ArmGenerator {
         // 地址 &1+4 存到%1 对应的cache里
         String regt = reg.applyTmp();
         int off = curFunc.getOffsetByName(dest.toString());
-        add("mov " + regt + ", sp");
+        add("mov " + regt + ", r7");
 
         selfAddImm(regt, (off + 4));
 
 //        add("str " + regt + ", [sp,  #" + off + "]");
-        addInstrRegSpOffset("str", regt, "sp", off);
+        addInstrRegSpOffset("str", regt, "r7", off);
 
         reg.freeTmp(regt);
     }
@@ -614,9 +625,7 @@ public class ArmGenerator {
         String oppomovestr = ((IcmpInst) instr).predToOppoBr();
         add("cmp " + reg1 + ", " + reg2);
         add("mov" + movestr + " " + destreg + ", #1");
-        add("mov" + oppomovestr + " " + destreg + ", #0");
-
-        reg.freeTmp(reg1);
+        add("mov" + oppomovestr + " " + destreg + ", #0");reg.freeTmp(reg1);
         reg.freeTmp(reg2);
 
         storeValue(destreg, dest);
@@ -644,43 +653,64 @@ public class ArmGenerator {
         }
 
         add("push {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}");
-        int pushregs = 52;
 
         // 准备传参数r0-r3为前四个参数，[sp]开始为第5个及之后参数
         int pushargsnum = max(argsnum * 4 - 16, 0);
 //        add("sub sp, sp,  #" + (pushregs + pushargsnum));
-        selfSubImm("sp", (pushregs + pushargsnum));
+        add("push {r7}");
+        selfSubImm("sp", getFuncSize(callfuncname));
 
-        if (argsnum <= 4) {
-            for (int i = argsnum - 1; i >= 0; i--) {
-                TypeValue tv = args.get(i);
-                if (tv.getType().getTypec() == TypeC.P) {
-
-                } else {
-                    Value v = tv.getValue();
-                    if (v.isIdent()) {
-                        String regt = reg.applyTmp();
-                        loadValue(regt, v.getIdent());
-                        add("mov r" + i + ", " + regt);
-                        reg.freeTmp(regt);
-
-                    } else {
-                        moveImm("r" + i, v.getVal());
-                    }
-                }
+//        if (argsnum <= 4) {
+//            for (int i = argsnum - 1; i >= 0; i--) {
+//                TypeValue tv = args.get(i);
+//                if (tv.getType().getTypec() == TypeC.P) {
+//
+//                } else {
+//                    Value v = tv.getValue();
+//                    if (v.isIdent()) {
+//                        String regt = reg.applyTmp();
+//                        loadValue(regt, v.getIdent());
+//                        add("mov r" + i + ", " + regt);
+//                        reg.freeTmp(regt);
+//
+//                    } else {
+//                        moveImm("r" + i, v.getVal());
+//                    }
+//                }
+//            }
+//        }
+        //暂时全用内存传参
+        for (int i = 0; i < argsnum; i++) {
+            TypeValue tv = args.get(i);
+            Value v = tv.getValue();
+            if (v.isIdent()) {
+                String regt = reg.applyTmp();
+                loadValue(regt, v.getIdent());
+//                add("mov r" + i + ", " + regt);
+                add("str " + regt + ", [sp, #" + i * 4 + "]");
+                reg.freeTmp(regt);
+            } else {
+                String regt = reg.applyTmp();
+                moveImm(regt, v.getVal());
+                add("str " + regt + ", [sp, #" + i * 4 + "]");
+                reg.freeTmp(regt);
             }
+
         }
+
         //todo
         add("bl " + callfuncname);
 
         // 若有dest，保存返回结果
-        if (dest.length > 0) {
-            storeValue("r0", dest[0]);
-        }
+
 
 //        add("add sp, sp,  #" + (pushregs + pushargsnum));
 
-        selfAddImm("sp", (pushregs + pushargsnum));
+        selfAddImm("sp", getFuncSize(callfuncname));
+        add("pop {r7}");
+        if (dest.length > 0) {
+            storeValue("r0", dest[0]);
+        }
         add("pop {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}");
     }
 
@@ -778,7 +808,10 @@ public class ArmGenerator {
         }
 
 //        add("add sp, sp,  #" + curFunc.getFuncSize());
-        selfAddImm("sp", curFunc.getFuncSize());
+        if (curFunc.getFuncheader().getFname().equals("main")) {
+            selfAddImm("sp", curFunc.getFuncSize());
+        }
+
         add("bx lr");
     }
 
@@ -957,7 +990,7 @@ public class ArmGenerator {
             int off = curFunc.getOffsetByName(destIdent.toString());
 
 //            add("ldr " + regName + ", [sp,  #" + off + "]");
-            addInstrRegSpOffset("ldr", regName, "sp", off);
+            addInstrRegSpOffset("ldr", regName, "r7", off);
         }
     }
 
@@ -981,7 +1014,7 @@ public class ArmGenerator {
             int off = curFunc.getOffsetByName(destIdent.toString());
 
 //            add("str " + regName + ", [sp, #" + off + "]");
-            addInstrRegSpOffset("str", regName, "sp", off);
+            addInstrRegSpOffset("str", regName, "r7", off);
         }
     }
 
@@ -1033,15 +1066,15 @@ public class ArmGenerator {
     // 要求 off < 4096
     private void addInstrRegSpOffset(String instrname, String regname, String sp, int num) {
         if (num < 4096) {
-            add(instrname + " " + regname + ", [sp, #" + num + "]");
+            add(instrname + " " + regname + ", [" + sp + ", #" + num + "]");
 
         } else {
             String regt = reg.applyTmp();
             moveImm(regt, num);
-            add("add " + "sp" + ", " + "sp" + ", " + regt);
+            add("add " + sp + ", " + sp + ", " + regt);
             reg.freeTmp(regt);
 
-            add(instrname + " " + regname + ", [sp, #0]");
+            add(instrname + " " + regname + ", [" + sp + ", #0]");
         }
     }
 
@@ -1051,6 +1084,15 @@ public class ArmGenerator {
 
     private String getLable(String s) {
         return curFunc.getFuncheader().getFname() + "_label" + s;
+    }
+
+    private int getFuncSize(String name) {
+        for (Function function: aflist) {
+            if (function.getFuncheader().getFname().equals(name)) {
+                return function.getFuncSize();
+            }
+        }
+        return -10086;
     }
 }
 

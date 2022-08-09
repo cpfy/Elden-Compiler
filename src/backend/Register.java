@@ -67,7 +67,9 @@ public class Register {
 
     private void initFreeRegList() {
         for (int i = 0; i < 13; i++) {
-            freeRegList.add(i);
+            if (i != 7) {
+                freeRegList.add(i);
+            }
         }
     }
 
