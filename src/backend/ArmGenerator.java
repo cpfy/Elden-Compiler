@@ -46,8 +46,9 @@ public class ArmGenerator {
     private final String tab = "\t";
 
 
-    private boolean infuncdef = false;
-    private boolean inmain = false;     //放到global主要用于main函数return 0时的判断
+    //    private boolean infuncdef = false;
+//    private boolean inmain = false;     //放到global主要用于main函数return 0时的判断
+    private boolean outGlobalDef = false;
 
     //    private int spoffset = 0;           // 正数，统一度量衡了
     private boolean innerfunc = false;  // 标记此时在函数体内
@@ -95,13 +96,10 @@ public class ArmGenerator {
             }
 
             if (f.getFuncheader().getFname() != "GlobalContainer") {
-                infuncdef = true;
-                add(".text");
-                add(".global main");
-                //add(tab + "b main");
-
-                if (f.getFuncheader().getFname().equals("main")) {
-                    inmain = true;
+                if (!outGlobalDef) {
+                    outGlobalDef = true;
+                    add(".text");
+                    add(".global main");
                 }
 
                 addFuncDef(f);  // 加个label
@@ -113,7 +111,7 @@ public class ArmGenerator {
                 addBlockLabel(b);
                 for (Instr i : b.getInblocklist()) {
 
-                    if (inmain || infuncdef) {
+                    if (outGlobalDef) {
                         addInstr(i);
                     } else {
                         // global ident
@@ -121,6 +119,8 @@ public class ArmGenerator {
                     }
                 }
             }
+
+            tabcount -= 1;
         }
 
         addProgramEnd();
@@ -205,12 +205,17 @@ public class ArmGenerator {
             case "getelementptr":
                 addGetelementptr(valueinstr, dest);
                 break;
+            case "call":
+                // e.g. getint()
+                addCall(valueinstr, dest);
+                break;
             default:
                 break;
         }
 
 
     }
+
 
     // %2 = getelementptr inbounds [x x [y x i32]], [x x [y x i32]]* %1, i32 a, i32 b
     // %2 = %1 + a * (x * y * 4) + b * (y * 4)
@@ -229,12 +234,15 @@ public class ArmGenerator {
         int off2 = t2.getOffset();
         if (v3.isIdent()) {
             String rega = register.applyTmp();
+            String regt = register.applyTmp();
             loadValue(rega, v3.getIdent());
 
             // mul a, a, off1
-            add("mul " + rega + ", " + rega + ", #" + off1);
+            add("mov " + regt + ", #" + off1);
+            add("mul " + rega + ", " + rega + ", " + regt);
             add("add " + regd + ", " + regd + ", " + rega);
 
+            register.freeTmp(regt);
             register.freeTmp(rega);
 
         } else {
@@ -248,11 +256,15 @@ public class ArmGenerator {
 
             if (v4.isIdent()) {
                 String regb = register.applyTmp();
+                String regt = register.applyTmp();
                 loadValue(regb, v4.getIdent());
+
                 // mul b, b, off2
-                add("mul " + regb + ", " + regb + ", #" + off2);
+                add("mov " + regt + ", #" + off2);
+                add("mul " + regb + ", " + regb + ", " + regt);
                 add("add " + regd + ", " + regd + ", " + regb);
 
+                register.freeTmp(regt);
                 register.freeTmp(regb);
 
             } else {
@@ -412,7 +424,7 @@ public class ArmGenerator {
 
         }
 
-        storeValue(destreg, v.getIdent());
+        storeValue(destreg, dest);
         register.freeTmp(destreg);
     }
 
@@ -426,11 +438,14 @@ public class ArmGenerator {
         String regt = register.applyTmp();
         loadValue(regt, v.getIdent());
 
-        add("cmp " + regt + ", #1");
+        String one = register.applyTmp();
+        add("mov " + one + ", #1");
+        add("cmp " + regt + ", " + one);
         add("beq " + i1.getId());
         add("bne " + i2.getId());
 
         register.freeTmp(regt);
+        register.freeTmp(one);
 
     }
 
@@ -494,21 +509,20 @@ public class ArmGenerator {
         String destreg = register.applyTmp();
 
 
-        String reg1, reg2;
+        String reg1 = register.applyTmp();
         if (v1.isIdent()) {
-            reg1 = register.applyTmp();
             loadValue(reg1, v1.getIdent());
 
         } else {
-            reg1 = "#" + v1.getVal();
+            add("mov " + reg1 + ", #" + v1.getVal());
         }
 
+        String reg2 = register.applyTmp();
         if (v2.isIdent()) {
-            reg2 = register.applyTmp();
             loadValue(reg2, v2.getIdent());
 
         } else {
-            reg2 = "#" + v2.getVal();
+            add("mov " + reg2 + ", #" + v2.getVal());
         }
 
         String movestr = ((IcmpInst) instr).predToBr();
@@ -517,8 +531,8 @@ public class ArmGenerator {
         add("mov" + movestr + " " + destreg + ", #1");
         add("mov" + oppomovestr + " " + destreg + ", #0");
 
-        if (v1.isIdent()) register.freeTmp(reg1);
-        if (v2.isIdent()) register.freeTmp(reg2);
+        register.freeTmp(reg1);
+        register.freeTmp(reg2);
 
         storeValue(destreg, dest);
         register.freeTmp(destreg);
@@ -533,7 +547,8 @@ public class ArmGenerator {
     private void addPush(Instr instr) {
     }
 
-    private void addCall(Instr instr) {
+    // dest为可选参数
+    private void addCall(Instr instr, Ident... dest) {
         String callfuncname = ((CallInst) instr).getFuncname();
         int argsnum = ((CallInst) instr).getArgsNum();
         ArrayList<TypeValue> args = ((CallInst) instr).getArgs();
@@ -572,6 +587,10 @@ public class ArmGenerator {
         //todo
         add("bl " + callfuncname);
 
+        // 若有dest，保存返回结果
+        if (dest.length > 0) {
+            storeValue("r0", dest[0]);
+        }
 
         add("add sp, sp, #" + (pushregs + pushargsnum));
         add("pop {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,pc}");
@@ -579,7 +598,7 @@ public class ArmGenerator {
 
 
     // 标准printf, scanf等函数
-    private void addStandardCall(Instr instr) {
+    private void addStandardCall(Instr instr, Ident... dest) {
         String callfuncname = ((CallInst) instr).getFuncname();
         ArrayList<TypeValue> args = ((CallInst) instr).getArgs();
         int argLength = args.size();
@@ -645,20 +664,29 @@ public class ArmGenerator {
         //统一
         add("bl " + callfuncname);
 
+        // 若有dest，保存返回结果
+        if (dest.length > 0) {
+            storeValue("r0", dest[0]);
+        }
+
         add("pop {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}");
     }
 
     private void addReturn(Instr instr) {
         Value vret = ((RetTerm) instr).getV();
-        if (vret.isIdent()) {
-            String regt = register.applyTmp();
-            loadValue(regt, vret.getIdent());
-            add("mov r0, " + regt);
-            register.freeTmp(regt);
 
-        } else {
-            int num = vret.getVal();
-            add("mov r0, #" + num);
+        // ret void啥也不用管
+        if (vret != null) {
+            if (vret.isIdent()) {
+                String regt = register.applyTmp();
+                loadValue(regt, vret.getIdent());
+                add("mov r0, " + regt);
+                register.freeTmp(regt);
+
+            } else {
+                int num = vret.getVal();
+                add("mov r0, #" + num);
+            }
         }
 
         add("add sp, sp, #" + curFunc.getFuncSize());
