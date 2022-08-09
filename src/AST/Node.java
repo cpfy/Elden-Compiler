@@ -15,7 +15,7 @@ public abstract class Node {
 
     static HashSet<String> globalNames = new HashSet<>();
     public static String newGlobalName(String name) {
-        String ans = null;
+        String ans = name;
         for (int i = 0; i < name.length(); i++) {
             if (name.charAt(i) >= '0' && name.charAt(i) <= '9') {
                 ans = name.substring(0, i);
