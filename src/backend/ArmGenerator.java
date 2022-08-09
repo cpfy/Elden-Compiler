@@ -932,7 +932,9 @@ public class ArmGenerator {
 //            register.freeTmp(regt);
 
             int off = curFunc.getOffsetByName(destIdent.toString());
-            add("str " + regName + ", [sp,  #" + off + "]");
+
+//            add("str " + regName + ", [sp, #" + off + "]");
+            addInstrRegSpOffset("str", regName, "sp", off);
         }
     }
 

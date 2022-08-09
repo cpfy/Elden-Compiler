@@ -567,9 +567,25 @@ public class IRParser {
                 return SIToFPInst();
             case "fptosi":
                 return FPToSIInst();
+            case "fcmp":
+                return FCmpInst();
             default:
                 return BinaryInst();
         }
+    }
+
+    // FCmpInst : "fcmp" FastMathFlags FPred Type Value "," Value OptCommaSepMetadataAttachmentList ;
+    // e.g. %5 = fcmp olt float %3, %4
+    private Instr FCmpInst() {
+        match("fcmp");
+        FPred();
+        Type();
+        Value();
+        match(",");
+        Value();
+
+        return new FCmpInst();
+
     }
 
     // FPToSIInst : "fptosi" Type Value "to" Type OptCommaSepMetadataAttachmentList

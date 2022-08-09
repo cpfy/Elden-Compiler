@@ -24,7 +24,7 @@ public abstract class Instr {
 
     （新增）
     [全局定义]: globaldef（仅全局使用）
-    [浮点]: sitofp, fptosi
+    [浮点]: sitofp, fptosi, fcmp
 
     */
 

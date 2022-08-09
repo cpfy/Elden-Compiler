@@ -611,6 +611,38 @@ FPToSIInst
 ;
 ```
 
+##### FCmpInst
+
+```
+FCmpInst
+	: "fcmp" FastMathFlags FPred Type Value "," Value OptCommaSepMetadataAttachmentList
+;
+```
+
+##### FPred
+
+```
+FPred
+	: "false"
+	| "oeq"
+	| "oge"
+	| "ogt"
+	| "ole"
+	| "olt"
+	| "one"
+	| "ord"
+	| "true"
+	| "ueq"
+	| "uge"
+	| "ugt"
+	| "ule"
+	| "ult"
+	| "une"
+	| "uno"
+;
+
+```
+
 
 
 #### Terminator
