@@ -978,6 +978,7 @@ public class ArmGenerator {
         // global则加载进来
         if (destIdent.isGlobal()) {
             add("ldr " + regName + ", addr_of_" + destIdent.getName());
+            add("add " + regName + ", " + regName + ", 0x10000");//todo 为什么要加0x10000(待确定，模拟器上是0x10000)，因为addr_of_xxx中记录的地址是相对于text段的地址，使用时需要加上text段的基地址（0x10000）
 //            add("ldr " + regName + ", [" + regName + "]");
 
         } else {
@@ -1003,6 +1004,7 @@ public class ArmGenerator {
 //            register.freeTmp(regt);
 
             add("str " + regName + ", addr_of_" + destIdent.getName());
+            add("add " + regName + ", " + regName + ", 0x10000");
 
         } else {
 //            int off = curFunc.getOffsetByName(destIdent.toString());
@@ -1073,7 +1075,6 @@ public class ArmGenerator {
             moveImm(regt, num);
             add("add " + sp + ", " + sp + ", " + regt);
             reg.freeTmp(regt);
-
             add(instrname + " " + regname + ", [" + sp + ", #0]");
         }
     }
