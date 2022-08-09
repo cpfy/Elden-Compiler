@@ -37,7 +37,7 @@ public class Parser {
     }
 
     private void funcNewName(RawWord rawWord) {
-        String ans = null;
+        String ans = rawWord.getName();
         String name = rawWord.getName();
         for (int i = 0; i < name.length(); i++) {
             if (name.charAt(i) >= '0' && name.charAt(i) <= '9') {
