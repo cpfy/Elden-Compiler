@@ -2,6 +2,7 @@ package backend.backendTable;
 
 import llvm.Block;
 import llvm.Function;
+import llvm.Ident;
 import llvm.Instr.AllocaInst;
 import llvm.Instr.AssignInstr;
 import llvm.Instr.Instr;
@@ -20,9 +21,14 @@ public class GenerateTable {
 
     private void execute() {
         initList();
+        int n = 0;
+        for (Ident ident: function.getFuncheader().getParas()) {
+            n = 4;
+            function.addVar(ident.toString(), n);
+        }
 
         for (Instr instr: instrs) {
-            int n = 0;
+            n = 0;
             if (instr instanceof AssignInstr) {
                 n += 4;
                 AssignInstr assignInstr = (AssignInstr) instr;
