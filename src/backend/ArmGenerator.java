@@ -79,6 +79,8 @@ public class ArmGenerator {
         add(".extern putfloat");
         add(".extern putarray");
         add(".extern putfarray");
+        add(".cpu cortex-a15");
+        add(".align 4");
         add("");
 
 //        collectPrintStr();
@@ -456,8 +458,9 @@ public class ArmGenerator {
 
     private void addBr(Instr instr) {
         Ident bident = ((BrTerm) instr).getLi();
-        String labelname = bident.getName();
-        add("b " + labelname);
+//        String labelname = bident.getName();
+        String label = String.valueOf(bident.getId());
+        add("b " + label);
     }
 
     // %1 = alloca [4 x [2 x i32]]
@@ -555,7 +558,7 @@ public class ArmGenerator {
     // dest为可选参数
     private void addCall(Instr instr, Ident... dest) {
         String callfuncname = ((CallInst) instr).getFuncname();
-        int argsnum = ((CallInst) instr).getArgsNum();
+        int argsnum = ((CallInst) instr).getArgsNum();  // 变量个数
         ArrayList<TypeValue> args = ((CallInst) instr).getArgs();
 
         if (((CallInst) instr).isStandardCall()) {
