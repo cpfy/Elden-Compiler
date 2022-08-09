@@ -577,15 +577,15 @@ public class IRParser {
     // FCmpInst : "fcmp" FastMathFlags FPred Type Value "," Value OptCommaSepMetadataAttachmentList ;
     // e.g. %5 = fcmp olt float %3, %4
     private Instr FCmpInst() {
-        match("fcmp");
-        FPred();
-        Type();
-        Value();
-        match(",");
-        Value();
-
-        return new FCmpInst();
-
+//        match("fcmp");
+//        FPred();
+//        Type();
+//        Value();
+//        match(",");
+//        Value();
+//
+//        return new FCmpInst();
+        return null;
     }
 
     // FPToSIInst : "fptosi" Type Value "to" Type OptCommaSepMetadataAttachmentList

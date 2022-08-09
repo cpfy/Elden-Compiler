@@ -467,7 +467,7 @@ public class ArmGenerator {
     // block的标签
     private void addBlockLabel(Block b) {
         tabcount -= 1;
-        add(b.getLabel() + ":");
+        add(getLable(b.getLabel()) + ":");
         tabcount += 1;
     }
 
@@ -518,8 +518,8 @@ public class ArmGenerator {
         String one = reg.applyTmp();
         add("mov " + one + ", #1");
         add("cmp " + regt + ", " + one);
-        add("beq " + i1.getId());
-        add("bne " + i2.getId());
+        add("beq " + getLable(i1.getId()));
+        add("bne " + getLable(i2.getId()));
 
         reg.freeTmp(regt);
         reg.freeTmp(one);
@@ -529,7 +529,7 @@ public class ArmGenerator {
     private void addBr(Instr instr) {
         Ident bident = ((BrTerm) instr).getLi();
 //        String labelname = bident.getName();
-        String label = String.valueOf(bident.getId());
+        String label = getLable(bident.getId());
         add("b " + label);
     }
 
@@ -1040,6 +1040,14 @@ public class ArmGenerator {
 
             add(instrname + " " + regname + ", [sp, #0]");
         }
+    }
+
+    private String getLable(int s) {
+        return curFunc.getFuncheader().getFname() + "_label" + s;
+    }
+
+    private String getLable(String s) {
+        return curFunc.getFuncheader().getFname() + "_label" + s;
     }
 }
 
