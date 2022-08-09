@@ -23,6 +23,9 @@ public class RetTerm extends Instr {
 
     @Override
     public String toString() {
+        if (this.v == null) {
+            return "ret " + retype.toString();
+        }
         return "ret " + retype.toString() + " " + v.toString();
     }
 
