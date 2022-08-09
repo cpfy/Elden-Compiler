@@ -222,7 +222,7 @@ public class ArmGenerator {
             default:
                 break;
         }
-        
+
     }
 
     private void addFPToSI(Instr valueinstr, Ident dest) {
@@ -256,7 +256,8 @@ public class ArmGenerator {
             loadValue(rega, v3.getIdent());
 
             // mul a, a, off1
-            add("mov " + regt + ", #" + off1);
+            // 封装 add("mov " + regt + ",   #" + off1);
+            moveImm(regt, off1);
             add("mul " + rega + ", " + rega + ", " + regt);
             add("add " + regd + ", " + regd + ", " + rega);
 
@@ -265,7 +266,7 @@ public class ArmGenerator {
 
         } else {
             int mulAOff1 = v3.getVal() * off1;
-            add("add " + regd + ", " + regd + ", #" + mulAOff1);
+            selfAddImm(regd, mulAOff1);
         }
 
         if (((GetElementPtrInst) instr).hasFourth()) {
@@ -278,7 +279,7 @@ public class ArmGenerator {
                 loadValue(regb, v4.getIdent());
 
                 // mul b, b, off2
-                add("mov " + regt + ", #" + off2);
+                moveImm(regt, off2);
                 add("mul " + regb + ", " + regb + ", " + regt);
                 add("add " + regd + ", " + regd + ", " + regb);
 
@@ -287,13 +288,14 @@ public class ArmGenerator {
 
             } else {
                 int mulAOff2 = v4.getVal() * off2;
-                add("add " + regd + ", " + regd + ", #" + mulAOff2);
+                selfAddImm(regd, mulAOff2);
             }
         }
 
         storeValue(regd, dest);
         register.freeTmp(regd);
     }
+
 
     private void addBinary(Instr instr, Ident dest) {
         String op = ((BinaryInst) instr).getOp();
@@ -333,7 +335,7 @@ public class ArmGenerator {
             loadValue(reg1, v1.getIdent());
 
         } else {
-            add("mov " + reg1 + ", #" + v1.getVal());
+            moveImm(reg1, v1.getVal());
         }
 
         //v2
@@ -342,7 +344,7 @@ public class ArmGenerator {
             loadValue(reg2, v2.getIdent());
 
         } else {
-            add("mov " + reg2 + ", #" + v2.getVal());
+            moveImm(reg2, v2.getVal());
         }
 
 //        String destreg = register.applyRegister(dest);
@@ -373,8 +375,7 @@ public class ArmGenerator {
             loadValue(reg, v1.getIdent());
 
         } else {
-            int val = v1.getVal();
-            add("mov " + reg + ", #" + val);
+            moveImm(reg, v1.getVal());
 
         }
 
@@ -407,7 +408,10 @@ public class ArmGenerator {
         add(f.getFuncheader().getFname() + ":");
 
         // sp移动
-        add(tab + "sub sp, sp, #" + f.getFuncSize());
+        tabcount += 1;
+//        add("sub sp, sp,  #" + f.getFuncSize());
+        selfSubImm("sp", f.getFuncSize());
+        tabcount -= 1;
     }
 
     // block的标签
@@ -443,8 +447,7 @@ public class ArmGenerator {
             add("ldr " + destreg + ", [" + destreg + "]");
 
         } else {
-            int val = v.getVal();
-            add("mov " + destreg + ", #" + val);
+            moveImm(destreg, v.getVal());
 
         }
 
@@ -497,8 +500,12 @@ public class ArmGenerator {
         String regt = register.applyTmp();
         int off = curFunc.getOffsetByName(dest.toString());
         add("mov " + regt + ", sp");
-        add("add " + regt + ", " + regt + ", #" + (off + 4));
-        add("str " + regt + ", [sp, #" + off + "]");
+
+        selfAddImm(regt, (off + 4));
+
+//        add("str " + regt + ", [sp,  #" + off + "]");
+        addInstrRegSpOffset("str", regt, "sp", off);
+
         register.freeTmp(regt);
     }
 
@@ -539,7 +546,7 @@ public class ArmGenerator {
             loadValue(reg1, v1.getIdent());
 
         } else {
-            add("mov " + reg1 + ", #" + v1.getVal());
+            moveImm(reg1, v1.getVal());
         }
 
         String reg2 = register.applyTmp();
@@ -547,7 +554,7 @@ public class ArmGenerator {
             loadValue(reg2, v2.getIdent());
 
         } else {
-            add("mov " + reg2 + ", #" + v2.getVal());
+            moveImm(reg2, v2.getVal());
         }
 
         String movestr = ((IcmpInst) instr).predToBr();
@@ -588,7 +595,8 @@ public class ArmGenerator {
 
         // 准备传参数r0-r3为前四个参数，[sp]开始为第5个及之后参数
         int pushargsnum = max(argsnum * 4 - 16, 0);
-        add("sub sp, sp, #" + (pushregs + pushargsnum));
+//        add("sub sp, sp,  #" + (pushregs + pushargsnum));
+        selfSubImm("sp", (pushregs + pushargsnum));
 
         if (argsnum <= 4) {
             for (int i = argsnum - 1; i >= 0; i--) {
@@ -604,7 +612,7 @@ public class ArmGenerator {
                         register.freeTmp(regt);
 
                     } else {
-                        add("mov r" + i + ", #" + v.getVal());
+                        moveImm("r" + i, v.getVal());
                     }
                 }
             }
@@ -617,7 +625,9 @@ public class ArmGenerator {
             storeValue("r0", dest[0]);
         }
 
-        add("add sp, sp, #" + (pushregs + pushargsnum));
+//        add("add sp, sp,  #" + (pushregs + pushargsnum));
+
+        selfAddImm("sp", (pushregs + pushargsnum));
         add("pop {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,pc}");
     }
 
@@ -661,7 +671,7 @@ public class ArmGenerator {
                         add("mov r0, " + regt);
 
                     } else {
-                        add("mov r0, #" + v.getVal());
+                        moveImm("r0", v.getVal());
                     }
                 }
                 // add("bl putint");        //最后统一弄
@@ -710,11 +720,12 @@ public class ArmGenerator {
 
             } else {
                 int num = vret.getVal();
-                add("mov r0, #" + num);
+                moveImm("r0", num);
             }
         }
 
-        add("add sp, sp, #" + curFunc.getFuncSize());
+//        add("add sp, sp,  #" + curFunc.getFuncSize());
+        selfAddImm("sp", curFunc.getFuncSize());
         add("bx lr");
     }
 
@@ -837,321 +848,6 @@ public class ArmGenerator {
         return regname;
     }
 
-    //计算一个函数参数的偏移量
-    private int calcuFuncParaOffset(String name) {
-//        int paraorder = curFunc.varnameOrderInFuncPara(name);   //范围是1-n共n个参数
-//        int parafullnum = curFunc.getParaNum();
-//        int funcparaoffset = infuncoffset + 4 + (parafullnum - paraorder) * 4;
-//        return funcparaoffset;
-        return 0;
-    }
-
-    //计算一个函数内局部变量的偏移量
-    private int calcuFuncLocalVarOffset(Symbol symbol) {
-//        int localvaraddr = infuncoffset + symbol.addrOffsetDec;
-//        return localvaraddr;
-        return 0;
-    }
-
-    //将函数 存在sp的内容加载到寄存器
-    private void loadWordOfInfuncVarFromSpToReg(Variable var, String regname) {
-        String name = var.getName();
-        if (curFunc.varnameIsFuncPara(name)) {    //函数内+para需要lw
-            int paraspoffset = calcuFuncParaOffset(name);
-            add("lw $" + regname + ", " + paraspoffset + "($sp)");
-
-        } else {    //函数内+local var需要lw
-            Symbol symbol = var.getSymbol();
-            int localvarspoffset = calcuFuncLocalVarOffset(symbol);
-            add("lw $" + regname + ", " + localvarspoffset + "($sp)");
-        }
-    }
-
-    //将函数 存在寄存器放回sp
-    private void saveWordOfInfuncVarFromRegToSp(Variable var, String regname) {
-        String name = var.getName();
-        if (curFunc.varnameIsFuncPara(name)) {    //函数内+para需要lw
-            int paraspoffset = calcuFuncParaOffset(name);
-            add("sw $" + regname + ", " + paraspoffset + "($sp)");
-
-        } else {    //函数内+local var需要lw
-            Symbol symbol = var.getSymbol();
-            int localvarspoffset = calcuFuncLocalVarOffset(symbol);
-            add("sw $" + regname + ", " + localvarspoffset + "($sp)");
-        }
-    }
-
-    //将 局部变量 存在sp的内容加载到寄存器
-    private void loadWordOfLocalMainfuncVarSymbolFromSpToReg(String regname, Symbol symbol) {
-        int symboladdr = symbol.spBaseHex + symbol.addrOffsetDec;
-        //String hexaddr = "0x" + Integer.toHexString(symboladdr);
-        String hexaddr = convertIntAddrToHex(symboladdr);
-        add("lw $" + regname + ", " + hexaddr);
-    }
-
-    //将 局部变量 存在寄存器放回sp
-    private void saveWordOfLocalMainfuncVarSymbolFromSpToReg(String regname, Symbol symbol) {
-        int symboladdr = symbol.spBaseHex + symbol.addrOffsetDec;
-        //String hexaddr = "0x" + Integer.toHexString(symboladdr);
-        String hexaddr = convertIntAddrToHex(symboladdr);
-        add("sw $" + regname + ", " + hexaddr);
-    }
-
-    //将任意variable加载到指定寄存器，oper1、2、dest等均可用; 优先给offset用
-    private String loadWordOfAnyVariableToRegName(Variable oper0) {
-        String op0reg = "null_reg!!";
-
-        if (oper0.isKindofsymbol()) {       //todo 判定、分类有隐患?
-            Symbol oper0symbol = oper0.getSymbol();
-            if (innerfunc && !oper0symbol.isGlobal()) {    //函数内+symbol需要lw
-                int tmpregforop0 = register.applyTmpRegister();
-                op0reg = register.getRegisterNameFromNo(tmpregforop0);
-
-                loadWordOfInfuncVarFromSpToReg(oper0, op0reg);       //包装从函数体sp读取到reg过程
-
-                register.freeTmpRegister(tmpregforop0);
-
-            } else if (oper0symbol.isGlobal() && oper0symbol.getType() != Symbol.TYPE.F) {  //还要判断不是func返回值
-                String globalvarname = oper0symbol.getName();
-                op0reg = searchRegName(oper0);
-                add("lw $" + op0reg + ", Global_" + globalvarname);
-
-            } else {
-                op0reg = searchRegName(oper0);
-                loadWordOfLocalMainfuncVarSymbolFromSpToReg(op0reg, oper0symbol);
-            }
-        } else {
-            op0reg = searchRegName(oper0);
-        }
-
-        return op0reg;
-    }
-
-    //将函数 存在sp的 int 值加载到寄存器 [此处push时使用]
-    private void loadWordOfInfuncVarFromSpToReg(Variable var, String regname, int pushsign, Instrs pushinstrs) {
-        String name = var.getName();
-        if (curFunc.varnameIsFuncPara(name)) {    //函数内+para需要lw
-            int paraspoffset = calcuFuncParaOffset(name);
-
-//            Instr lwinstr = new NewInstr("lw $" + regname + ", ", paraspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
-            //lwinstr.setAddroffset(true);
-//            pushinstrs.addInstr(lwinstr);
-
-        } else {    //函数内+local var需要lw
-            Symbol symbol = var.getSymbol();
-            int localvarspoffset = calcuFuncLocalVarOffset(symbol);
-
-//            Instr lwinstr = new NewInstr("lw $" + regname + ", ", localvarspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
-            //lwinstr.setAddroffset(true);
-//            pushinstrs.addInstr(lwinstr);
-        }
-    }
-
-    //将 局部变量 存在sp的 int 加载到寄存器 [此处push时使用]
-    private void loadWordOfLocalMainfuncVarSymbolFromSpToReg(String regname, Symbol symbol, int pushsign, Instrs pushinstrs) {
-        int symboladdr = symbol.spBaseHex + symbol.addrOffsetDec;
-        //String hexaddr = "0x" + Integer.toHexString(symboladdr);
-        String hexaddr = convertIntAddrToHex(symboladdr);
-
-        NewInstr hexinstr = new NewInstr("lw $" + regname + ", " + hexaddr);
-        pushinstrs.addInstr(hexinstr);
-    }
-
-    //将函数 存在sp的 array 地址加载到寄存器 [此处push时使用]
-    //todo 正确性存疑
-    private void loadAddressOfInfuncArrayVarFromSpToReg(Variable var, String regname, int pushsign, Instrs pushinstrs) {
-        String name = var.getName();
-        Symbol arraysymbol = var.getSymbol();
-
-        if (curFunc.varnameIsFuncPara(name)) {    //函数内+para需要lw
-            int paraspoffset = calcuFuncParaOffset(name);
-
-            if (var.getVar() != null) {     //处理如b[1], b[i]情况
-                Variable offset = var.getVar();
-                String offsetType = offset.getType();
-
-                //分类arr[1]或arr[i]处理
-                if (offsetType.equals("num")) {    //offset = 数字
-                    int arroffset = offset.getNum() * arraysymbol.getDimen2() * 4;    //偏移量=index * dimen2 * 4
-                    paraspoffset += arroffset;
-                    //若para，原样lw传地址
-//                    Instr lwinstr = new NewInstr("lw $" + regname + ", ", paraspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
-//                    pushinstrs.addInstr(lwinstr);
-
-                } else {    //offset = var变量
-                    int tmpregno = register.applyTmpRegister();
-                    String tmpregname = register.getRegisterNameFromNo(tmpregno);   //申请临时寄存器
-
-                    String offsetregname = loadWordOfAnyVariableToRegName(offset, 1, pushinstrs);
-                    pushinstrs.addInstr(new NewInstr("sll $" + offsetregname + ", $" + offsetregname + ", 2"));   //！！！需要乘以4
-                    pushinstrs.addInstr(new NewInstr("li $" + tmpregname + ", " + arraysymbol.getDimen2()));
-                    pushinstrs.addInstr(new NewInstr("mult $" + offsetregname + ", $" + tmpregname));
-                    pushinstrs.addInstr(new NewInstr("mflo $" + tmpregname));
-
-                    //先把函数参数中array首地址加载到regname
-//                    pushinstrs.addInstr(new NewInstr("lw $" + regname + ", ", paraspoffset, "($sp)", "actreg"));
-
-                    //之后将regname中的地址增加偏移量(即$tmpregname)
-                    pushinstrs.addInstr(new NewInstr("add $" + regname + ", $" + regname + ", $" + tmpregname));
-
-                    //以下处理： register.freeRegister(offset);
-                    if (offset.getCurReg() != -1) {
-                        //register.freeRegister(offset);  //统一释放存数组偏移量的reg.此处不能放
-
-                        NewInstr last = new NewInstr("#push an array end.");  //用一个#标签包装处理
-//                        last.hasRetReg = true;        //最后一个语句，附加一个归还offsetReg操作
-//                        last.setFreeRegNumber(offset.getCurReg());  //todo getCurReg方法存疑
-                        pushinstrs.addInstr(last);
-
-                    } else {
-                        NewInstr last = new NewInstr("#push an array end.");  //用一个#标签包装处理
-                        pushinstrs.addInstr(last);
-                    }
-                }
-
-            } else {
-                //若para，原样lw传地址; 若local variable，正常la传地址
-//                Instr lwinstr = new NewInstr("lw $" + regname + ", ", paraspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
-//                pushinstrs.addInstr(lwinstr);
-            }
-
-        } else {    //函数内+局部变量需要la
-
-            int localvarspoffset = calcuFuncLocalVarOffset(arraysymbol);
-
-            if (var.getVar() != null) {     //处理如b[1], b[i]情况
-                Variable offset = var.getVar();
-                String offsetType = offset.getType();
-
-                //分类arr[1]或arr[i]处理
-                if (offsetType.equals("num")) {    //offset = 数字
-                    int arroffset = offset.getNum() * arraysymbol.getDimen2() * 4;    //偏移量=index * dimen2 * 4
-                    localvarspoffset += arroffset;
-                    //local variable，正常la传地址
-//                    Instr lwinstr = new NewInstr("la $" + regname + ", ", localvarspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
-//                    pushinstrs.addInstr(lwinstr);
-
-                } else {    //offset = var变量
-                    int tmpregno = register.applyTmpRegister();
-                    String tmpregname = register.getRegisterNameFromNo(tmpregno);   //申请临时寄存器
-
-                    String offsetregname = loadWordOfAnyVariableToRegName(offset, 1, pushinstrs);
-                    pushinstrs.addInstr(new NewInstr("sll $" + offsetregname + ", $" + offsetregname + ", 2"));   //！！！需要乘以4
-                    pushinstrs.addInstr(new NewInstr("li $" + tmpregname + ", " + arraysymbol.getDimen2()));
-                    pushinstrs.addInstr(new NewInstr("mult $" + offsetregname + ", $" + tmpregname));
-                    pushinstrs.addInstr(new NewInstr("mflo $" + tmpregname));
-
-                    pushinstrs.addInstr(new NewInstr("add $" + tmpregname + ", $" + tmpregname + ", $sp"));
-//                    pushinstrs.addInstr(new NewInstr("la $" + regname + ", ", localvarspoffset, "($" + tmpregname + ")", "actreg"));
-
-                    //以下处理： register.freeRegister(offset);
-                    if (offset.getCurReg() != -1) {
-                        //register.freeRegister(offset);  //统一释放存数组偏移量的reg.此处不能放
-
-                        //todo la有点问题，好像本质就是move
-                        NewInstr last = new NewInstr("#push an array end.");  //用一个#标签包装处理
-//                        last.hasRetReg = true;        //最后一个语句，附加一个归还offsetReg操作
-//                        last.setFreeRegNumber(offset.getCurReg());  //todo getCurReg方法存疑
-                        pushinstrs.addInstr(last);
-
-                    } else {
-                        NewInstr last = new NewInstr("#push an array end.");  //用一个#标签包装处理
-                        pushinstrs.addInstr(last);
-                    }
-                }
-
-            } else {
-                //若para，原样lw传地址; 若local variable，正常la传地址
-//                Instr lwinstr = new NewInstr("la $" + regname + ", ", localvarspoffset, "($sp)", "actreg");  //特意用一个Instr包装处理
-//                pushinstrs.addInstr(lwinstr);
-            }
-        }
-    }
-
-    //将 局部变量 存在sp的 array 地址 加载到寄存器 [此处push时使用]
-    private void loadAddressOfLocalMainfuncArrayVarSymbolFromSpToReg(String regname, Symbol symbol, int pushsign, Instrs pushinstrs, Variable var) {
-        int symboladdr = symbol.spBaseHex + symbol.addrOffsetDec;
-
-        if (var.getVar() != null) {     //处理如array[1]或array[i]情况
-            Variable offset = var.getVar();
-            String offsetType = offset.getType();
-
-            //分类arr[1]或arr[i]处理
-            if (offsetType.equals("num")) {    //offset = 数字
-                int arroffset = offset.getNum() * var.getSymbol().getDimen2() * 4;    //偏移量=index * dimen2 * 4
-                symboladdr += arroffset;
-
-                String hexaddr = convertIntAddrToHex(symboladdr);
-                NewInstr hexinstr = new NewInstr("li $" + regname + ", " + hexaddr);
-                pushinstrs.addInstr(hexinstr);
-
-            } else {    //offset = var变量
-                int tmpregno = register.applyTmpRegister();
-                String tmpregname = register.getRegisterNameFromNo(tmpregno);   //申请临时寄存器
-
-                String offsetregname = loadWordOfAnyVariableToRegName(offset, 1, pushinstrs);
-                pushinstrs.addInstr(new NewInstr("sll $" + offsetregname + ", $" + offsetregname + ", 2"));   //！！！需要乘以4
-                pushinstrs.addInstr(new NewInstr("li $" + tmpregname + ", " + var.getSymbol().getDimen2()));
-                pushinstrs.addInstr(new NewInstr("mult $" + offsetregname + ", $" + tmpregname));
-                pushinstrs.addInstr(new NewInstr("mflo $" + tmpregname));
-
-                //tmpregname是此时算出的偏移量
-                pushinstrs.addInstr(new NewInstr("addi $" + regname + ", $" + tmpregname + ", " + symboladdr));
-
-                //以下处理： register.freeRegister(offset);
-                if (offset.getCurReg() != -1) {
-                    //register.freeRegister(offset);  //统一释放存数组偏移量的reg.此处不能放
-                    //todo la有点问题，好像本质就是move
-                    NewInstr last = new NewInstr("#push an local array end.");  //用一个#标签包装处理
-//                    last.hasRetReg = true;        //最后一个语句，附加一个归还offsetReg操作
-//                    last.setFreeRegNumber(offset.getCurReg());  //todo getCurReg方法存疑
-//                    pushinstrs.addInstr(last);
-
-                } else {
-                    NewInstr last = new NewInstr("#push an local array end.");  //用一个#标签包装处理
-                    pushinstrs.addInstr(last);
-                }
-            }
-
-        } else {  //无偏移量
-            String hexaddr = convertIntAddrToHex(symboladdr);
-            NewInstr hexinstr = new NewInstr("li $" + regname + ", " + hexaddr);
-            pushinstrs.addInstr(hexinstr);
-        }
-    }
-
-    //将任意variable加载到指定寄存器，oper1、2、dest等均可用; 优先给offset用 [此处push时使用]
-    private String loadWordOfAnyVariableToRegName(Variable oper0, int pushsign, Instrs pushinstrs) {
-        String op0reg = "null_reg!!";
-
-        if (oper0.isKindofsymbol()) {       //todo 判定、分类有隐患?
-            Symbol oper0symbol = oper0.getSymbol();
-            if (innerfunc && !oper0symbol.isGlobal()) {    //函数内+symbol需要lw
-                int tmpregforop0 = register.applyTmpRegister();
-                op0reg = register.getRegisterNameFromNo(tmpregforop0);
-
-                loadWordOfInfuncVarFromSpToReg(oper0, op0reg, 1, pushinstrs);       //包装从函数体sp读取到reg过程
-
-                //register.freeTmpRegister(tmpregforop0);
-                //todo tmpregforop0没放
-
-            } else if (oper0symbol.isGlobal() && oper0symbol.getType() != Symbol.TYPE.F) {  //还要判断不是func返回值
-                String globalvarname = oper0symbol.getName();
-                op0reg = searchRegName(oper0);
-                pushinstrs.addInstr(new NewInstr("lw $" + op0reg + ", Global_" + globalvarname));
-
-            } else {
-                op0reg = searchRegName(oper0);
-                loadWordOfLocalMainfuncVarSymbolFromSpToReg(op0reg, oper0symbol, 1, pushinstrs);
-            }
-        } else {
-            op0reg = searchRegName(oper0);
-        }
-
-        return op0reg;
-    }
-
-
     /**********Reg 处理**********/
     // 右值，必定有结果
     private String searchRegName(Ident i) {
@@ -1201,12 +897,14 @@ public class ArmGenerator {
         } else {
 //            String regt = register.applyTmp();
 //            int off = curFunc.getOffsetByName(destIdent.toString());
-//            add("ldr " + regt + ", [sp, #" + off + "]");
+//            add("ldr " + regt + ", [sp,  #" + off + "]");
 //            add("ldr " + regName + ", [" + regt + "]");
 //            register.freeTmp(regt);
 
             int off = curFunc.getOffsetByName(destIdent.toString());
-            add("ldr " + regName + ", [sp, #" + off + "]");
+
+//            add("ldr " + regName + ", [sp,  #" + off + "]");
+            addInstrRegSpOffset("ldr", regName, "sp", off);
         }
     }
 
@@ -1223,15 +921,74 @@ public class ArmGenerator {
         } else {
 //            int off = curFunc.getOffsetByName(destIdent.toString());
 //            String regt = register.applyTmp();
-//            add("ldr " + regt + ", [sp, #" + off + "]");
+//            add("ldr " + regt + ", [sp,  #" + off + "]");
 //            add("str " + regName + ", [" + regt + "]");
 //            register.freeTmp(regt);
 
             int off = curFunc.getOffsetByName(destIdent.toString());
-            add("str " + regName + ", [sp, #" + off + "]");
+            add("str " + regName + ", [sp,  #" + off + "]");
         }
     }
 
+    // 封装(16位)立即数移动
+    private void moveImm(String regname, int num) {
+
+        // 负数必会有问题
+        if (num < 65536) {
+            add("mov " + regname + ", #" + num);
+
+        } else {
+            int low = num & 0xffff;
+            int high = (num >> 16) & 0xffff;
+            add("mov " + regname + ", #" + low);
+            add("movt " + regname + ", #" + high);
+
+        }
+    }
+
+    // 封装 add("add " + regd + ", " + regd + ", #" + mulAOff1);
+    private void selfAddImm(String regname, int num) {
+        if (num < 4096) {
+            add("add " + regname + ", " + regname + ", #" + num);
+
+        } else {
+            String regt = register.applyTmp();
+            moveImm(regt, num);
+            add("add " + regname + ", " + regname + ", " + regt);
+            register.freeTmp(regt);
+
+        }
+    }
+
+    // 一般封装 sub sp, sp, #xxxx
+    private void selfSubImm(String regname, int num) {
+        if (num < 4096) {
+            add("sub " + regname + ", " + regname + ", #" + num);
+
+        } else {
+            String regt = register.applyTmp();
+            moveImm(regt, num);
+            add("sub " + regname + ", " + regname + ", " + regt);
+            register.freeTmp(regt);
+
+        }
+    }
+
+    // 封装形如 add("str " + regt + ", [sp, #" + off + "]");
+    // 要求 off < 4096
+    private void addInstrRegSpOffset(String instrname, String regname, String sp, int num) {
+        if (num < 4096) {
+            add(instrname + " " + regname + ", [sp, #" + num + "]");
+
+        } else {
+            String regt = register.applyTmp();
+            moveImm(regt, num);
+            add("add " + "sp" + ", " + "sp" + ", " + regt);
+            register.freeTmp(regt);
+
+            add(instrname + " " + regname + ", [sp, #0]");
+        }
+    }
 }
 
 
