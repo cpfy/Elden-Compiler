@@ -58,6 +58,9 @@ public class ArmGenerator {
     private Function curFunc;       // 当前函数，读取offset时用
 
     public ArmGenerator(ArrayList<Function> allfunclist, String outputfile) {
+        Function mainFunc = allfunclist.get(allfunclist.size() - 1);
+        allfunclist.remove(allfunclist.size() - 1);
+        allfunclist.add(0, mainFunc);
         this.aflist = allfunclist;
         this.armlist = new ArrayList<>();
         this.printstrMap = new HashMap<>();
@@ -678,7 +681,7 @@ public class ArmGenerator {
 //        add("add sp, sp,  #" + (pushregs + pushargsnum));
 
         selfAddImm("sp", (pushregs + pushargsnum));
-        add("pop {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,pc}");
+        add("pop {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}");
     }
 
 
