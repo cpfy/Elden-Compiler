@@ -97,20 +97,19 @@ public class ArmGenerator {
             if (f.getFuncheader().getFname() != "GlobalContainer") {
                 infuncdef = true;
                 add(".text");
+                add(".global main");
                 //add(tab + "b main");
 
                 if (f.getFuncheader().getFname().equals("main")) {
                     inmain = true;
-                    add(".global main");
-                    add("main:");
-                    tabcount += 1;
-
-                } else {
-                    addFuncDef(f);  // 就是个label
                 }
+
+                addFuncDef(f);  // 加个label
+                tabcount += 1;
+
             }
             for (Block b : f.getBlocklist()) {
-                if (b.isDirty()) continue;
+                //if (b.isDirty()) continue;
                 addBlockLabel(b);
                 for (Instr i : b.getInblocklist()) {
 
@@ -119,7 +118,6 @@ public class ArmGenerator {
                     } else {
                         // global ident
                         addGlobalDef(i);
-                        this.gbdeflist.add(i);
                     }
                 }
             }
@@ -356,6 +354,8 @@ public class ArmGenerator {
     }
 
     private void addGlobalDef(Instr i) {
+        this.gbdeflist.add(i);
+
         Ident gi = ((GlobalDefInst) i).getGi();
         Type t = ((GlobalDefInst) i).getT();
         Value value = ((GlobalDefInst) i).getV();
@@ -374,7 +374,7 @@ public class ArmGenerator {
         add(f.getFuncheader().getFname() + ":");
 
         // sp移动
-        add("sub sp, sp, #" + f.getFuncSize());
+        add(tab + "sub sp, sp, #" + f.getFuncSize());
     }
 
     // block的标签
@@ -517,8 +517,8 @@ public class ArmGenerator {
         add("mov" + movestr + " " + destreg + ", #1");
         add("mov" + oppomovestr + " " + destreg + ", #0");
 
-        if(v1.isIdent()) register.freeTmp(reg1);
-        if(v2.isIdent()) register.freeTmp(reg2);
+        if (v1.isIdent()) register.freeTmp(reg1);
+        if (v2.isIdent()) register.freeTmp(reg2);
 
         storeValue(destreg, dest);
         register.freeTmp(destreg);
@@ -681,17 +681,12 @@ public class ArmGenerator {
 
     private void addProgramEnd() {
         // return from main
-//        add("ldr lr, address_of_return");
-//        add("ldr lr, [lr]");
-//        add("bx lr");
-
         tabcount -= 1;
         add("");
         for (Instr i : this.gbdeflist) {
             String name = ((GlobalDefInst) i).getGi().getName();
             add("addr_of_" + name + ": .word " + name);
         }
-//        add("address_of_return : .word return");
 
     }
 
