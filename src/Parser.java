@@ -5,6 +5,8 @@ import word.WordType;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class Parser {
     private ArrayList<RawWord> rawWords;
@@ -12,6 +14,7 @@ public class Parser {
     private ArrayList<String> outputs = new ArrayList<>();
     private CompUnit compUnit;
 
+    HashMap<String, String> funcNameMap = new HashMap<>();
 
     public Parser(ArrayList<RawWord> rawWords) throws FileNotFoundException {
         this.rawWords = rawWords;
@@ -31,6 +34,28 @@ public class Parser {
 
     private void error() {
         System.out.println("error at line: " + rawWords.get(point - 1).getLine());
+    }
+
+    private void funcNewName(RawWord rawWord) {
+        String ans = null;
+        String name = rawWord.getName();
+        for (int i = 0; i < name.length(); i++) {
+            if (name.charAt(i) >= '0' && name.charAt(i) <= '9') {
+                ans = name.substring(0, i);
+                break;
+            }
+        }
+        while (funcNameMap.containsValue(ans)) {
+            ans += 'a';
+        }
+        funcNameMap.put(name, ans);
+        rawWord.setName(ans);
+    }
+
+    private void funcReName(RawWord rawWord) {
+        if (funcNameMap.containsKey(rawWord.getName())) {
+            rawWord.setName(funcNameMap.get(rawWord.getName()));
+        }
     }
 
     private RawWord getNextWord() {
@@ -274,6 +299,7 @@ public class Parser {
         if (seeNextWord().getType() != WordType.IDENFR) {
             error();
         }
+        funcNewName(seeNextWord());
         id = new ID(getNextWord());
         if (getNextWord().getType() != WordType.LPARENT) {
             error();
@@ -624,6 +650,7 @@ public class Parser {
         } else if (seeNextWord().getType() == WordType.IDENFR
                 && seeSecondWord().getType() == WordType.LPARENT) {
             ArrayList<Exp> params = new ArrayList<>();
+            funcReName(seeNextWord());
             ID id = new ID(getNextWord());
             getNextWord();
             if (seeNextWord().getType() != WordType.RPARENT) {

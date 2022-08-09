@@ -3,7 +3,6 @@ package AST;
 import symbolTable.items.FloatItem;
 import symbolTable.items.IntegerItem;
 
-import javax.swing.*;
 import java.util.ArrayList;
 
 public class VarDef extends Def {
@@ -118,7 +117,7 @@ public class VarDef extends Def {
 
     void tableInsert() {
         if (isGlobal) {
-            tempName = "@" + id.getRawWord().getName();
+            tempName = "@" + newGlobalName(id.getRawWord().getName());
         }
         else {
             tempName = newTemp();

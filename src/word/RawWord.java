@@ -24,6 +24,10 @@ public class RawWord {
         return type;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String output1() {
         return type.name() + " " + name + " " + line;
     }

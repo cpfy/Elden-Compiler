@@ -4,12 +4,29 @@ import symbolTable.Table;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public abstract class Node {
 
     static String getFloatString(float in) {
         String s = Integer.toHexString(Float.floatToIntBits(in));
         return s;
+    }
+
+    static HashSet<String> globalNames = new HashSet<>();
+    public static String newGlobalName(String name) {
+        String ans = null;
+        for (int i = 0; i < name.length(); i++) {
+            if (name.charAt(i) >= '0' && name.charAt(i) <= '9') {
+                ans = name.substring(0, i);
+                break;
+            }
+        }
+        while (globalNames.contains(ans)) {
+            ans += 'a';
+        }
+        globalNames.add(ans);
+        return ans;
     }
 
     static int labels = 0;
