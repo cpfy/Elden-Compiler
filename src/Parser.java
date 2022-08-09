@@ -153,7 +153,6 @@ public class Parser {
         //outputs.add("<BType>");
         return type;
     }
-
     //ConstDef → Ident { '[' ConstExp ']' } '=' ConstInitVal
     private ConstDef getConstDef() {
         ID id = null;
@@ -184,38 +183,8 @@ public class Parser {
         return new ConstDef(id, dims, constInitVal);
     }
 
-    //ConstInitVal → ConstExp
-    //    | '{' [ ConstInitVal { ',' ConstInitVal } ] '}'
-    private ConstInitVal getConstInitVal() {
-        ArrayList<Object> initValues = new ArrayList<>();
-        if (seeNextWord().getType() == WordType.LBRACE) {
-            getNextWord();
-            if (seeNextWord().getType() != WordType.RBRACE) {
-                if (seeNextWord().getType() == WordType.LBRACE) {
-                    initValues.add(getConstInitVal());
-                } else {
-                    initValues.add(getConstExp());
-                }
-                while (seeNextWord().getType() == WordType.COMMA) {
-                    getNextWord();
-                    if (seeNextWord().getType() == WordType.LBRACE) {
-                        initValues.add(getConstInitVal());
-                    } else {
-                        initValues.add(getConstExp());
-                    }
-                }
-            }
-            if (getNextWord().getType() == WordType.RBRACE) {
 
-            } else {
-                error();
-            }
-        } else {
-            initValues.add(getConstExp());
-        }
-        outputs.add("<ConstInitVal>");
-        return new ConstInitVal(initValues);
-    }
+
 
     //VarDecl → BType VarDef { ',' VarDef } ';'
     private VarDecl getVarDecl() {
@@ -264,16 +233,59 @@ public class Parser {
         return new VarDef(id, dims, initVal);
     }
 
+
+
+    //ConstInitVal → ConstExp
+    //    | '{' [ ConstInitVal { ',' ConstInitVal } ] '}'
+    private ConstInitVal getConstInitVal() {
+        ArrayList<Object> initValues = new ArrayList<>();
+        if (seeNextWord().getType() == WordType.LBRACE) {
+            getNextWord();
+            if (seeNextWord().getType() != WordType.RBRACE) {
+                if (seeNextWord().getType() == WordType.LBRACE) {
+                    initValues.add(getConstInitVal());
+                } else {
+                    initValues.add(getConstExp());
+                }
+                while (seeNextWord().getType() == WordType.COMMA) {
+                    getNextWord();
+                    if (seeNextWord().getType() == WordType.LBRACE) {
+                        initValues.add(getConstInitVal());
+                    } else {
+                        initValues.add(getConstExp());
+                    }
+                }
+            }
+            if (getNextWord().getType() == WordType.RBRACE) {
+
+            } else {
+                error();
+            }
+        } else {
+            initValues.add(getConstExp());
+        }
+        outputs.add("<ConstInitVal>");
+        return new ConstInitVal(initValues);
+    }
+
     //InitVal → Exp | '{' [ InitVal { ',' InitVal } ] '}'
     private InitVal getInitVal() {
         ArrayList<Object> initValues = new ArrayList<>();
         if (seeNextWord().getType() == WordType.LBRACE) {
             getNextWord();
             if (seeNextWord().getType() != WordType.RBRACE) {
-                initValues.add(getInitVal());
+                if (seeNextWord().getType() == WordType.LBRACE) {
+                    initValues.add(getInitVal());
+                } else {
+                    initValues.add(getExp());
+                }
                 while (seeNextWord().getType() == WordType.COMMA) {
                     getNextWord();
-                    initValues.add(getInitVal());
+                    if (seeNextWord().getType() == WordType.LBRACE) {
+                        initValues.add(getInitVal());
+                    } else {
+                        initValues.add(getExp());
+                    }
                 }
             }
             if (getNextWord().getType() == WordType.RBRACE) {
