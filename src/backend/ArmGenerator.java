@@ -421,7 +421,7 @@ public class ArmGenerator {
             loadValue(destreg, v.getIdent());
 
             // 从addr加载value
-            add("mov " + destreg + ", [" + destreg + "]");
+            add("ldr " + destreg + ", [" + destreg + "]");
 
         } else {
             int val = v.getVal();
