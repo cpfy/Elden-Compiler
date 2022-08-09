@@ -211,11 +211,27 @@ public class ArmGenerator {
                 // e.g. getint()
                 addCall(valueinstr, dest);
                 break;
+            case "sitofp":
+
+                //todo
+                addSIToFP(valueinstr, dest);
+            case "fptosi":
+
+                //todo
+                addFPToSI(valueinstr, dest);
             default:
                 break;
         }
+        
+    }
+
+    private void addFPToSI(Instr valueinstr, Ident dest) {
+        //todo
+    }
 
 
+    private void addSIToFP(Instr valueinstr, Ident dest) {
+        //todo
     }
 
 
@@ -287,6 +303,7 @@ public class ArmGenerator {
             case "sub":
             case "mul":
             case "sdiv":
+            case "srem":    // 取模
                 addOp(instr, dest);
                 break;
 

@@ -22,8 +22,9 @@ public abstract class Instr {
     [比较跳转]: icmp
     [跳转相关]: br condbr ret
 
-    （新增，仅全局使用）
-    [全局定义]: globaldef
+    （新增）
+    [全局定义]: globaldef（仅全局使用）
+    [浮点]: sitofp, fptosi
 
     */
 

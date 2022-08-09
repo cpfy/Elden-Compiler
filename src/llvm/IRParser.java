@@ -7,12 +7,14 @@ import llvm.Instr.BinaryInst;
 import llvm.Instr.BrTerm;
 import llvm.Instr.CallInst;
 import llvm.Instr.CondBrTerm;
+import llvm.Instr.FPToSIInst;
 import llvm.Instr.GetElementPtrInst;
 import llvm.Instr.GlobalDefInst;
 import llvm.Instr.IcmpInst;
 import llvm.Instr.Instr;
 import llvm.Instr.LoadInst;
 import llvm.Instr.RetTerm;
+import llvm.Instr.SIToFPInst;
 import llvm.Instr.StoreInstr;
 import llvm.Instr.ZExtInst;
 import llvm.Type.ArrayType;
@@ -561,9 +563,35 @@ public class IRParser {
                 return LoadInst();
             case "zext":
                 return ZExtInst();
+            case "sitofp":
+                return SIToFPInst();
+            case "fptosi":
+                return FPToSIInst();
             default:
                 return BinaryInst();
         }
+    }
+
+    // FPToSIInst : "fptosi" Type Value "to" Type OptCommaSepMetadataAttachmentList
+    private Instr FPToSIInst() {
+        match("fptosi");
+        Type t1 = Type();
+        Value v = Value();
+        match("to");
+        Type t2 = Type();
+
+        return new FPToSIInst("fptosi", t1, t2, v);
+    }
+
+    // SIToFPInst : "sitofp" Type Value "to" Type OptCommaSepMetadataAttachmentList
+    private Instr SIToFPInst() {
+        match("sitofp");
+        Type t1 = Type();
+        Value v = Value();
+        match("to");
+        Type t2 = Type();
+
+        return new SIToFPInst("sitofp", t1, t2, v);
     }
 
     // ZExtInst : "zext" Type Value "to" Type OptCommaSepMetadataAttachmentList

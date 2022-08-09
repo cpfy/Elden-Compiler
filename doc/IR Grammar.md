@@ -599,6 +599,18 @@ ZExtInst
 ;
 ```
 
+##### SI与FP
+
+```
+SIToFPInst
+	: "sitofp" Type Value "to" Type OptCommaSepMetadataAttachmentList
+;
+
+FPToSIInst
+	: "fptosi" Type Value "to" Type OptCommaSepMetadataAttachmentList
+;
+```
+
 
 
 #### Terminator
