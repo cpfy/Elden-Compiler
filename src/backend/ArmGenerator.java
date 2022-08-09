@@ -272,7 +272,7 @@ public class ArmGenerator {
 
         } else {
             int mulAOff1 = v3.getVal() * off1;
-            selfAddImm(regd, mulAOff1);
+            moveImm(regd, mulAOff1);
         }
 
         if (((GetElementPtrInst) instr).hasFourth()) {
