@@ -124,13 +124,14 @@ public class Register {
 
     public void freeTmp(String reg) {
         int no = this.regNameMap.get(reg);
-        if (no > 15) {
+        if (no > 12) {
             System.err.println("Register freeTmpRegister() : Error free tmp Reg No!! regno = " + no);
         } else if (!freeRegList.contains(no)) {
             removeActiveRegList(no);     //删除变量in activeregList 活跃变量表
             freeRegList.add(no);
             System.out.println("Free Reg $" + regMap.get(no) + " from Tmp");
-        }//todo 其它的free寄存器都得检查是否重复！
+        }
+        //todo 其它的free寄存器都得检查是否重复！
     }
 
     public void freeTmpRegisterByName(String regname) {

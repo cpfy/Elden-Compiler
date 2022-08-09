@@ -166,8 +166,6 @@ public class ArmGenerator {
         Type t2 = ((ZExtInst) instr).getT2();
         Value v = ((ZExtInst) instr).getV();
 
-//        String destreg = register.applyRegister(dest);
-
         String regd = register.applyTmp();
 
         if (v.isIdent()) {
@@ -225,7 +223,9 @@ public class ArmGenerator {
         Value v3 = ((GetElementPtrInst) instr).getV3(); // a
         int val3 = v3.getVal(), val4;
 
-        String destreg = register.applyRegister(dest);
+//        String regd = register.applyRegister(dest);
+        String regd = register.applyTmp();
+
 
         int off1 = t1.getOffset();
         int off2 = t2.getOffset();
@@ -235,13 +235,13 @@ public class ArmGenerator {
 
             // mul a, a, off1
             add("mul " + rega + ", " + rega + ", #" + off1);
-            add("add " + destreg + ", " + destreg + ", " + rega);
+            add("add " + regd + ", " + regd + ", " + rega);
 
             register.freeTmp(rega);
 
         } else {
             int mulAOff1 = v3.getVal() * off1;
-            add("add " + destreg + ", " + destreg + ", #" + mulAOff1);
+            add("add " + regd + ", " + regd + ", #" + mulAOff1);
         }
 
         if (((GetElementPtrInst) instr).hasFourth()) {
@@ -253,23 +253,18 @@ public class ArmGenerator {
                 loadValue(regb, v4.getIdent());
                 // mul b, b, off2
                 add("mul " + regb + ", " + regb + ", #" + off2);
-                add("add " + destreg + ", " + destreg + ", " + regb);
+                add("add " + regd + ", " + regd + ", " + regb);
 
                 register.freeTmp(regb);
 
             } else {
                 int mulAOff2 = v4.getVal() * off2;
-                add("add " + destreg + ", " + destreg + ", #" + mulAOff2);
+                add("add " + regd + ", " + regd + ", #" + mulAOff2);
             }
-
         }
 
-        storeValue(destreg, dest);
-
-        // 否则无事发生
-//        else {
-//            val4 = 0;
-//        }
+        storeValue(regd, dest);
+        register.freeTmp(regd);
     }
 
     private void addBinary(Instr instr, Ident dest) {
@@ -321,13 +316,16 @@ public class ArmGenerator {
             add("mov " + reg2 + ", #" + v2.getVal());
         }
 
-        String destreg = register.applyRegister(dest);
+//        String destreg = register.applyRegister(dest);
+        String destreg = register.applyTmp();
 
         add(op + " " + destreg + ", " + reg1 + ", " + reg2);
         storeValue(destreg, dest);
 
         register.freeTmp(reg1);
         register.freeTmp(reg2);
+
+        register.freeTmp(destreg);
 
     }
 
@@ -400,19 +398,22 @@ public class ArmGenerator {
         Value v = ((LoadInst) instr).getV();
 
         // dest是否分配（必然未分配）
-        String reg = register.applyRegister(dest);
+//        String reg = register.applyRegister(dest);
+        String destreg = register.applyTmp();
+
 
         // 值存到dest reg里
         if (v.isIdent()) {
-            loadValue(reg, v.getIdent());
+            loadValue(destreg, v.getIdent());
 
         } else {
             int val = v.getVal();
-            add("mov " + reg + ", #" + val);
+            add("mov " + destreg + ", #" + val);
 
         }
 
-        storeValue(reg, v.getIdent());
+        storeValue(destreg, v.getIdent());
+        register.freeTmp(destreg);
     }
 
     // br i1 %7, label %8, label %27
@@ -489,7 +490,9 @@ public class ArmGenerator {
         Value v1 = ((IcmpInst) instr).getV1();
         Value v2 = ((IcmpInst) instr).getV2();
 
-        String destreg = register.applyRegister(dest);
+//        String destreg = register.applyRegister(dest);
+        String destreg = register.applyTmp();
+
 
         String reg1, reg2;
         if (v1.isIdent()) {
@@ -514,10 +517,11 @@ public class ArmGenerator {
         add("mov" + movestr + " " + destreg + ", #1");
         add("mov" + oppomovestr + " " + destreg + ", #0");
 
-        register.freeTmp(reg1);
-        register.freeTmp(reg2);
+        if(v1.isIdent()) register.freeTmp(reg1);
+        if(v2.isIdent()) register.freeTmp(reg2);
 
         storeValue(destreg, dest);
+        register.freeTmp(destreg);
 
         //见：https://stackoverflow.com/questions/54237061/when-comparing-numbers-in-arm-assembly-is-there-a-correct-way-to-store-the-value
         //参考2：http://cration.rcstech.org/embedded/2014/03/02/arm-conditional-execution/
@@ -746,40 +750,7 @@ public class ArmGenerator {
         exit(0);
     }
 
-    private String reverseCompareInstr(String instr) {
-        switch (instr) {
-            case "beq":
-                return "beq";
-            case "bne":
-                return "bne";
-            case "bge":
-                return "blt";
-            case "ble":
-                return "bgt";
-            case "bgt":
-                return "ble";
-            case "blt":
-                return "bge";
-            case "sge":
-                return "slt";
-            case "sgt":
-                return "sle";
-            case "sle":
-                return "sgt";
-            case "slt":
-                return "sge";
-            case "seq":
-                return "seq";
-            case "sne":
-                return "sne";
-            default:
-                break;
-        }
-        System.err.println("MIPSTranslator / reverseCompareInstr() ???instr type = " + instr);
-        return null;
-    }
-
-    //一个10进制int类型地址转Hex格式的小函数
+    // 一个10进制int类型地址转Hex格式的小函数
     private String convertIntAddrToHex(int intaddr) {
         return "0x" + Integer.toHexString(intaddr);
     }
@@ -1174,13 +1145,35 @@ public class ArmGenerator {
     }
 
     private void loadValue(String regName, Ident destIdent) {
-        int off = curFunc.getOffsetByName(destIdent.toString());
-        add("ldr " + regName + ", [sp, #" + off + "]");
+        // global则加载进来
+        if (destIdent.isGlobal()) {
+            add("ldr " + regName + ", addr_of_" + destIdent.getName());
+            add("ldr " + regName + ", [" + regName + "]");
+
+        } else {
+            String regt = register.applyTmp();
+            int off = curFunc.getOffsetByName(destIdent.toString());
+            add("ldr " + regt + ", [sp, #" + off + "]");
+            add("ldr " + regName + ", [" + regt + "]");
+            register.freeTmp(regt);
+        }
     }
 
     private void storeValue(String regName, Ident destIdent) {
-        int off = curFunc.getOffsetByName(destIdent.toString());
-        add("str " + regName + ", [sp, #" + off + "]");
+        // global则存储回去
+        if (destIdent.isGlobal()) {
+            String regt = register.applyTmp();
+            add("ldr " + regt + ", addr_of_" + destIdent.getName());
+            add("str " + regName + ", [" + regt + "]");
+            register.freeTmp(regt);
+
+        } else {
+            int off = curFunc.getOffsetByName(destIdent.toString());
+            String regt = register.applyTmp();
+            add("ldr " + regt + ", [sp, #" + off + "]");
+            add("str " + regName + ", [" + regt + "]");
+            register.freeTmp(regt);
+        }
     }
 
 }
