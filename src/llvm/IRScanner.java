@@ -101,8 +101,7 @@ public class IRScanner {
                     break;
                 } else if (readingBool) {
                     curToken = endOfOp();
-                }
-                else if(readingString){
+                } else if (readingString) {
                     // 为了处理i32，i1这种
                     endOfWord();
                 }
@@ -241,26 +240,8 @@ public class IRScanner {
 //            curToken = endOfWord();
             readingComments = true;
             curToken = "";
-        }
-//         else if (c == '"') {
-//            if (!readingFormatString) {
-//                readingFormatString = true;
-//                curToken += c;
-//
-//            } else {
-//                curToken += c;
-//                createToken("STRCON");
-//                readingFormatString = false;
-//            }
-//
-//        }
 
-//        else if (c == '@' || c == '%') {
-//            curToken = endOfWord();
-//            readingBool = false;
-//            curToken += c;
-
-          else if (c == '<' || c == '>' || c == '!' || c == '=' || c == '/' || c == '|' || c == '&') {
+        }else if (c == '<' || c == '>' || c == '!' || c == '=' || c == '/' || c == '|' || c == '&') {
             curToken = endOfWord();
             readingBool = true;
             curToken += c;

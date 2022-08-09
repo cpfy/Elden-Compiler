@@ -83,6 +83,8 @@ public class IRDictionary {
         // 应该无用
         OPERATORS_DICT = new HashMap<>();
 
+        OPERATORS_DICT.put("+", "PLUS");
+        OPERATORS_DICT.put("-", "MINUS");
         OPERATORS_DICT.put("*", "MULT");
         OPERATORS_DICT.put("%", "PERC");    // 取percent意
         OPERATORS_DICT.put("@", "AT");

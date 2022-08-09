@@ -35,6 +35,11 @@ public class Value {
         this.ident = ident;
     }
 
+    public Value(int val){
+        this.hex = false;
+        this.val = val;
+    }
+
     @Override
     public String toString() {
         if (isIdent) {

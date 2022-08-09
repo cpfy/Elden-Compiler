@@ -943,29 +943,43 @@ public class IRParser {
 //	| ConstantExpr
     private Value Constant() {
         String value = sym.getTokenValue();
-        if (symIs("zeroinitializer")) {
-            match("zeroinitializer");   //	| ZeroInitializerConst
-            Ident i = new Ident(value);
-            i.setZeroinit(true);
-            // 暂时没用到
-            return new ZeroInitializerConst();
-        }
-        if (Character.isDigit(value.charAt(0))) {
-            getsym();
-            //todo
-//            idn.setGlobal()
-            return new Value(value);
-        }
-        // @foo GlobalIdent
-        else if (symIs("@")) {
-            Ident gi = GlobalIdent();
-            return new Value(gi);
+        switch (value) {
+            case "zeroinitializer":
+                getsym();
+                return new ZeroInitializerConst();
+            case "@":
+                // @foo GlobalIdent
+                Ident gi = GlobalIdent();
+                return new Value(gi);
+            default:
+                break;
         }
 
-        //todo
+        if (value.equals("-")) {
+            int num = int_lit();
+            return new Value(num);
+
+        } else if (Character.isDigit(value.charAt(0))) {
+            getsym();
+            return new Value(value);
+        }
 
         error();
         return null;
+    }
+
+    // int_lit : _decimal_lit;
+    //_decimal_lit : [ '-' ] _decimals
+    private int int_lit() {
+        if (symIs("-")) {
+            getsym();
+            int val = Integer.parseInt(sym.getTokenValue());
+            getsym();
+            return -val;
+        }
+        int val = Integer.parseInt(sym.getTokenValue());
+        getsym();
+        return val;
     }
 
     // Type大类
