@@ -35,7 +35,7 @@ import static java.lang.System.*;
 public class ArmGenerator {
     private ArrayList<Function> aflist;
     private ArrayList<String> armlist;
-    private Register register;
+    private Register reg;
     private HashMap<IRCode, String> printstrMap;
     private static String OUTPUT_DIR;
     private ArrayList<Instr> gbdeflist;
@@ -61,7 +61,7 @@ public class ArmGenerator {
         this.aflist = allfunclist;
         this.armlist = new ArrayList<>();
         this.printstrMap = new HashMap<>();
-        this.register = new Register();
+        this.reg = new Register();
         this.gbdeflist = new ArrayList<>();
         OUTPUT_DIR = outputfile;
     }
@@ -166,13 +166,13 @@ public class ArmGenerator {
         Type t2 = ((ZExtInst) instr).getT2();
         Value v = ((ZExtInst) instr).getV();
 
-        String regd = register.applyTmp();
+        String regd = reg.applyTmp();
 
         if (v.isIdent()) {
-            String regt = register.applyTmp();
+            String regt = reg.applyTmp();
             loadValue(regt, v.getIdent());
             add("mov " + regd + ", " + regt);
-            register.freeTmp(regt);
+            reg.freeTmp(regt);
 
 
         } else {
@@ -180,7 +180,7 @@ public class ArmGenerator {
         }
 
         storeValue(regd, dest);
-        register.freeTmp(regd);
+        reg.freeTmp(regd);
     }
 
     private void addAssign(Instr instr) {
@@ -245,14 +245,14 @@ public class ArmGenerator {
         int val3 = v3.getVal(), val4;
 
 //        String regd = register.applyRegister(dest);
-        String regd = register.applyTmp();
+        String regd = reg.applyTmp();
 
 
         int off1 = t1.getOffset();
         int off2 = t2.getOffset();
         if (v3.isIdent()) {
-            String rega = register.applyTmp();
-            String regt = register.applyTmp();
+            String rega = reg.applyTmp();
+            String regt = reg.applyTmp();
             loadValue(rega, v3.getIdent());
 
             // mul a, a, off1
@@ -261,8 +261,8 @@ public class ArmGenerator {
             add("mul " + rega + ", " + rega + ", " + regt);
             add("add " + regd + ", " + regd + ", " + rega);
 
-            register.freeTmp(regt);
-            register.freeTmp(rega);
+            reg.freeTmp(regt);
+            reg.freeTmp(rega);
 
         } else {
             int mulAOff1 = v3.getVal() * off1;
@@ -274,8 +274,8 @@ public class ArmGenerator {
             val4 = v4.getVal();
 
             if (v4.isIdent()) {
-                String regb = register.applyTmp();
-                String regt = register.applyTmp();
+                String regb = reg.applyTmp();
+                String regt = reg.applyTmp();
                 loadValue(regb, v4.getIdent());
 
                 // mul b, b, off2
@@ -283,8 +283,8 @@ public class ArmGenerator {
                 add("mul " + regb + ", " + regb + ", " + regt);
                 add("add " + regd + ", " + regd + ", " + regb);
 
-                register.freeTmp(regt);
-                register.freeTmp(regb);
+                reg.freeTmp(regt);
+                reg.freeTmp(regb);
 
             } else {
                 int mulAOff2 = v4.getVal() * off2;
@@ -292,8 +292,14 @@ public class ArmGenerator {
             }
         }
 
+        // 最后还要加上%1
+        String regt = reg.applyTmp();
+        loadValue(regt, v.getIdent());
+        add("add " + regd + ", " + regd + ", " + regt);
+        reg.freeTmp(regt);
+
         storeValue(regd, dest);
-        register.freeTmp(regd);
+        reg.freeTmp(regd);
     }
 
 
@@ -330,7 +336,7 @@ public class ArmGenerator {
         String reg1, reg2;
 
         //v1
-        reg1 = register.applyTmp();
+        reg1 = reg.applyTmp();
         if (v1.isIdent()) {
             loadValue(reg1, v1.getIdent());
 
@@ -339,7 +345,7 @@ public class ArmGenerator {
         }
 
         //v2
-        reg2 = register.applyTmp();
+        reg2 = reg.applyTmp();
         if (v2.isIdent()) {
             loadValue(reg2, v2.getIdent());
 
@@ -348,15 +354,15 @@ public class ArmGenerator {
         }
 
 //        String destreg = register.applyRegister(dest);
-        String destreg = register.applyTmp();
+        String destreg = reg.applyTmp();
 
         add(op + " " + destreg + ", " + reg1 + ", " + reg2);
         storeValue(destreg, dest);
 
-        register.freeTmp(reg1);
-        register.freeTmp(reg2);
+        reg.freeTmp(reg1);
+        reg.freeTmp(reg2);
 
-        register.freeTmp(destreg);
+        reg.freeTmp(destreg);
 
     }
 
@@ -368,7 +374,7 @@ public class ArmGenerator {
         Value v1 = ((StoreInstr) instr).getV1();
         Value v2 = ((StoreInstr) instr).getV2();
 
-        String reg = register.applyTmp();
+        String reg = this.reg.applyTmp();
 
         // v1存到v2里
         if (v1.isIdent()) {
@@ -379,12 +385,12 @@ public class ArmGenerator {
 
         }
 
-        String regt = register.applyTmp();
+        String regt = this.reg.applyTmp();
         loadValue(regt, v2.getIdent());
         add("str " + reg + ", [" + regt + "]");
 
-        register.freeTmp(reg);
-        register.freeTmp(regt);
+        this.reg.freeTmp(reg);
+        this.reg.freeTmp(regt);
     }
 
     private void addGlobalDef(Instr i) {
@@ -436,7 +442,7 @@ public class ArmGenerator {
 
         // dest是否分配（必然未分配）
 //        String reg = register.applyRegister(dest);
-        String destreg = register.applyTmp();
+        String destreg = reg.applyTmp();
 
 
         // 值存到dest reg里
@@ -452,7 +458,7 @@ public class ArmGenerator {
         }
 
         storeValue(destreg, dest);
-        register.freeTmp(destreg);
+        reg.freeTmp(destreg);
     }
 
     // br i1 %7, label %8, label %27
@@ -462,17 +468,17 @@ public class ArmGenerator {
         Ident i1 = ((CondBrTerm) instr).getI1();
         Ident i2 = ((CondBrTerm) instr).getI2();
 
-        String regt = register.applyTmp();
+        String regt = reg.applyTmp();
         loadValue(regt, v.getIdent());
 
-        String one = register.applyTmp();
+        String one = reg.applyTmp();
         add("mov " + one + ", #1");
         add("cmp " + regt + ", " + one);
         add("beq " + i1.getId());
         add("bne " + i2.getId());
 
-        register.freeTmp(regt);
-        register.freeTmp(one);
+        reg.freeTmp(regt);
+        reg.freeTmp(one);
 
     }
 
@@ -497,7 +503,7 @@ public class ArmGenerator {
 //        }
 
         // 地址 &1+4 存到%1 对应的cache里
-        String regt = register.applyTmp();
+        String regt = reg.applyTmp();
         int off = curFunc.getOffsetByName(dest.toString());
         add("mov " + regt + ", sp");
 
@@ -506,7 +512,7 @@ public class ArmGenerator {
 //        add("str " + regt + ", [sp,  #" + off + "]");
         addInstrRegSpOffset("str", regt, "sp", off);
 
-        register.freeTmp(regt);
+        reg.freeTmp(regt);
     }
 
     private void addAllocaInt(Instr instr, Ident dest) {
@@ -538,10 +544,10 @@ public class ArmGenerator {
         Value v2 = ((IcmpInst) instr).getV2();
 
 //        String destreg = register.applyRegister(dest);
-        String destreg = register.applyTmp();
+        String destreg = reg.applyTmp();
 
 
-        String reg1 = register.applyTmp();
+        String reg1 = reg.applyTmp();
         if (v1.isIdent()) {
             loadValue(reg1, v1.getIdent());
 
@@ -549,7 +555,7 @@ public class ArmGenerator {
             moveImm(reg1, v1.getVal());
         }
 
-        String reg2 = register.applyTmp();
+        String reg2 = reg.applyTmp();
         if (v2.isIdent()) {
             loadValue(reg2, v2.getIdent());
 
@@ -563,11 +569,11 @@ public class ArmGenerator {
         add("mov" + movestr + " " + destreg + ", #1");
         add("mov" + oppomovestr + " " + destreg + ", #0");
 
-        register.freeTmp(reg1);
-        register.freeTmp(reg2);
+        reg.freeTmp(reg1);
+        reg.freeTmp(reg2);
 
         storeValue(destreg, dest);
-        register.freeTmp(destreg);
+        reg.freeTmp(destreg);
 
         //见：https://stackoverflow.com/questions/54237061/when-comparing-numbers-in-arm-assembly-is-there-a-correct-way-to-store-the-value
         //参考2：http://cration.rcstech.org/embedded/2014/03/02/arm-conditional-execution/
@@ -606,10 +612,10 @@ public class ArmGenerator {
                 } else {
                     Value v = tv.getValue();
                     if (v.isIdent()) {
-                        String regt = register.applyTmp();
+                        String regt = reg.applyTmp();
                         loadValue(regt, v.getIdent());
                         add("mov r" + i + ", " + regt);
-                        register.freeTmp(regt);
+                        reg.freeTmp(regt);
 
                     } else {
                         moveImm("r" + i, v.getVal());
@@ -666,7 +672,7 @@ public class ArmGenerator {
                     assert tv.getType().getTypec() == TypeC.I;
                     Value v = tv.getValue();
                     if (v.isIdent()) {
-                        String regt = register.applyTmp();
+                        String regt = reg.applyTmp();
                         loadValue(regt, v.getIdent());
                         add("mov r0, " + regt);
 
@@ -713,10 +719,10 @@ public class ArmGenerator {
         // ret void啥也不用管
         if (vret != null) {
             if (vret.isIdent()) {
-                String regt = register.applyTmp();
+                String regt = reg.applyTmp();
                 loadValue(regt, vret.getIdent());
                 add("mov r0, " + regt);
-                register.freeTmp(regt);
+                reg.freeTmp(regt);
 
             } else {
                 int num = vret.getVal();
@@ -823,20 +829,20 @@ public class ArmGenerator {
 
             Symbol symbol = v.getSymbol();
             if (symbol.getCurReg() == -1) {  //仅初始化未分配
-                regname = register.applyRegister(symbol);
+                regname = reg.applyRegister(symbol);
 
             } else {
                 int regno = symbol.getCurReg();
-                regname = register.getRegisterNameFromNo(regno);
+                regname = reg.getRegisterNameFromNo(regno);
             }
 
         } else {  //临时的“阅后即焚”野鸡变量
             if (v.getCurReg() == -1) {  //仅初始化未分配
-                regname = register.applyRegister(v);
+                regname = reg.applyRegister(v);
 
             } else {
                 int regno = v.getCurReg();
-                regname = register.getRegisterNameFromNo(regno);
+                regname = reg.getRegisterNameFromNo(regno);
             }
 
             if (regname == null || regname.equals("")) {
@@ -852,17 +858,17 @@ public class ArmGenerator {
     // 右值，必定有结果
     private String searchRegName(Ident i) {
         String regname;
-        int no = register.searchIdentRegNo(i);
+        int no = reg.searchIdentRegNo(i);
         if (no == -1) {
             // global则加载进来
             if (i.isGlobal()) {
-                regname = register.applyRegister(i);
+                regname = reg.applyRegister(i);
                 add("ldr " + regname + ", addr_of_" + i.getName());
                 add("ldr " + regname + ", [" + regname + "]");
                 return regname;
 
             } else {
-                String regt = register.applyTmp();
+                String regt = reg.applyTmp();
                 loadValue(regt, i);
                 return regt;
             }
@@ -872,7 +878,7 @@ public class ArmGenerator {
 //            return null;
 
         } else {
-            regname = register.getRegisterNameFromNo(no);
+            regname = reg.getRegisterNameFromNo(no);
             return regname;
         }
     }
@@ -884,7 +890,7 @@ public class ArmGenerator {
         } else {
             name = String.valueOf(i.getId());
         }
-        return register.allocated(name);
+        return reg.allocated(name);
 
     }
 
@@ -952,10 +958,10 @@ public class ArmGenerator {
             add("add " + regname + ", " + regname + ", #" + num);
 
         } else {
-            String regt = register.applyTmp();
+            String regt = reg.applyTmp();
             moveImm(regt, num);
             add("add " + regname + ", " + regname + ", " + regt);
-            register.freeTmp(regt);
+            reg.freeTmp(regt);
 
         }
     }
@@ -966,10 +972,10 @@ public class ArmGenerator {
             add("sub " + regname + ", " + regname + ", #" + num);
 
         } else {
-            String regt = register.applyTmp();
+            String regt = reg.applyTmp();
             moveImm(regt, num);
             add("sub " + regname + ", " + regname + ", " + regt);
-            register.freeTmp(regt);
+            reg.freeTmp(regt);
 
         }
     }
@@ -981,10 +987,10 @@ public class ArmGenerator {
             add(instrname + " " + regname + ", [sp, #" + num + "]");
 
         } else {
-            String regt = register.applyTmp();
+            String regt = reg.applyTmp();
             moveImm(regt, num);
             add("add " + "sp" + ", " + "sp" + ", " + regt);
-            register.freeTmp(regt);
+            reg.freeTmp(regt);
 
             add(instrname + " " + regname + ", [sp, #0]");
         }

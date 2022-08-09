@@ -997,6 +997,26 @@ ArrayConst
 ;
 ```
 
+##### TypeConsts
+
+```
+TypeConsts
+	: empty
+	| TypeConstList
+;
+
+TypeConstList
+	: TypeConst
+	| TypeConstList "," TypeConst
+;
+
+TypeConst
+	: Type Constant
+;
+```
+
+
+
 #### ConstantExpr
 
 ```

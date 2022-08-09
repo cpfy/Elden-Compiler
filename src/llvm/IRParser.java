@@ -979,6 +979,8 @@ public class IRParser {
                 // @foo GlobalIdent
                 Ident gi = GlobalIdent();
                 return new Value(gi);
+            case "[":
+                return ArrayConst();
             default:
                 break;
         }
@@ -994,6 +996,40 @@ public class IRParser {
 
         error();
         return null;
+    }
+
+    // ArrayConst : "[" TypeConsts "]" ;
+    private Value ArrayConst() {
+        match("[");
+        Value tc = TypeConsts();
+        match("]");
+        return tc;
+    }
+
+    // TypeConsts : empty | TypeConstList
+    private Value TypeConsts() {
+        // 筛过一次保证不是empty
+        return TypeConstList();
+    }
+
+    // TypeConstList : TypeConst | TypeConstList "," TypeConst
+    private Value TypeConstList() {
+        ArrayList<TypeValue> tclist = new ArrayList<>();
+        TypeValue tc = TypeConst();
+        tclist.add(tc);
+        while (symIs(",")) {
+            getsym();
+            tc = TypeConst();
+            tclist.add(tc);
+        }
+        return new Value(tclist);
+    }
+
+    // TypeConst : Type Constant
+    private TypeValue TypeConst() {
+        Type t = Type();
+        Value cvalue = Constant();
+        return new TypeValue(t, cvalue);
     }
 
     // int_lit : _decimal_lit;

@@ -1,5 +1,7 @@
 package llvm;
 
+import java.util.ArrayList;
+
 public class Value {
 
     private boolean hex;    // 10 or 16进制
@@ -11,6 +13,10 @@ public class Value {
 
     // Zeroinitailizer
     private boolean keys = false;
+
+    // TypeConst 列表，数组初始化用
+    private boolean isTClist = false;
+    private ArrayList<TypeValue> tclist;
 
     // Zeroinitailizer 用
     public Value() {
@@ -35,9 +41,14 @@ public class Value {
         this.ident = ident;
     }
 
-    public Value(int val){
+    public Value(int val) {
         this.hex = false;
         this.val = val;
+    }
+
+    public Value(ArrayList<TypeValue> tclist) {
+        this.tclist = tclist;
+        this.isTClist = true;
     }
 
     @Override
@@ -78,5 +89,17 @@ public class Value {
 
     public Ident getIdent() {
         return ident;
+    }
+
+    public boolean isKeys() {
+        return keys;
+    }
+
+    public boolean isTClist() {
+        return isTClist;
+    }
+
+    public ArrayList<TypeValue> getTclist() {
+        return tclist;
     }
 }
