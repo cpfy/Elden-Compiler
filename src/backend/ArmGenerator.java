@@ -311,8 +311,10 @@ public class ArmGenerator {
             case "sub":
             case "mul":
             case "sdiv":
-            case "srem":    // 取模
                 addOp(instr, dest);
+                break;
+            case "srem":    // 取模
+                addSrem(instr, dest);
                 break;
 
             //todo
@@ -325,6 +327,48 @@ public class ArmGenerator {
             default:
                 break;
         }
+    }
+
+    // 取模函数
+    // a % b = a - (a/b)*b
+    private void addSrem(Instr instr, Ident dest) {
+        String op = ((BinaryInst) instr).getOp();   // must "srem"
+        Type t = ((BinaryInst) instr).getT();
+        Value v1 = ((BinaryInst) instr).getV1();
+        Value v2 = ((BinaryInst) instr).getV2();
+
+        String reg1, reg2;
+
+        //v1
+        reg1 = reg.applyTmp();
+        if (v1.isIdent()) {
+            loadValue(reg1, v1.getIdent());
+
+        } else {
+            moveImm(reg1, v1.getVal());
+        }
+
+        //v2
+        reg2 = reg.applyTmp();
+        if (v2.isIdent()) {
+            loadValue(reg2, v2.getIdent());
+
+        } else {
+            moveImm(reg2, v2.getVal());
+        }
+
+        String destreg = reg.applyTmp();
+
+        add("sdiv " + destreg + ", " + reg1 + ", " + reg2);
+        add("mul " + destreg + ", " + destreg + ", " + reg2);
+        add("sub " + destreg + ", " + reg1 + ", " + destreg);
+        storeValue(destreg, dest);
+
+        reg.freeTmp(reg1);
+        reg.freeTmp(reg2);
+
+        reg.freeTmp(destreg);
+
     }
 
     private void addOp(Instr instr, Ident dest) {
