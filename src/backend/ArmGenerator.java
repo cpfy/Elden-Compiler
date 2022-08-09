@@ -347,21 +347,23 @@ public class ArmGenerator {
         Value v1 = ((StoreInstr) instr).getV1();
         Value v2 = ((StoreInstr) instr).getV2();
 
-        String regt = register.applyTmp();
+        String reg = register.applyTmp();
 
         // v1存到v2里
         if (v1.isIdent()) {
-            loadValue(regt, v1.getIdent());
+            loadValue(reg, v1.getIdent());
 
         } else {
             int val = v1.getVal();
-            add("mov " + regt + ", #" + val);
+            add("mov " + reg + ", #" + val);
 
         }
 
-//        int off = curFunc.getOffsetByName(v2.toString());
-//        add("str " + regt + ", [sp, #" + off + "]");
-        storeValue(regt, v2.getIdent());
+        String regt = register.applyTmp();
+        loadValue(regt, v2.getIdent());
+        add("str " + reg + ", [" + regt + "]");
+
+        register.freeTmp(reg);
         register.freeTmp(regt);
     }
 
@@ -417,6 +419,9 @@ public class ArmGenerator {
         // 值存到dest reg里
         if (v.isIdent()) {
             loadValue(destreg, v.getIdent());
+
+            // 从addr加载value
+            add("mov " + destreg + ", [" + destreg + "]");
 
         } else {
             int val = v.getVal();
@@ -1171,31 +1176,39 @@ public class ArmGenerator {
         // global则加载进来
         if (destIdent.isGlobal()) {
             add("ldr " + regName + ", addr_of_" + destIdent.getName());
-            add("ldr " + regName + ", [" + regName + "]");
+//            add("ldr " + regName + ", [" + regName + "]");
 
         } else {
-            String regt = register.applyTmp();
+//            String regt = register.applyTmp();
+//            int off = curFunc.getOffsetByName(destIdent.toString());
+//            add("ldr " + regt + ", [sp, #" + off + "]");
+//            add("ldr " + regName + ", [" + regt + "]");
+//            register.freeTmp(regt);
+
             int off = curFunc.getOffsetByName(destIdent.toString());
-            add("ldr " + regt + ", [sp, #" + off + "]");
-            add("ldr " + regName + ", [" + regt + "]");
-            register.freeTmp(regt);
+            add("ldr " + regName + ", [sp, #" + off + "]");
         }
     }
 
     private void storeValue(String regName, Ident destIdent) {
         // global则存储回去
         if (destIdent.isGlobal()) {
-            String regt = register.applyTmp();
-            add("ldr " + regt + ", addr_of_" + destIdent.getName());
-            add("str " + regName + ", [" + regt + "]");
-            register.freeTmp(regt);
+//            String regt = register.applyTmp();
+//            add("ldr " + regt + ", addr_of_" + destIdent.getName());
+//            add("str " + regName + ", [" + regt + "]");
+//            register.freeTmp(regt);
+
+            add("str " + regName + ", addr_of_" + destIdent.getName());
 
         } else {
+//            int off = curFunc.getOffsetByName(destIdent.toString());
+//            String regt = register.applyTmp();
+//            add("ldr " + regt + ", [sp, #" + off + "]");
+//            add("str " + regName + ", [" + regt + "]");
+//            register.freeTmp(regt);
+
             int off = curFunc.getOffsetByName(destIdent.toString());
-            String regt = register.applyTmp();
-            add("ldr " + regt + ", [sp, #" + off + "]");
-            add("str " + regName + ", [" + regt + "]");
-            register.freeTmp(regt);
+            add("str " + regName + ", [sp, #" + off + "]");
         }
     }
 

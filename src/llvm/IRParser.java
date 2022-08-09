@@ -1139,9 +1139,8 @@ public class IRParser {
             } else if (newsym.getTokenValue().equals(s)) {
                 // 为了处理双**，修改为标记最后一个出现的*
                 if (!newsym.isPointerused()) {
-                    lastmatch = index+offset;
-//                    newsym.setPointerused(true);
-//                    return true;
+                    lastmatch = index + offset;
+
                 } else {
                     break;  // *已经用过，必然超过
                 }
