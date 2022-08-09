@@ -103,6 +103,7 @@ public class IRScanner {
                     curToken = endOfOp();
                 }
                 else if(readingString){
+                    // 为了处理i32，i1这种
                     endOfWord();
                 }
 

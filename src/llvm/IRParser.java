@@ -793,9 +793,6 @@ public class IRParser {
             case "[":
                 return ArrayType();
             case "i":
-//                if (assignPeek("*", ",")) {
-//                    return PointerType();
-//                }
                 return IntType();
             case "float":
                 getsym();
@@ -999,7 +996,7 @@ public class IRParser {
 
         match("*");
 
-        return new PointerType(TypeC.IP, t);
+        return new PointerType(TypeC.P, t);
     }
 
     // ArrayType : "[" int_lit "x" Type "]"
@@ -1125,9 +1122,12 @@ public class IRParser {
         return newsym.getTokenCode().equals(s);
     }
 
-    private boolean assignPeek(String s, String end, String end2, String end3) {   // 查找本行结束前/end前是否有某个符号
+    // 查找本行结束前/end前是否有某个符号
+    private boolean assignPeek(String s, String end, String end2, String end3) {
         int offset = 1;
         int curRow = tokenList.get(index).getRow();
+        int lastmatch = -1;
+
         while (index + offset < tokenList.size()) {
             Token newsym = tokenList.get(index + offset);
             if (newsym.getTokenValue().equals(end) ||
@@ -1135,17 +1135,28 @@ public class IRParser {
                     newsym.getTokenValue().equals(end3) ||
                     newsym.getRow() > curRow) {
                 break;
+
             } else if (newsym.getTokenValue().equals(s)) {
+                // 为了处理双**，修改为标记最后一个出现的*
                 if (!newsym.isPointerused()) {
-                    newsym.setPointerused(true);
-                    return true;
+                    lastmatch = index+offset;
+//                    newsym.setPointerused(true);
+//                    return true;
                 } else {
                     break;  // *已经用过，必然超过
                 }
             }
             offset += 1;
         }
-        return false;
+
+        // 是否匹配到
+        if (lastmatch == -1) {
+            return false;
+        } else {
+            Token newsym = tokenList.get(lastmatch);
+            newsym.setPointerused(true);
+            return true;
+        }
     }
 
     private Token getLastToken() {    //获取上一个 符

@@ -34,3 +34,4 @@ testcase.s
 llvmir.ll
 *.ll
 *.s
+txt/output.txt
