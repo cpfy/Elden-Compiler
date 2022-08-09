@@ -10,7 +10,7 @@ public abstract class Node {
 
     static String getFloatString(float in) {
         String s = Integer.toHexString(Float.floatToIntBits(in));
-        return s;
+        return "0x" + s;
     }
 
     static HashSet<String> globalNames = new HashSet<>();
