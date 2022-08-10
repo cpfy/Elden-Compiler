@@ -56,6 +56,9 @@ public class Value {
         if (isIdent) {
             return ident.toString();
         }
+        else if (isHex()) {
+            return hexVal;
+        }
         return String.valueOf(val);
     }
 

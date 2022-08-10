@@ -1104,5 +1104,3 @@ public class ArmGenerator {
         return -10086;
     }
 }
-
-
