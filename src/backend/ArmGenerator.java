@@ -495,17 +495,17 @@ public class ArmGenerator {
     }
 
     private void addFuncDef(Function f) {
+        add("");
+        add(".section .text");
         add(f.getFuncheader().getFname() + ":");
 
         // sp移动
         tabcount += 1;
 //        add("sub sp, sp,  #" + f.getFuncSize());
 
-
         if (curFunc.getFuncheader().getFname().equals("main")) {
             selfSubImm("sp", f.getFuncSize());
         }
-
 
         add("mov r7, sp");
         tabcount -= 1;
@@ -761,25 +761,21 @@ public class ArmGenerator {
             //todo 补充array处理
 
             case "getint":
-
                 break;
             case "getch":
-
                 break;
             case "getfloat":
-
-
                 break;
             case "getarray":
-
                 break;
             case "getfarray":
-
                 break;
             case "putint":
-                for (TypeValue tv : args) {
-                    //todo more than r0
+            case "putch":
+                // 仅r0一个参数
+                // putchar可参考：https://stackoverflow.com/questions/55699646/branch-link-to-putchar-causes-segmentation-fault-in-arm
 
+                for (TypeValue tv : args) {
                     assert tv.getType().getTypec() == TypeC.I;
                     Value v = tv.getValue();
                     if (v.isIdent()) {
@@ -792,15 +788,8 @@ public class ArmGenerator {
                     }
                 }
                 // add("bl putint");        //最后统一弄
-
-                break;
-            case "putch":
-
-
                 break;
             case "putfloat":
-
-
                 break;
             case "putarray":
 
