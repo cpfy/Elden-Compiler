@@ -91,6 +91,7 @@ public class IRDictionary {
         OPERATORS_DICT.put("#", "POUND");
         OPERATORS_DICT.put(":", "COLON");
         OPERATORS_DICT.put(";", "SEMICN");
+        OPERATORS_DICT.put(".", "POINT");   // float小数点使用
 
         OPERATORS_DICT.put("=", "ASSIGN");
         OPERATORS_DICT.put(",", "COMMA");

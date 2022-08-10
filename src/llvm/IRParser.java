@@ -149,7 +149,6 @@ public class IRParser {
 //        if (curFunction != null) {
 //            allfunctionlist.add(curFunction);
 //        }
-//>>>>>>> Stashed changes
     }
 
     // FunctionDecl : "declare" MetadataAttachments OptExternLinkage FunctionHeader
@@ -1007,17 +1006,47 @@ public class IRParser {
                 break;
         }
 
-        if (value.equals("-")) {
-            int num = int_lit();
-            return new Value(num);
+        // peek逗号？前是否有小数点
+        if (peekPoint(".")) {
+            float f = float_lit();
+            return new Value(f);
 
-        } else if (Character.isDigit(value.charAt(0))) {
-            getsym();
-            return new Value(value);
+        } else {
+            if (value.equals("-")) {
+                int num = int_lit();
+                return new Value(num);
+
+            } else if (Character.isDigit(value.charAt(0))) {
+                getsym();
+                return new Value(value);
+            }
         }
 
         error();
         return null;
+    }
+
+    // float_lit : _frac_lit | _sci_lit | _float_hex_lit
+    private float float_lit() {
+        // 目前仅用于_frac_lit
+        return _frac_lit();
+    }
+
+    // _frac_lit : [ _sign ] _decimals '.' { _decimal_digit }
+    private float _frac_lit() {
+        String prefix = "";
+        if (symIs("-")) {
+            getsym();
+            prefix = "-";
+        }
+        String high = sym.getTokenValue();
+        getsym();
+        String point = sym.getTokenValue();
+        getsym();
+        String low = sym.getTokenValue();
+        getsym();
+
+        return Float.parseFloat(prefix + high + point + low);
     }
 
     // ArrayConst : "[" TypeConsts "]" ;
@@ -1256,6 +1285,23 @@ public class IRParser {
             newsym.setPointerused(true);
             return true;
         }
+    }
+
+    // peek逗号？前是否有小数点
+    private boolean peekPoint(String s) {
+        int curRow = tokenList.get(index).getRow();
+
+        for (int i = index + 1; i < tokenList.size(); i++) {
+            Token newsym = tokenList.get(i);
+            if (newsym.getTokenValue().equals(",") ||
+                    newsym.getRow() > curRow) {
+                break;
+
+            } else if (newsym.getTokenValue().equals(s)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Token getLastToken() {    //获取上一个 符

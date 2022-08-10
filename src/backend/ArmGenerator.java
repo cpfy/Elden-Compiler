@@ -613,12 +613,12 @@ public class ArmGenerator {
                 for (TypeValue tv : value.getTclist()) {
                     Type tvt = tv.getType();
                     // float写法见：https://stackoverflow.com/questions/6970438/arm-assembly-float-variables
-//                    if (tvt.getTypec() == TypeC.F) {
-//                        add(".single 0e" + tv.getValue().hexToFloat());
-//
-//                    } else {
+                    if (tvt.getTypec() == TypeC.F) {
+                        add(".single 0e" + tv.getValue().getF());
+
+                    } else {
                         add(".word " + tv.getValue().toString());
-//                    }
+                    }
                     usedSpace += 4;
                 }
                 // 不会出现，llvm ir时已经所有0显式写了

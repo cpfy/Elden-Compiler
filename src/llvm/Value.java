@@ -19,6 +19,10 @@ public class Value {
     private boolean isTClist = false;
     private ArrayList<TypeValue> tclist;
 
+    //float
+    private boolean isfloat = false;
+    private float f;
+
     // Zeroinitailizer 用
     public Value() {
         this.keys = true;
@@ -52,12 +56,17 @@ public class Value {
         this.isTClist = true;
     }
 
+    // float
+    public Value(float f) {
+        this.isfloat = true;
+        this.f = f;
+    }
+
     @Override
     public String toString() {
         if (isIdent) {
             return ident.toString();
-        }
-        else if (isHex()) {
+        } else if (isHex()) {
             return hexVal;
         }
         return String.valueOf(val);
@@ -105,6 +114,14 @@ public class Value {
 
     public ArrayList<TypeValue> getTclist() {
         return tclist;
+    }
+
+    public boolean isFloat() {
+        return isfloat;
+    }
+
+    public float getF() {
+        return f;
     }
 
     // 16进制转浮点
