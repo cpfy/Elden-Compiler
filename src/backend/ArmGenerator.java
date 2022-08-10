@@ -682,7 +682,7 @@ public class ArmGenerator {
         ArrayList<TypeValue> args = ((CallInst) instr).getArgs();
 
         if (((CallInst) instr).isStandardCall()) {
-            addStandardCall(instr);
+            addStandardCall(instr, dest);
             return;
         }
 
@@ -765,22 +765,19 @@ public class ArmGenerator {
 
 
 //        if (argsnum <= 4) {
-            for (int i = argsnum - 1; i >= 0; i--) {
+            for (int i = 0; i < argsnum; i++) {
                 TypeValue tv = args.get(i);
-                if (tv.getType().getTypec() == TypeC.P) {
+                Value v = tv.getValue();
+                if (v.isIdent()) {
+                    String regt = reg.applyTmp();
+                    loadValue(regt, v.getIdent());
+                    add("mov r" + i + ", " + regt);
+                    reg.freeTmp(regt);
 
                 } else {
-                    Value v = tv.getValue();
-                    if (v.isIdent()) {
-                        String regt = reg.applyTmp();
-                        loadValue(regt, v.getIdent());
-                        add("mov r" + i + ", " + regt);
-                        reg.freeTmp(regt);
-
-                    } else {
-                        moveImm("r" + i, v.getVal());
-                    }
+                    moveImm("r" + i, v.getVal());
                 }
+
             }
 //        }
         //暂时全用内存传参
