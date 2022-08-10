@@ -30,7 +30,11 @@ public class GetElementPtrInst extends Instr {
 
     @Override
     public String toString() {
-        return "getelementptr inbounds " + t1.toString() + ", " + t2.toString() + " " + v.toString();
+        String ans = "getelementptr inbounds " + t1.toString() + ", " + t2.toString() + " " + v.toString() + ", i32 " +  commas.get(0).getValue().toString();
+        if (hasFourth) {
+            ans += ", i32 " +  commas.get(1).getValue().toString();
+        }
+        return ans;
     }
 
     public void setValue(Value i) {
