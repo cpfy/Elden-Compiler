@@ -1004,7 +1004,7 @@ public class ArmGenerator {
     // 插入.L
     private void addinterpoL() {
         interpolating = true;
-        add("b " + ".L" + (lcount + 1));
+        add("b " + ".L_auto_Generate_No_" + lcount);
         tabcount -= 1;
 
         add(".L" + lcount + ":");
@@ -1018,8 +1018,8 @@ public class ArmGenerator {
         lpicusecount = 0;
         lpicUseList.clear();
 
-        add(".L" + (lcount + 1) + ":");
-        lcount += 2;    // important!
+        add(".L_auto_Generate_No_" + lcount + ":");
+        lcount += 1;    // important!
         tabcount += 1;
         interpolating = false;
     }
@@ -1089,7 +1089,7 @@ public class ArmGenerator {
         if (destIdent.isGlobal()) {
             if (isfreg) {
                 interpolating = true;
-                add("vldr " + regName + ", =" + ".L" + lcount + "+" + lpicusecount * 4);
+                add("vldr " + regName + ", .L" + lcount + "+" + lpicusecount * 4);
                 addLpic(destIdent.getName());
                 interpolating = false;
 
@@ -1097,7 +1097,7 @@ public class ArmGenerator {
                 // 测试新写法
                 interpolating = true;
 //              add("ldr " + regName + ", =" + destIdent.getName());
-                add("ldr " + regName + ", =" + ".L" + lcount + "+" + lpicusecount * 4);
+                add("ldr " + regName + ", .L" + lcount + "+" + lpicusecount * 4);
                 addLpic(destIdent.getName());
                 interpolating = false;
             }
@@ -1134,7 +1134,7 @@ public class ArmGenerator {
 
                 interpolating = true;
 //                add("ldr " + regt + ", =" + destIdent.getName());
-                add("ldr " + regt + ", =" + ".L" + lcount + "+" + lpicusecount * 4);
+                add("ldr " + regt + ", .L" + lcount + "+" + lpicusecount * 4);
                 addLpic(destIdent.getName());
                 interpolating = false;
 
@@ -1146,7 +1146,7 @@ public class ArmGenerator {
 
                 interpolating = true;
 //                add("ldr " + regt + ", =" + destIdent.getName());
-                add("ldr " + regt + ", =" + ".L" + lcount + "+" + lpicusecount * 4);
+                add("ldr " + regt + ", .L" + lcount + "+" + lpicusecount * 4);
                 addLpic(destIdent.getName());
                 interpolating = false;
 
