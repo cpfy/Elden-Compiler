@@ -43,27 +43,19 @@ public class ArmGenerator {
     private static String OUTPUT_DIR;
     private ArrayList<Instr> gbdeflist;
 
-
     private int tabcount = 0;
     private int printcount = 0;
     private final String tab = "\t";
 
-
-    //    private boolean infuncdef = false;
-//    private boolean inmain = false;     //放到global主要用于main函数return 0时的判断
-    private boolean outGlobalDef = false;
-
-    //    private int spoffset = 0;           // 正数，统一度量衡了
-    private boolean innerfunc = false;  // 标记此时在函数体内
-//    private int infuncoffset = 0;   // 正数, func内的偏移
-
+    private boolean outMain = false;        // 倒着读取，已经离开main函数
+    private boolean intoGlobalDef = false;  // 标记此时在函数体内
 
     private Function curFunc;       // 当前函数，读取offset时用
 
     public ArmGenerator(ArrayList<Function> allfunclist, String outputfile) {
-        Function mainFunc = allfunclist.get(allfunclist.size() - 1);
-        allfunclist.remove(allfunclist.size() - 1);
-        allfunclist.add(0, mainFunc);
+//        Function mainFunc = allfunclist.get(allfunclist.size() - 1);
+//        allfunclist.remove(allfunclist.size() - 1);
+//        allfunclist.add(0, mainFunc);
         for (Function function : allfunclist) {
             function.initOffsetTable();
         }
@@ -93,15 +85,16 @@ public class ArmGenerator {
         add(".cpu cortex-a15");
         add(".align 4");
         add("");
+        add(".global main");
 
 //        collectPrintStr();
 
-        for (Function f : aflist) {
-//            f.initOffsetTable();    // 初始化偏移计算
+        for (int j = aflist.size() - 1; j >= 0; j--) {
+            Function f = aflist.get(j);
             curFunc = f;
 
             // GlobalDef特判
-            if (f.getFuncheader().getFname() == "GlobalContainer") {
+            if (f.getFuncheader().getFname().equals("GlobalContainer")) {
                 add("");
                 add(".section .data");
                 add(".align 2");
@@ -109,37 +102,25 @@ public class ArmGenerator {
                     addGlobalDef(i);
                 }
                 continue;
-            }
 
-            if (f.getFuncheader().getFname() != "GlobalContainer") {
-                if (!outGlobalDef) {
-                    outGlobalDef = true;
-                    add(".global main");
-                }
-
+            } else if (f.getFuncheader().getFname() != "main") {
+                outMain = true;
                 addFuncDef(f);  // 加个label
                 tabcount += 1;
-
             }
             for (Block b : f.getBlocklist()) {
                 //if (b.isDirty()) continue;
                 addBlockLabel(b);
                 for (Instr i : b.getInblocklist()) {
-
-                    if (outGlobalDef) {
-                        add("\n@ " + i.toString());
-                        addInstr(i);
-                    } else {
-                        // global ident
-//                        addGlobalDef(i);
-                    }
+                    add("@ " + i.toString());
+                    addInstr(i);
+                    add("");
                 }
             }
-
             tabcount -= 1;
         }
 
-        addProgramEnd();
+//        addProgramEnd();
 
         printout(1);
     }
