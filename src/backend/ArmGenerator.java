@@ -61,7 +61,7 @@ public class ArmGenerator {
         Function mainFunc = allfunclist.get(allfunclist.size() - 1);
         allfunclist.remove(allfunclist.size() - 1);
         allfunclist.add(0, mainFunc);
-        for (Function function: allfunclist) {
+        for (Function function : allfunclist) {
             function.initOffsetTable();
         }
         this.aflist = allfunclist;
@@ -221,22 +221,31 @@ public class ArmGenerator {
 
                 //todo
                 addSIToFP(valueinstr, dest);
+                break;
             case "fptosi":
 
                 //todo
                 addFPToSI(valueinstr, dest);
+                break;
+            case "fcmp":
+                addFcmp(valueinstr, dest);
+                break;
             default:
                 break;
         }
 
     }
 
-    private void addFPToSI(Instr valueinstr, Ident dest) {
+    private void addFcmp(Instr instr, Ident dest) {
+        //todo
+    }
+
+    private void addFPToSI(Instr instr, Ident dest) {
         //todo
     }
 
 
-    private void addSIToFP(Instr valueinstr, Ident dest) {
+    private void addSIToFP(Instr instr, Ident dest) {
         //todo
     }
 
@@ -454,7 +463,17 @@ public class ArmGenerator {
             add(gi.getName() + ": .word " + value.toString());
 
         } else if (t.getTypec() == TypeC.A) {
-            add(gi.getName() + ": .skip " + t.getSpace());
+
+            add(".global " + gi.getName());
+            add(".size " + gi.getName() + ", " + t.getSpace());
+            add(gi.getName() + ":");
+            tabcount += 1;
+            for (TypeValue tv : value.getTclist()) {
+                add(".word " + tv.getValue().toString());
+
+            }
+            tabcount -= 1;
+//            add(gi.getName() + ": .skip " + t.getSpace());
         }
         //todo other format
 
@@ -466,7 +485,6 @@ public class ArmGenerator {
         // sp移动
         tabcount += 1;
 //        add("sub sp, sp,  #" + f.getFuncSize());
-
 
 
         if (curFunc.getFuncheader().getFname().equals("main")) {
@@ -625,7 +643,8 @@ public class ArmGenerator {
         String oppomovestr = ((IcmpInst) instr).predToOppoBr();
         add("cmp " + reg1 + ", " + reg2);
         add("mov" + movestr + " " + destreg + ", #1");
-        add("mov" + oppomovestr + " " + destreg + ", #0");reg.freeTmp(reg1);
+        add("mov" + oppomovestr + " " + destreg + ", #0");
+        reg.freeTmp(reg1);
         reg.freeTmp(reg2);
 
         storeValue(destreg, dest);
@@ -1088,7 +1107,7 @@ public class ArmGenerator {
     }
 
     private int getFuncSize(String name) {
-        for (Function function: aflist) {
+        for (Function function : aflist) {
             if (function.getFuncheader().getFname().equals(name)) {
                 return function.getFuncSize();
             }

@@ -7,6 +7,7 @@ import llvm.Instr.BinaryInst;
 import llvm.Instr.BrTerm;
 import llvm.Instr.CallInst;
 import llvm.Instr.CondBrTerm;
+import llvm.Instr.FCmpInst;
 import llvm.Instr.FPToSIInst;
 import llvm.Instr.GetElementPtrInst;
 import llvm.Instr.GlobalDefInst;
@@ -577,15 +578,20 @@ public class IRParser {
     // FCmpInst : "fcmp" FastMathFlags FPred Type Value "," Value OptCommaSepMetadataAttachmentList ;
     // e.g. %5 = fcmp olt float %3, %4
     private Instr FCmpInst() {
-//        match("fcmp");
-//        FPred();
-//        Type();
-//        Value();
-//        match(",");
-//        Value();
-//
-//        return new FCmpInst();
-        return null;
+        match("fcmp");
+        String fpred = FPred();
+        Type t = Type();
+        Value v1 = Value();
+        match(",");
+        Value v2 = Value();
+
+        return new FCmpInst("fcmp", fpred, t, v1, v2);
+    }
+
+    private String FPred() {
+        String fpred = sym.getTokenValue();
+        getsym();
+        return fpred;
     }
 
     // FPToSIInst : "fptosi" Type Value "to" Type OptCommaSepMetadataAttachmentList

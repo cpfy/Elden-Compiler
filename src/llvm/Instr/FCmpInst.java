@@ -6,14 +6,14 @@ import llvm.Value;
 import java.util.ArrayList;
 
 public class FCmpInst extends Instr {
-    private String ipred;
+    private String fpred;
     private Type t;
     private Value v1;
     private Value v2;
 
     public FCmpInst(String instrname, String ipred, Type t, Value v1, Value v2) {
         super(instrname);
-        this.ipred = ipred;
+        this.fpred = ipred;
         this.t = t;
         this.v1 = v1;
         this.v2 = v2;
@@ -21,11 +21,11 @@ public class FCmpInst extends Instr {
 
     @Override
     public String toString() {
-        return "fcmp " + ipred + " " + t.toString() + " " + v1.toString() + ", " + v2.toString();
+        return "fcmp " + fpred + " " + t.toString() + " " + v1.toString() + ", " + v2.toString();
     }
 
-    public String getIpred() {
-        return ipred;
+    public String getFpred() {
+        return fpred;
     }
 
     public Type getT() {
@@ -50,7 +50,7 @@ public class FCmpInst extends Instr {
 
     // llvm 的ipred转为bne、beq等
     public String predToBr() {
-        switch (ipred) {
+        switch (fpred) {
             case "eq":
                 return "eq";
             case "ne":
@@ -75,7 +75,7 @@ public class FCmpInst extends Instr {
 
     // llvm 的ipred转为相反的ne、eq等
     public String predToOppoBr() {
-        switch (ipred) {
+        switch (fpred) {
             case "eq":
                 return "ne";
             case "ne":
