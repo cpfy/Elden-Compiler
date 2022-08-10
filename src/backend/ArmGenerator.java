@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static java.lang.Math.floor;
 import static java.lang.Math.max;
 import static java.lang.System.*;
 
@@ -52,6 +53,15 @@ public class ArmGenerator {
 
     private Function curFunc;       // 当前函数，读取offset时用
 
+    // LPIC计数器
+    private int lpiccount = 1;
+    private int lcount = 1;
+    private int lines = 0;  // 每500插入
+    private static int lpicConst = 500; // 默认每500行插入
+    private int lpicusecount = 0;
+    private ArrayList<String> lpicUseList;
+    private boolean interpolating = false;  // 是否正在插入，不触发500
+
     public ArmGenerator(ArrayList<Function> allfunclist, String outputfile) {
 //        Function mainFunc = allfunclist.get(allfunclist.size() - 1);
 //        allfunclist.remove(allfunclist.size() - 1);
@@ -65,6 +75,8 @@ public class ArmGenerator {
         this.reg = new Register();
         this.gbdeflist = new ArrayList<>();
         OUTPUT_DIR = outputfile;
+
+        this.lpicUseList = new ArrayList<>();
     }
 
     public void convertarm() {
@@ -95,6 +107,8 @@ public class ArmGenerator {
 
             // GlobalDef特判
             if (f.getFuncheader().getFname().equals("GlobalContainer")) {
+                addinterpoL();  // addInterpol收尾
+
                 add("");
                 add(".section .data");
                 add(".align 2");
@@ -317,7 +331,7 @@ public class ArmGenerator {
 
             String dregf = reg.applyFTmp();     // 浮点+目的寄存器
 //            add("vmov " + dregf + ", #" + v.getVal());
-            vmoveFloat(dregf, v.hexToFloat());
+            vmoveFloat(dregf, v.getVal());
 //            add("vcvt.f32.s32 " + dregf + ", " + dregf);
             reg.freeFTmp(dregf);
 
@@ -976,6 +990,38 @@ public class ArmGenerator {
         }
         armlist.add(armstr);
         System.out.println(armstr);
+
+        // 大于lpic截断时插入.L
+        if (lines > lpicConst && !interpolating) {
+            addinterpoL();
+            lines = 0;
+
+        } else {
+            lines += 1;
+        }
+    }
+
+    // 插入.L
+    private void addinterpoL() {
+        interpolating = true;
+        add("b " + ".L" + (lcount + 1));
+        tabcount -= 1;
+
+        add(".L" + lcount + ":");
+        tabcount += 1;
+        for (String l_use : lpicUseList) {
+            add(".word " + l_use);
+        }
+        tabcount -= 1;
+
+        // clear
+        lpicusecount = 0;
+        lpicUseList.clear();
+
+        add(".L" + (lcount + 1) + ":");
+        lcount += 2;    // important!
+        tabcount += 1;
+        interpolating = false;
     }
 
 
@@ -995,7 +1041,7 @@ public class ArmGenerator {
     }
 
     /**********Reg 处理**********/
-    // 右值，必定有结果
+    // 右值，必定有结果（废弃）
     private String searchRegName(Ident i) {
         String regname;
         int no = reg.searchIdentRegNo(i);
@@ -1004,7 +1050,7 @@ public class ArmGenerator {
             if (i.isGlobal()) {
                 regname = reg.applyRegister(i);
 //                add("ldr " + regname + ", addr_of_" + i.getName());
-                add("ldr " + regname + ",=" + i.getName());
+                add("ldr " + regname + ", =" + i.getName());
 //                add("ldr " + regname + ", [" + regname + "]");
                 return regname;
 
@@ -1042,11 +1088,18 @@ public class ArmGenerator {
         // global则加载进来
         if (destIdent.isGlobal()) {
             if (isfreg) {
-                add("vldr " + regName + ", =" + destIdent.getName());
+                interpolating = true;
+                add("vldr " + regName + ", =" + ".L" + lcount + "+" + lpicusecount * 4);
+                addLpic(destIdent.getName());
+                interpolating = false;
 
             } else {
                 // 测试新写法
-                add("ldr " + regName + ", =" + destIdent.getName());
+                interpolating = true;
+//              add("ldr " + regName + ", =" + destIdent.getName());
+                add("ldr " + regName + ", =" + ".L" + lcount + "+" + lpicusecount * 4);
+                addLpic(destIdent.getName());
+                interpolating = false;
             }
 
 //            add("ldr " + regName + ", a  d  dr_of_" + destIdent.getName());
@@ -1078,13 +1131,25 @@ public class ArmGenerator {
             // 测试新写法
             if (isfreg) {
                 String regt = reg.applyTmp();
-                add("ldr " + regt + ", =" + destIdent.getName());
+
+                interpolating = true;
+//                add("ldr " + regt + ", =" + destIdent.getName());
+                add("ldr " + regt + ", =" + ".L" + lcount + "+" + lpicusecount * 4);
+                addLpic(destIdent.getName());
+                interpolating = false;
+
                 add("vstr " + regname + ", [" + regt + "]");
                 reg.freeTmp(regt);
 
             } else {
                 String regt = reg.applyTmp();
-                add("ldr " + regt + ", =" + destIdent.getName());
+
+                interpolating = true;
+//                add("ldr " + regt + ", =" + destIdent.getName());
+                add("ldr " + regt + ", =" + ".L" + lcount + "+" + lpicusecount * 4);
+                addLpic(destIdent.getName());
+                interpolating = false;
+
                 add("str " + regname + ", [" + regt + "]");
                 reg.freeTmp(regt);
             }
@@ -1100,6 +1165,17 @@ public class ArmGenerator {
                 addInstrRegSpOffset("str", regname, "r7", off);
             }
         }
+    }
+
+    // 添加LPIC
+    private void addLpic(String name) {
+        tabcount -= 1;
+        add(".LPIC" + lpiccount + ":");
+        tabcount += 1;
+
+        lpicUseList.add(name + "-(.LPIC" + lpiccount + "+4)");
+        lpiccount += 1;
+        lpicusecount += 1;
     }
 
     // 封装(16位)立即数移动
