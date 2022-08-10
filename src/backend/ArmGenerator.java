@@ -283,8 +283,7 @@ public class ArmGenerator {
             // mul a, a, off1
             // 封装 add("mov " + regt + ",   #" + off1);
             moveImm(regt, off1);
-            add("mul " + rega + ", " + rega + ", " + regt);
-            add("add " + regd + ", " + regd + ", " + rega);
+            add("mul " + regd + ", " + rega + ", " + regt);
 
             reg.freeTmp(regt);
             reg.freeTmp(rega);
