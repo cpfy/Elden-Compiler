@@ -250,7 +250,8 @@ public class ArmGenerator {
 
         } else {
 //            moveImm(reg1, v1.getVal());
-            add("vmov " + reg1 + ", #" + v1.hexToFloat());
+//            add("vm ov " + reg1 + ", #" + v1.hexToFloat());
+            vmoveFloat(reg1, v1.hexToFloat());
         }
 
         String reg2 = reg.applyFTmp();
@@ -259,14 +260,16 @@ public class ArmGenerator {
 
         } else {
 //            moveImm(reg2, v2.getVal());
-            add("vmov " + reg2 + ", #" + v2.hexToFloat());
+//            add("vm ov " + reg2 + ", #" + v2.hexToFloat());
+            vmoveFloat(reg2, v2.hexToFloat());
+
         }
 
         // 见：https://community.arm.com/cn/f/discussions/10002/neon-vcmp-f32
         // https://community.arm.com/arm-community-blogs/b/architectures-and-processors-blog/posts/condition-codes-4-floating-point-comparisons-using-vfp
         String movestr = ((FCmpInst) instr).predToBr();
         String oppomovestr = ((FCmpInst) instr).predToOppoBr();
-        add("vcmp " + reg1 + ", " + reg2);
+        add("vcmp.f32 " + reg1 + ", " + reg2);
         add("vmrs APSR_nzcv, FPSCR");       //@ Get the flags into APSR.
         add("mov" + movestr + " " + reg_d + ", #1");
         add("mov" + oppomovestr + " " + reg_d + ", #0");
@@ -305,7 +308,8 @@ public class ArmGenerator {
             String regtf = reg.applyFTmp();
             String dreg = reg.applyTmp();     // 整数+目的寄存器
             add("mov " + regtf + ", #" + v.hexToFloat());
-            add("vcvt.s32.f32 " + dreg + ", " + regtf);     // (target, source)
+            add("vcvt.s32.f32 " + regtf + ", " + regtf);     // (target, source)
+            add("vmov " + dreg + ", " + regtf);
             reg.freeFTmp(regtf);
             reg.freeTmp(dreg);
         }
@@ -331,7 +335,8 @@ public class ArmGenerator {
         } else {
 
             String dregf = reg.applyFTmp();     // 浮点+目的寄存器
-            add("vmov " + dregf + ", #" + v.getVal());
+//            add("vmov " + dregf + ", #" + v.getVal());
+            vmoveFloat(dregf, v.hexToFloat());
 //            add("vcvt.f32.s32 " + dregf + ", " + dregf);
             reg.freeFTmp(dregf);
 
@@ -446,7 +451,8 @@ public class ArmGenerator {
         } else {
             // 操作浮点时指令变为 vmov
 //            moveImm(reg1, v1.getVal());
-            add("vmov " + reg1 + ", #" + v1.hexToFloat());
+//            add("v  m   ov  " + reg1 + ", #" + v1.hexToFloat());
+            vmoveFloat(reg1, v1.hexToFloat());
 
         }
 
@@ -457,7 +463,8 @@ public class ArmGenerator {
         } else {
             // 操作浮点时指令变为 vmov
 //            moveImm(reg2, v2.getVal());
-            add("vmov " + reg2 + ", #" + v2.hexToFloat());
+//            add("vm ov " + reg2 + ", #" + v2.hexToFloat());
+            vmoveFloat(reg2, v2.hexToFloat());
         }
 
         String destreg = reg.applyFTmp();
@@ -572,7 +579,8 @@ public class ArmGenerator {
             loadValue(regs, v1.getIdent());
 
         } else {
-            if (f) add("vmov " + regs + ", #" + v1.hexToFloat());
+//            if (f) add("vm     ov " + regs + ", #" + v1.hexToFloat());
+            if (f) vmoveFloat(regs, v1.hexToFloat());
             else moveImm(regs, v1.getVal());  // 仅支持int
 
         }
@@ -678,7 +686,8 @@ public class ArmGenerator {
             reg.freeTmp(addrreg);
 
         } else {
-            if (f) add("vmov " + dreg + ", #" + v.hexToFloat());
+//            if (f) add("vm  ov " + dreg + ", #" + v.hexToFloat());
+            if (f) vmoveFloat(dreg, v.hexToFloat());
             else moveImm(dreg, v.getVal());
         }
 
@@ -1186,4 +1195,17 @@ public class ArmGenerator {
         }
         return -10086;
     }
+
+    // 封装如：add("vmov " + reg1 + ", #" + v1.hexToFloat());
+    private void vmoveFloat(String regname, float floatnum) {
+        if (floatnum == 0) {
+            // 相当于清零，arm不支持#0
+            // 见：https://stackoverflow.com/questions/11205652/why-does-vmov-f64-not-allow-me-to-load-zero
+            add("eor " + regname + ", " + regname + ", " + regname);
+
+        } else {
+            add("vmov " + regname + ", #" + floatnum);
+        }
+    }
+
 }
