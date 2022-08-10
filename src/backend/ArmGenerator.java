@@ -15,6 +15,7 @@ import llvm.Instr.IcmpInst;
 import llvm.Instr.Instr;
 import llvm.Instr.LoadInst;
 import llvm.Instr.RetTerm;
+import llvm.Instr.SIToFPInst;
 import llvm.Instr.StoreInstr;
 import llvm.Instr.ZExtInst;
 import llvm.Type.IntType;
@@ -185,7 +186,6 @@ public class ArmGenerator {
             add("mov " + regd + ", " + regt);
             reg.freeTmp(regt);
 
-
         } else {
             //todo 不可能是digit
         }
@@ -219,12 +219,10 @@ public class ArmGenerator {
                 addGetelementptr(valueinstr, dest);
                 break;
             case "call":
-                // e.g. getint()
+                // e.g. %1 = getint()
                 addCall(valueinstr, dest);
                 break;
             case "sitofp":
-
-                //todo
                 addSIToFP(valueinstr, dest);
                 break;
             case "fptosi":
@@ -238,7 +236,6 @@ public class ArmGenerator {
             default:
                 break;
         }
-
     }
 
     private void addFcmp(Instr instr, Ident dest) {
@@ -252,6 +249,14 @@ public class ArmGenerator {
 
     private void addSIToFP(Instr instr, Ident dest) {
         //todo
+//        Type t1 = ((SIToFPInst) instr).getT1();  // must i32
+//        Type t2 = ((SIToFPInst) instr).getT2();  // must float
+//        Value v = ((SIToFPInst) instr).getV();
+//
+//String regt=reg.applyTmp();
+//load
+//        String regfd = reg.applyFTmp();     // 浮点+目的寄存器
+//        add("vmov " + regfd + ", " +);
     }
 
 
@@ -342,11 +347,52 @@ public class ArmGenerator {
             case "fsub":
             case "fmul":
             case "fdiv":
-//                addFop(instr,dest);
+                addFop(instr, dest);    // 浮点运算系列
                 break;
             default:
                 break;
         }
+    }
+
+    // 浮点运算系列
+    private void addFop(Instr instr, Ident dest) {
+        String op = ((BinaryInst) instr).getOp();   // fadd, fsub等
+        Type t = ((BinaryInst) instr).getT();       // 一般为float
+        Value v1 = ((BinaryInst) instr).getV1();    // 0xAAAA 或者 %x
+        Value v2 = ((BinaryInst) instr).getV2();
+        String reg1, reg2;
+
+        reg1 = reg.applyFTmp();
+        if (v1.isIdent()) {
+            loadValue(reg1, v1.getIdent());
+
+        } else {
+            // 操作浮点时指令变为 vmov
+//            moveImm(reg1, v1.getVal());
+            add("vmov " + reg1 + ", #" + v1.getHexVal());
+
+        }
+
+        reg2 = reg.applyFTmp();
+        if (v2.isIdent()) {
+            loadValue(reg2, v2.getIdent());
+
+        } else {
+            // 操作浮点时指令变为 vmov
+//            moveImm(reg2, v2.getVal());
+            add("vmov " + reg2 + ", #" + v2.getHexVal());
+        }
+
+        String destreg = reg.applyFTmp();
+
+        // e.g. vadd.f32 s1, s2, s3
+        op = 'v' + op.substring(1, op.length());
+        add(op + ".f32 " + destreg + ", " + reg1 + ", " + reg2);
+        storeValue(destreg, dest);
+
+        reg.freeFTmp(reg1);
+        reg.freeFTmp(reg2);
+        reg.freeFTmp(destreg);
     }
 
     // 取模函数
@@ -607,24 +653,7 @@ public class ArmGenerator {
         reg.freeTmp(regt);
     }
 
-    private void addAllocaInt(Instr instr, Ident dest) {
-
-    }
-
-    private void addAllocaArray(Instr instr, Ident dest) {
-    }
-
     private void addPrints(Instr instr) {
-    }
-
-    private void addJump(Instr instr) {
-        //原始 addJump
-
-
-        //中的jump
-    }
-
-    private void addCompareBranch(Instr instr) {
     }
 
     // icmp xx
@@ -749,7 +778,6 @@ public class ArmGenerator {
         add("pop {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}");
     }
 
-
     // 标准printf, scanf等函数
     private void addStandardCall(Instr instr, Ident... dest) {
         String callfuncname = ((CallInst) instr).getFuncname();
@@ -766,33 +794,31 @@ public class ArmGenerator {
 
 
 //        if (argsnum <= 4) {
-            for (int i = 0; i < argsnum; i++) {
-                TypeValue tv = args.get(i);
-                Value v = tv.getValue();
-                if (v.isIdent()) {
-                    String regt = reg.applyTmp();
-                    loadValue(regt, v.getIdent());
-                    add("mov r" + i + ", " + regt);
-                    reg.freeTmp(regt);
+        for (int i = 0; i < argsnum; i++) {
+            TypeValue tv = args.get(i);
+            Value v = tv.getValue();
+            if (v.isIdent()) {
+                String regt = reg.applyTmp();
+                loadValue(regt, v.getIdent());
+                add("mov r" + i + ", " + regt);
+                reg.freeTmp(regt);
 
-                } else {
-                    moveImm("r" + i, v.getVal());
-                }
-
+            } else {
+                moveImm("r" + i, v.getVal());
             }
+
+        }
 //        }
         //暂时全用内存传参
 
         //todo
         add("bl " + callfuncname);
 
-        // 若有dest，保存返回结果
-
-
 //        add("add sp, sp,  #" + (pushregs + pushargsnum));
 
-
         add("pop {r7}");
+
+        // 若有dest，保存返回结果
         if (dest.length > 0) {
             storeValue("r0", dest[0]);
         }
@@ -823,20 +849,6 @@ public class ArmGenerator {
 
         add("bx lr");
     }
-
-    private void addAssignRet(Instr instr) {
-    }
-
-    private void addArrayDecl(Instr instr) {
-    }
-
-    private void addIntDecl(Instr instr) {
-    }
-
-
-//    private void addNotes(Instr instr) {
-//    }
-
 
     private void addProgramEnd() {
         // return from main
@@ -909,40 +921,6 @@ public class ArmGenerator {
         return "0x" + Integer.toHexString(intaddr);
     }
 
-    // 应废弃
-    private String searchRegName(Variable v) {
-        String regname;
-
-        if (v.isKindofsymbol()) {  //是一个蛮重要的变量
-            //System.out.println("v's name = " + v.getName());
-
-            Symbol symbol = v.getSymbol();
-            if (symbol.getCurReg() == -1) {  //仅初始化未分配
-                regname = reg.applyRegister(symbol);
-
-            } else {
-                int regno = symbol.getCurReg();
-                regname = reg.getRegisterNameFromNo(regno);
-            }
-
-        } else {  //临时的“阅后即焚”野鸡变量
-            if (v.getCurReg() == -1) {  //仅初始化未分配
-                regname = reg.applyRegister(v);
-
-            } else {
-                int regno = v.getCurReg();
-                regname = reg.getRegisterNameFromNo(regno);
-            }
-
-            if (regname == null || regname.equals("")) {
-                System.err.println("Null Reg :" + v.toString());
-
-                //regname = register.applyRegister(v);
-            }
-        }
-        return regname;
-    }
-
     /**********Reg 处理**********/
     // 右值，必定有结果
     private String searchRegName(Ident i) {
@@ -968,7 +946,7 @@ public class ArmGenerator {
 //            return null;
 
         } else {
-            regname = reg.getRegisterNameFromNo(no);
+            regname = reg.getRegnameFromNo(no);
             return regname;
         }
     }
@@ -984,45 +962,75 @@ public class ArmGenerator {
 
     }
 
-    private void loadValue(String regName, Ident destIdent) {
+    // 当vop=true时操作浮点，指令变为vldr, vstr
+    private void loadValue(String regName, Ident destIdent/*, boolean... vop*/) {
+        boolean isfreg = regName.charAt(0) == 's';
+
         // global则加载进来
         if (destIdent.isGlobal()) {
-//            add("ldr " + regName + ", a  d  dr_of_" + destIdent.getName());
-            // 测试新写法
-            add("ldr " + regName + ",=" + destIdent.getName());
+            if (isfreg) {
+                add("vldr " + regName + ", =" + destIdent.getName());
 
+            } else {
+                // 测试新写法
+                add("ldr " + regName + ", =" + destIdent.getName());
+            }
+
+//            add("ldr " + regName + ", a  d  dr_of_" + destIdent.getName());
 //            add("add " + regName + ", " + regName + ", #0x10000");//todo 为什么要加0x10000(待确定，模拟器上是0x10000)，因为ad dr_of_xxx中记录的地址是相对于text段的地址，使用时需要加上text段的基地址（0x10000）
 //            add("ldr " + regName + ", [" + regName + "]");
 
         } else {
             int off = curFunc.getOffsetByName(destIdent.toString());
-//            add("ldr " + regName + ", [sp,  #" + off + "]");
-            addInstrRegSpOffset("ldr", regName, "r7", off);
+
+            if (isfreg) {
+                addInstrRegSpOffset("vldr", regName, "r7", off);
+
+            } else {
+                // 封装 add("ldr " + regName + ", [sp,  #" + off + "]");
+                addInstrRegSpOffset("ldr", regName, "r7", off);
+            }
         }
     }
 
-    private void storeValue(String regName, Ident destIdent) {
+    // 当regName的首位为s时操作浮点，指令变为vldr, vstr
+    private void storeValue(String regName, Ident destIdent/*, boolean... vop*/) {
+        boolean isfreg = regName.charAt(0) == 's';
+
         // global则存储回去
         if (destIdent.isGlobal()) {
 //            add("str " + regName + ", a d   d r_of_" + destIdent.getName());
 //            add("add " + regName + ", " + regName + ", #0x10000");
 
             // 测试新写法
-            String regt = reg.applyTmp();
-            add("ldr " + regt + ",=" + destIdent.getName());
-            add("str " + regName + ", [" + regt + "]");
-            reg.freeTmp(regt);
+            if (isfreg) {
+                String regt = reg.applyTmp();
+                add("ldr " + regt + ", =" + destIdent.getName());
+                add("vstr " + regName + ", [" + regt + "]");
+                reg.freeTmp(regt);
+
+            } else {
+                String regt = reg.applyTmp();
+                add("ldr " + regt + ", =" + destIdent.getName());
+                add("str " + regName + ", [" + regt + "]");
+                reg.freeTmp(regt);
+            }
 
         } else {
             int off = curFunc.getOffsetByName(destIdent.toString());
-//            add("str " + regName + ", [sp, #" + off + "]");
-            addInstrRegSpOffset("str", regName, "r7", off);
+
+            if (isfreg) {
+                addInstrRegSpOffset("vstr", regName, "r7", off);
+
+            } else {
+                // 封装 add("str " + regName + ", [sp, #" + off + "]");
+                addInstrRegSpOffset("str", regName, "r7", off);
+            }
         }
     }
 
     // 封装(16位)立即数移动
     private void moveImm(String regname, int num) {
-
         // 负数必会有问题
         if (num < 65536) {
             add("mov " + regname + ", #" + num);
@@ -1065,7 +1073,7 @@ public class ArmGenerator {
     }
 
     // 封装形如 add("str " + regt + ", [sp, #" + off + "]");
-    // 要求 off < 4096
+    // 要求 off < 4096；目前来看并未出现 <0 的报错
     private void addInstrRegSpOffset(String instrname, String regname, String sp, int num) {
         if (num < 4096) {
             add(instrname + " " + regname + ", [" + sp + ", #" + num + "]");
