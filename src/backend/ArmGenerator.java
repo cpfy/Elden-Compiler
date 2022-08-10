@@ -1090,7 +1090,7 @@ public class ArmGenerator {
             if (isfreg) {
                 interpolating = true;
                 add("vldr " + regName + ", .L" + lcount + "+" + lpicusecount * 4);
-                addLpic(destIdent.getName());
+                addLpic(regName, destIdent.getName());
                 interpolating = false;
 
             } else {
@@ -1098,7 +1098,7 @@ public class ArmGenerator {
                 interpolating = true;
 //              add("ldr " + regName + ", =" + destIdent.getName());
                 add("ldr " + regName + ", .L" + lcount + "+" + lpicusecount * 4);
-                addLpic(destIdent.getName());
+                addLpic(regName, destIdent.getName());
                 interpolating = false;
             }
 
@@ -1135,7 +1135,7 @@ public class ArmGenerator {
                 interpolating = true;
 //                add("ldr " + regt + ", =" + destIdent.getName());
                 add("ldr " + regt + ", .L" + lcount + "+" + lpicusecount * 4);
-                addLpic(destIdent.getName());
+                addLpic(regt, destIdent.getName());
                 interpolating = false;
 
                 add("vstr " + regname + ", [" + regt + "]");
@@ -1147,7 +1147,7 @@ public class ArmGenerator {
                 interpolating = true;
 //                add("ldr " + regt + ", =" + destIdent.getName());
                 add("ldr " + regt + ", .L" + lcount + "+" + lpicusecount * 4);
-                addLpic(destIdent.getName());
+                addLpic(regt, destIdent.getName());
                 interpolating = false;
 
                 add("str " + regname + ", [" + regt + "]");
@@ -1168,10 +1168,12 @@ public class ArmGenerator {
     }
 
     // 添加LPIC
-    private void addLpic(String name) {
+    private void addLpic(String reg, String name) {
         tabcount -= 1;
         add(".LPIC" + lpiccount + ":");
         tabcount += 1;
+
+        add("add " + reg + ", " + reg + ", pc");
 
         lpicUseList.add(name + "-(.LPIC" + lpiccount + "+4)");
         lpiccount += 1;
