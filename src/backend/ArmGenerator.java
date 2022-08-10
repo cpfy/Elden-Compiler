@@ -74,7 +74,9 @@ public class ArmGenerator {
 
     public void convertarm() {
         add("/* -- testcase.s */");
-        add(".data");
+        add(".arch armv7ve");
+        add(".arm");
+        add(".section .text");
         add(".extern getint");
         add(".extern getch");
         add(".extern getfloat");
@@ -97,6 +99,9 @@ public class ArmGenerator {
 
             // GlobalDef特判
             if (f.getFuncheader().getFname() == "GlobalContainer") {
+                add("");
+                add(".section .data");
+                add(".align 2");
                 for (Instr i : f.getBlocklist().get(0).getInblocklist()) {
                     addGlobalDef(i);
                 }
@@ -106,7 +111,6 @@ public class ArmGenerator {
             if (f.getFuncheader().getFname() != "GlobalContainer") {
                 if (!outGlobalDef) {
                     outGlobalDef = true;
-                    add(".text");
                     add(".global main");
                 }
 
@@ -123,7 +127,7 @@ public class ArmGenerator {
                         addInstr(i);
                     } else {
                         // global ident
-                        addGlobalDef(i);
+//                        addGlobalDef(i);
                     }
                 }
             }
@@ -464,15 +468,26 @@ public class ArmGenerator {
 
         } else if (t.getTypec() == TypeC.A) {
 
-            add(".global " + gi.getName());
-            add(".size " + gi.getName() + ", " + t.getSpace());
-            add(gi.getName() + ":");
-            tabcount += 1;
-            for (TypeValue tv : value.getTclist()) {
-                add(".word " + tv.getValue().toString());
+            // zeroinitializer
+            // comm用法：https://stackoverflow.com/questions/501105/what-does-comm-mean
+            if (value.isKeys()) {
+                add(".comm " + gi.getName() + ", " + t.getSpace() + ", 4");
 
+            } else {
+                add(".global " + gi.getName());
+                add(".size " + gi.getName() + ", " + t.getSpace());
+                add(gi.getName() + ":");
+                tabcount += 1;
+                int usedSpace = 0;
+                for (TypeValue tv : value.getTclist()) {
+                    add(".word " + tv.getValue().toString());
+                    usedSpace += 4;
+                }
+                // 不会出现，llvm ir时已经所有0显式写了
+                if (t.getSpace() - usedSpace > 0) add(".space " + (t.getSpace() - usedSpace));
+                tabcount -= 1;
             }
-            tabcount -= 1;
+
 //            add(gi.getName() + ": .skip " + t.getSpace());
         }
         //todo other format
@@ -851,11 +866,11 @@ public class ArmGenerator {
     private void addProgramEnd() {
         // return from main
         tabcount -= 1;
-        add("");
-        for (Instr i : this.gbdeflist) {
-            String name = ((GlobalDefInst) i).getGi().getName();
-            add("addr_of_" + name + ": .word " + name);
-        }
+//        add("");
+//        for (Instr i : this.gbdeflist) {
+//            String name = ((GlobalDefInst) i).getGi().getName();
+//            add("ad    d   r_of_" + name + ": .word " + name);
+//        }
 
     }
 
@@ -962,8 +977,9 @@ public class ArmGenerator {
             // global则加载进来
             if (i.isGlobal()) {
                 regname = reg.applyRegister(i);
-                add("ldr " + regname + ", addr_of_" + i.getName());
-                add("ldr " + regname + ", [" + regname + "]");
+//                add("ldr " + regname + ", addr_of_" + i.getName());
+                add("ldr " + regname + ",=" + i.getName());
+//                add("ldr " + regname + ", [" + regname + "]");
                 return regname;
 
             } else {
@@ -996,19 +1012,15 @@ public class ArmGenerator {
     private void loadValue(String regName, Ident destIdent) {
         // global则加载进来
         if (destIdent.isGlobal()) {
-            add("ldr " + regName + ", addr_of_" + destIdent.getName());
-            add("add " + regName + ", " + regName + ", #0x10000");//todo 为什么要加0x10000(待确定，模拟器上是0x10000)，因为addr_of_xxx中记录的地址是相对于text段的地址，使用时需要加上text段的基地址（0x10000）
+//            add("ldr " + regName + ", a  d  dr_of_" + destIdent.getName());
+            // 测试新写法
+            add("ldr " + regName + ",=" + destIdent.getName());
+
+//            add("add " + regName + ", " + regName + ", #0x10000");//todo 为什么要加0x10000(待确定，模拟器上是0x10000)，因为ad dr_of_xxx中记录的地址是相对于text段的地址，使用时需要加上text段的基地址（0x10000）
 //            add("ldr " + regName + ", [" + regName + "]");
 
         } else {
-//            String regt = register.applyTmp();
-//            int off = curFunc.getOffsetByName(destIdent.toString());
-//            add("ldr " + regt + ", [sp,  #" + off + "]");
-//            add("ldr " + regName + ", [" + regt + "]");
-//            register.freeTmp(regt);
-
             int off = curFunc.getOffsetByName(destIdent.toString());
-
 //            add("ldr " + regName + ", [sp,  #" + off + "]");
             addInstrRegSpOffset("ldr", regName, "r7", off);
         }
@@ -1017,23 +1029,17 @@ public class ArmGenerator {
     private void storeValue(String regName, Ident destIdent) {
         // global则存储回去
         if (destIdent.isGlobal()) {
-//            String regt = register.applyTmp();
-//            add("ldr " + regt + ", addr_of_" + destIdent.getName());
-//            add("str " + regName + ", [" + regt + "]");
-//            register.freeTmp(regt);
+//            add("str " + regName + ", a d   d r_of_" + destIdent.getName());
+//            add("add " + regName + ", " + regName + ", #0x10000");
 
-            add("str " + regName + ", addr_of_" + destIdent.getName());
-            add("add " + regName + ", " + regName + ", #0x10000");
+            // 测试新写法
+            String regt = reg.applyTmp();
+            add("ldr " + regt + ",=" + destIdent.getName());
+            add("str " + regName + ", [" + regt + "]");
+            reg.freeTmp(regt);
 
         } else {
-//            int off = curFunc.getOffsetByName(destIdent.toString());
-//            String regt = register.applyTmp();
-//            add("ldr " + regt + ", [sp,  #" + off + "]");
-//            add("str " + regName + ", [" + regt + "]");
-//            register.freeTmp(regt);
-
             int off = curFunc.getOffsetByName(destIdent.toString());
-
 //            add("str " + regName + ", [sp, #" + off + "]");
             addInstrRegSpOffset("str", regName, "r7", off);
         }
