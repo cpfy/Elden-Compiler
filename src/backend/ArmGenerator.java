@@ -1197,7 +1197,7 @@ public class ArmGenerator {
 
     // 封装 add("add " + regd + ", " + regd + ", #" + mulAOff1);
     private void selfAddImm(String regname, int num) {
-        if (num < 4096) {
+        if (num < 256) {
             add("add " + regname + ", " + regname + ", #" + num);
 
         } else {
@@ -1211,7 +1211,7 @@ public class ArmGenerator {
 
     // 一般封装 sub sp, sp, #xxxx
     private void selfSubImm(String regname, int num) {
-        if (num < 4096) {
+        if (num < 256) {
             add("sub " + regname + ", " + regname + ", #" + num);
 
         } else {
