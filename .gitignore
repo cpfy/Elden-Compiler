@@ -35,3 +35,4 @@ llvmir.ll
 *.ll
 *.s
 txt/output.txt
+src/test.java

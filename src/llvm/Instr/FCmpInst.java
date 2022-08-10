@@ -51,17 +51,17 @@ public class FCmpInst extends Instr {
     // llvm 的ipred转为bne、beq等
     public String predToBr() {
         switch (fpred) {
-            case "eq":
+            case "oeq":
                 return "eq";
-            case "ne":
+            case "one":
                 return "ne";
-            case "sge":
+            case "oge":
                 return "ge";
-            case "sgt":
+            case "ogt":
                 return "gt";
-            case "sle":
+            case "ole":
                 return "le";
-            case "slt":
+            case "olt":
                 return "lt";
             case "uge":
             case "ugt":
@@ -76,17 +76,17 @@ public class FCmpInst extends Instr {
     // llvm 的ipred转为相反的ne、eq等
     public String predToOppoBr() {
         switch (fpred) {
-            case "eq":
+            case "oeq":
                 return "ne";
-            case "ne":
+            case "one":
                 return "eq";
-            case "sge":
+            case "oge":
                 return "lt";
-            case "sgt":
+            case "ogt":
                 return "le";
-            case "sle":
+            case "ole":
                 return "gt";
-            case "slt":
+            case "olt":
                 return "ge";
             case "uge":
             case "ugt":

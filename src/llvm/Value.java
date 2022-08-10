@@ -71,9 +71,9 @@ public class Value {
         return val;
     }
 
-    public String getHexVal() {
-        return hexVal;
-    }
+//    public String getHexVal() {
+//        return hexVal;
+//    }
 
     public void setHex(boolean hex) {
         this.hex = hex;

@@ -9,6 +9,7 @@ import llvm.Instr.BinaryInst;
 import llvm.Instr.BrTerm;
 import llvm.Instr.CallInst;
 import llvm.Instr.CondBrTerm;
+import llvm.Instr.FCmpInst;
 import llvm.Instr.FPToSIInst;
 import llvm.Instr.GetElementPtrInst;
 import llvm.Instr.GlobalDefInst;
@@ -149,9 +150,6 @@ public class ArmGenerator {
             case "store":
                 addStore(instr);
                 break;
-            case "push":
-                addPush(instr);
-                break;
             case "call":
                 addCall(instr);
                 break;
@@ -237,8 +235,47 @@ public class ArmGenerator {
         }
     }
 
+    // e.g. %9 = fcmp olt float %8, 0x358637bd
     private void addFcmp(Instr instr, Ident dest) {
-        //todo
+        String fpred = ((FCmpInst) instr).getFpred();   // e.g. olt
+        Type t = ((FCmpInst) instr).getT();     // must float
+        Value v1 = ((FCmpInst) instr).getV1();
+        Value v2 = ((FCmpInst) instr).getV2();
+
+        String reg_d = reg.applyTmp();  // 0 or 1
+
+        String reg1 = reg.applyFTmp();
+        if (v1.isIdent()) {
+            loadValue(reg1, v1.getIdent());
+
+        } else {
+//            moveImm(reg1, v1.getVal());
+            add("vmov " + reg1 + ", #" + v1.hexToFloat());
+        }
+
+        String reg2 = reg.applyFTmp();
+        if (v2.isIdent()) {
+            loadValue(reg2, v2.getIdent());
+
+        } else {
+//            moveImm(reg2, v2.getVal());
+            add("vmov " + reg2 + ", #" + v2.hexToFloat());
+        }
+
+        // 见：https://community.arm.com/cn/f/discussions/10002/neon-vcmp-f32
+        // https://community.arm.com/arm-community-blogs/b/architectures-and-processors-blog/posts/condition-codes-4-floating-point-comparisons-using-vfp
+        String movestr = ((FCmpInst) instr).predToBr();
+        String oppomovestr = ((FCmpInst) instr).predToOppoBr();
+        add("vcmp " + reg1 + ", " + reg2);
+        add("vmrs APSR_nzcv, FPSCR");       //@ Get the flags into APSR.
+        add("mov" + movestr + " " + reg_d + ", #1");
+        add("mov" + oppomovestr + " " + reg_d + ", #0");
+        reg.freeFTmp(reg1);
+        reg.freeFTmp(reg2);
+
+        storeValue(reg_d, dest);
+        reg.freeTmp(reg_d);
+
     }
 
     // e.g. %68 = fptosi float %67 to i32
@@ -409,7 +446,7 @@ public class ArmGenerator {
         } else {
             // 操作浮点时指令变为 vmov
 //            moveImm(reg1, v1.getVal());
-            add("vmov " + reg1 + ", #" + v1.getHexVal());
+            add("vmov " + reg1 + ", #" + v1.hexToFloat());
 
         }
 
@@ -420,7 +457,7 @@ public class ArmGenerator {
         } else {
             // 操作浮点时指令变为 vmov
 //            moveImm(reg2, v2.getVal());
-            add("vmov " + reg2 + ", #" + v2.getHexVal());
+            add("vmov " + reg2 + ", #" + v2.hexToFloat());
         }
 
         String destreg = reg.applyFTmp();
@@ -574,7 +611,14 @@ public class ArmGenerator {
                 tabcount += 1;
                 int usedSpace = 0;
                 for (TypeValue tv : value.getTclist()) {
-                    add(".word " + tv.getValue().toString());
+                    Type tvt = tv.getType();
+                    // float写法见：https://stackoverflow.com/questions/6970438/arm-assembly-float-variables
+//                    if (tvt.getTypec() == TypeC.F) {
+//                        add(".single 0e" + tv.getValue().hexToFloat());
+//
+//                    } else {
+                        add(".word " + tv.getValue().toString());
+//                    }
                     usedSpace += 4;
                 }
                 // 不会出现，llvm ir时已经所有0显式写了
@@ -713,7 +757,6 @@ public class ArmGenerator {
 //        String destreg = register.applyRegister(dest);
         String destreg = reg.applyTmp();
 
-
         String reg1 = reg.applyTmp();
         if (v1.isIdent()) {
             loadValue(reg1, v1.getIdent());
@@ -743,12 +786,6 @@ public class ArmGenerator {
 
         //见：https://stackoverflow.com/questions/54237061/when-comparing-numbers-in-arm-assembly-is-there-a-correct-way-to-store-the-value
         //参考2：http://cration.rcstech.org/embedded/2014/03/02/arm-conditional-execution/
-    }
-
-    private void addGetint(Instr instr) {
-    }
-
-    private void addPush(Instr instr) {
     }
 
     // dest为可选参数
@@ -934,9 +971,9 @@ public class ArmGenerator {
     }
 
     // 增加列表
-    private void addCode(ArrayList<String> armlist) {
-        this.armlist.addAll(armlist);
-    }
+//    private void addCode(ArrayList<String> armlist) {
+//        this.armlist.addAll(armlist);
+//    }
 
     private void addCode(String arm) {
         this.armlist.add(arm);
