@@ -37,6 +37,9 @@ public class Function {
     }
 
     public int getFuncSize() {
+        if (funcSize % 8 != 0) {
+            funcSize += 4;
+        }
         return funcSize;
     }
 

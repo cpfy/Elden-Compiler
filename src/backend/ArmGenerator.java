@@ -755,10 +755,6 @@ public class ArmGenerator {
         int argsnum = ((CallInst) instr).getArgsNum();  // 变量个数
         ArrayList<TypeValue> args = ((CallInst) instr).getArgs();
 
-        if (((CallInst) instr).isStandardCall()) {
-            addStandardCall(instr);
-            return;
-        }
 
         add("push {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}");
 
