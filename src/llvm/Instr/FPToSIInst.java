@@ -5,7 +5,7 @@ import llvm.Value;
 
 import java.util.ArrayList;
 
-public class FPToSIInst extends Instr{
+public class FPToSIInst extends Instr {
     private Type t1;
     private Type t2;
     private Value v;
@@ -16,6 +16,23 @@ public class FPToSIInst extends Instr{
         this.t1 = t1;
         this.t2 = t2;
         this.v = v;
+    }
+
+    @Override
+    public String toString() {
+        return "fptosi " + t1.toString() + " " + v.toString() + " to " + t2.toString();
+    }
+
+    public Type getT1() {
+        return t1;
+    }
+
+    public Type getT2() {
+        return t2;
+    }
+
+    public Value getV() {
+        return v;
     }
 
     //todo 补充

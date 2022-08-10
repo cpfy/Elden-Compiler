@@ -9,6 +9,7 @@ import llvm.Instr.BinaryInst;
 import llvm.Instr.BrTerm;
 import llvm.Instr.CallInst;
 import llvm.Instr.CondBrTerm;
+import llvm.Instr.FPToSIInst;
 import llvm.Instr.GetElementPtrInst;
 import llvm.Instr.GlobalDefInst;
 import llvm.Instr.IcmpInst;
@@ -226,8 +227,6 @@ public class ArmGenerator {
                 addSIToFP(valueinstr, dest);
                 break;
             case "fptosi":
-
-                //todo
                 addFPToSI(valueinstr, dest);
                 break;
             case "fcmp":
@@ -242,23 +241,65 @@ public class ArmGenerator {
         //todo
     }
 
+    // e.g. %68 = fptosi float %67 to i32
     private void addFPToSI(Instr instr, Ident dest) {
-        //todo
+        Type t1 = ((FPToSIInst) instr).getT1();  // must float
+        Type t2 = ((FPToSIInst) instr).getT2();  // must i32
+        Value v = ((FPToSIInst) instr).getV();
+
+        if (v.isIdent()) {
+            String regtf = reg.applyFTmp();
+            loadValue(regtf, v.getIdent());
+            add("vcvt.s32.f32 " + regtf + ", " + regtf);    // Converts {$reg} signed integer value to a single-precision value and stores it in {$reg}(前)
+            // 注意：vcvt的两个参数都必须是float reg
+
+            String dreg = reg.applyTmp();     // 整数+目的寄存器
+            add("vmov " + dreg + ", " + regtf);
+
+            reg.freeFTmp(regtf);
+            reg.freeTmp(dreg);
+
+        } else {
+//            //todo 不确定对不对
+//            String regt = reg.applyTmp();
+//            add("mov " + regt + ", #" + (int) v.hexToF  loat());
+//            reg.freeTmp(regt);
+
+            String regtf = reg.applyFTmp();
+            String dreg = reg.applyTmp();     // 整数+目的寄存器
+            add("mov " + regtf + ", #" + v.hexToFloat());
+            add("vcvt.s32.f32 " + dreg + ", " + regtf);     // (target, source)
+            reg.freeFTmp(regtf);
+            reg.freeTmp(dreg);
+        }
     }
 
-
+    // e.g. %31 = sitofp i32 2 to float
     private void addSIToFP(Instr instr, Ident dest) {
-        //todo
-//        Type t1 = ((SIToFPInst) instr).getT1();  // must i32
-//        Type t2 = ((SIToFPInst) instr).getT2();  // must float
-//        Value v = ((SIToFPInst) instr).getV();
-//
-//String regt=reg.applyTmp();
-//load
-//        String regfd = reg.applyFTmp();     // 浮点+目的寄存器
-//        add("vmov " + regfd + ", " +);
-    }
+        Type t1 = ((SIToFPInst) instr).getT1();  // must i32
+        Type t2 = ((SIToFPInst) instr).getT2();  // must float
+        Value v = ((SIToFPInst) instr).getV();
 
+        if (v.isIdent()) {
+            String regt = reg.applyTmp();
+            loadValue(regt, v.getIdent());
+
+            String dregf = reg.applyFTmp();     // 浮点+目的寄存器
+            add("vmov " + dregf + ", " + regt);
+            add("vcvt.f32.s32 " + dregf + ", " + dregf);    // Converts {$reg} signed integer value to a single-precision value and stores it in {$reg}(前)
+
+            reg.freeTmp(regt);
+            reg.freeFTmp(dregf);
+
+        } else {
+
+            String dregf = reg.applyFTmp();     // 浮点+目的寄存器
+            add("vmov " + dregf + ", #" + v.getVal());
+//            add("vcvt.f32.s32 " + dregf + ", " + dregf);
+            reg.freeFTmp(dregf);
+
+        }
+    }
 
     // %2 = getelementptr inbounds [x x [y x i32]], [x x [y x i32]]* %1, i32 a, i32 b
     // %2 = %1 + a * (x * y * 4) + b * (y * 4)
@@ -476,31 +517,38 @@ public class ArmGenerator {
 
     }
 
-    // store i32 5, i32* %1
-    // %1永远表示要存值的地址
+    // store i32 5, i32* %1（%1永远表示要存值的地址）
+    // e.g.2. store float %34, float* %44
     private void addStore(Instr instr) {
-        Type t1 = ((StoreInstr) instr).getT1();
+        Type t1 = ((StoreInstr) instr).getT1();     // 可为float或i32
         Type t2 = ((StoreInstr) instr).getT2();
         Value v1 = ((StoreInstr) instr).getV1();
         Value v2 = ((StoreInstr) instr).getV2();
+        boolean f = (t1.getTypec() == TypeC.F);   // true表示指令为float
 
-        String reg = this.reg.applyTmp();
+        // 更新：增加支持float
+        String regs;
+        if (f) regs = reg.applyFTmp();
+        else regs = reg.applyTmp();
 
         // v1存到v2里
         if (v1.isIdent()) {
-            loadValue(reg, v1.getIdent());
+            loadValue(regs, v1.getIdent());
 
         } else {
-            moveImm(reg, v1.getVal());
+            if (f) add("vmov " + regs + ", #" + v1.hexToFloat());
+            else moveImm(regs, v1.getVal());  // 仅支持int
 
         }
 
-        String regt = this.reg.applyTmp();
-        loadValue(regt, v2.getIdent());
-        add("str " + reg + ", [" + regt + "]");
+        String regt = reg.applyTmp();
+        loadValue(regt, v2.getIdent());     // float v2的地址仍为int
+        if (f) add("vstr " + regs + ", [" + regt + "]");
+        else add("str " + regs + ", [" + regt + "]");
+        reg.freeTmp(regt);
 
-        this.reg.freeTmp(reg);
-        this.reg.freeTmp(regt);
+        reg.free(regs);
+
     }
 
     private void addGlobalDef(Instr i) {
@@ -548,11 +596,9 @@ public class ArmGenerator {
         tabcount += 1;
 //        add("sub sp, sp,  #" + f.getFuncSize());
 
-
         if (curFunc.getFuncheader().getFname().equals("main")) {
             selfSubImm("sp", f.getFuncSize());
         }
-
 
         add("mov r7, sp");
         tabcount -= 1;
@@ -565,38 +611,39 @@ public class ArmGenerator {
         tabcount += 1;
     }
 
-    private void addDeclStmt(Instr i) {
-    }
-
-    private void addFuncdefStmt(Instr i) {
-    }
-
     // %2 = load i32, i32* %1
     // %3 = load i32, i32* @b
     private void addLoad(Instr instr, Ident dest) {
         Type t1 = ((LoadInst) instr).getT1();
         Type t2 = ((LoadInst) instr).getT2();
         Value v = ((LoadInst) instr).getV();
+        boolean f = (t1.getTypec() == TypeC.F);   // true表示指令为float
 
-        // dest是否分配（必然未分配）
-//        String reg = register.applyRegister(dest);
-        String destreg = reg.applyTmp();
-
+        // 更新：增加支持float
+        String dreg;
+        if (f) dreg = reg.applyFTmp();
+        else dreg = reg.applyTmp();
 
         // 值存到dest reg里
         if (v.isIdent()) {
-            loadValue(destreg, v.getIdent());
+            String addrreg = reg.applyTmp();
+            loadValue(addrreg, v.getIdent());
 
             // 从addr加载value
-            add("ldr " + destreg + ", [" + destreg + "]");
+            if (f) add("vldr " + dreg + ", [" + addrreg + "]");
+            else add("ldr " + dreg + ", [" + addrreg + "]");
+            reg.freeTmp(addrreg);
 
         } else {
-            moveImm(destreg, v.getVal());
-
+            if (f) add("vmov " + dreg + ", #" + v.hexToFloat());
+            else moveImm(dreg, v.getVal());
         }
 
-        storeValue(destreg, dest);
-        reg.freeTmp(destreg);
+        storeValue(dreg, dest);
+
+//        if (f) reg.freeFTmp(dreg);
+//        else reg.free Tmp(dreg);
+        reg.free(dreg);
     }
 
     // br i1 %7, label %8, label %27
@@ -994,8 +1041,8 @@ public class ArmGenerator {
     }
 
     // 当regName的首位为s时操作浮点，指令变为vldr, vstr
-    private void storeValue(String regName, Ident destIdent/*, boolean... vop*/) {
-        boolean isfreg = regName.charAt(0) == 's';
+    private void storeValue(String regname, Ident destIdent/*, boolean... vop*/) {
+        boolean isfreg = regname.charAt(0) == 's';
 
         // global则存储回去
         if (destIdent.isGlobal()) {
@@ -1006,13 +1053,13 @@ public class ArmGenerator {
             if (isfreg) {
                 String regt = reg.applyTmp();
                 add("ldr " + regt + ", =" + destIdent.getName());
-                add("vstr " + regName + ", [" + regt + "]");
+                add("vstr " + regname + ", [" + regt + "]");
                 reg.freeTmp(regt);
 
             } else {
                 String regt = reg.applyTmp();
                 add("ldr " + regt + ", =" + destIdent.getName());
-                add("str " + regName + ", [" + regt + "]");
+                add("str " + regname + ", [" + regt + "]");
                 reg.freeTmp(regt);
             }
 
@@ -1020,11 +1067,11 @@ public class ArmGenerator {
             int off = curFunc.getOffsetByName(destIdent.toString());
 
             if (isfreg) {
-                addInstrRegSpOffset("vstr", regName, "r7", off);
+                addInstrRegSpOffset("vstr", regname, "r7", off);
 
             } else {
                 // 封装 add("str " + regName + ", [sp, #" + off + "]");
-                addInstrRegSpOffset("str", regName, "r7", off);
+                addInstrRegSpOffset("str", regname, "r7", off);
             }
         }
     }

@@ -185,6 +185,15 @@ public class Register {
         //todo 其它的free寄存器都得检查是否重复
     }
 
+    // free任意float或int寄存器
+    public void free(String reg) {
+        if (reg.charAt(0) == 's') {    // 必不可能是sp
+            freeFTmp(reg);
+        } else {
+            freeTmp(reg);
+        }
+    }
+
 
     //reset全部寄存器状态
     public void resetAllReg() {
