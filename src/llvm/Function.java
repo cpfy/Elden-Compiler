@@ -37,8 +37,8 @@ public class Function {
     }
 
     public int getFuncSize() {
-        if (funcSize % 64 != 0) {
-            funcSize = funcSize / 64 * 64 + 64;
+        if (funcSize % 8 != 0) {
+            funcSize += 4;
         }
         return funcSize;
     }
