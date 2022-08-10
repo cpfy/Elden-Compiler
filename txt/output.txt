@@ -1,5 +1,7 @@
 /* -- testcase.s */
-.data
+.arch armv7ve
+.arm
+.section .text
 .extern getint
 .extern getch
 .extern getfloat
@@ -13,19 +15,37 @@
 .cpu cortex-a15
 .align 4
 
-.text
 .global main
 main:
-	sub sp, sp, #0
+	sub sp, sp, #20
 	mov r7, sp
 main_label0:
-	mov r0, #0
-	add sp, sp, #0
+	mov r0, r7
+	add r0, r0, #4
+	str r0, [r7, #0]
+	mov r1, #5
+	ldr r2, [r7, #0]
+	str r1, [r2]
+	ldr r3, [r7, #0]
+	ldr r3, [r3]
+	str r3, [r7, #8]
+	ldr r4,=b
+	ldr r4, [r4]
+	str r4, [r7, #12]
+	ldr r5, [r7, #8]
+	ldr r6, [r7, #12]
+	add r8, r5, r6
+	str r8, [r7, #16]
+	ldr r9, [r7, #16]
+	mov r0, r9
+	add sp, sp, #20
 	bx lr
-main_label1:
+main_label5:
 	mov r0, #0
-	add sp, sp, #0
+	add sp, sp, #20
 	bx lr
-b: .skip 32
 
-addr_of_b: .word b
+.section .data
+.align 2
+a: .word 3
+b: .word 5

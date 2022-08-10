@@ -495,17 +495,17 @@ public class ArmGenerator {
     }
 
     private void addFuncDef(Function f) {
-        add("");
-        add(".section .text");
         add(f.getFuncheader().getFname() + ":");
 
         // sp移动
         tabcount += 1;
 //        add("sub sp, sp,  #" + f.getFuncSize());
 
+
         if (curFunc.getFuncheader().getFname().equals("main")) {
             selfSubImm("sp", f.getFuncSize());
         }
+
 
         add("mov r7, sp");
         tabcount -= 1;
@@ -686,7 +686,7 @@ public class ArmGenerator {
             return;
         }
 
-        add("push {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}");
+        add("push {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}");
 
         // 准备传参数r0-r3为前四个参数，[sp]开始为第5个及之后参数
         int pushargsnum = max(argsnum * 4 - 16, 0);
@@ -745,72 +745,64 @@ public class ArmGenerator {
         if (dest.length > 0) {
             storeValue("r0", dest[0]);
         }
-        add("pop {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}");
+        add("pop {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}");
     }
 
 
     // 标准printf, scanf等函数
     private void addStandardCall(Instr instr, Ident... dest) {
         String callfuncname = ((CallInst) instr).getFuncname();
+        int argsnum = ((CallInst) instr).getArgsNum();  // 变量个数
         ArrayList<TypeValue> args = ((CallInst) instr).getArgs();
-        int argLength = args.size();
 
-        add("push {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}");
+        if (((CallInst) instr).isStandardCall()) {
+            addStandardCall(instr);
+            return;
+        }
 
-        switch (callfuncname) {
-            //todo 补充array处理
+        add("push {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}");
 
-            case "getint":
-                break;
-            case "getch":
-                break;
-            case "getfloat":
-                break;
-            case "getarray":
-                break;
-            case "getfarray":
-                break;
-            case "putint":
-            case "putch":
-                // 仅r0一个参数
-                // putchar可参考：https://stackoverflow.com/questions/55699646/branch-link-to-putchar-causes-segmentation-fault-in-arm
+        // 准备传参数r0-r3为前四个参数，[sp]开始为第5个及之后参数
+        int pushargsnum = max(argsnum * 4 - 16, 0);
+//        add("sub sp, sp,  #" + (pushregs + pushargsnum));
+        add("push {r7}");
 
-                for (TypeValue tv : args) {
-                    assert tv.getType().getTypec() == TypeC.I;
+
+//        if (argsnum <= 4) {
+            for (int i = argsnum - 1; i >= 0; i--) {
+                TypeValue tv = args.get(i);
+                if (tv.getType().getTypec() == TypeC.P) {
+
+                } else {
                     Value v = tv.getValue();
                     if (v.isIdent()) {
                         String regt = reg.applyTmp();
                         loadValue(regt, v.getIdent());
-                        add("mov r0, " + regt);
+                        add("mov r" + i + ", " + regt);
+                        reg.freeTmp(regt);
 
                     } else {
-                        moveImm("r0", v.getVal());
+                        moveImm("r" + i, v.getVal());
                     }
                 }
-                // add("bl putint");        //最后统一弄
-                break;
-            case "putfloat":
-                break;
-            case "putarray":
+            }
+//        }
+        //暂时全用内存传参
 
-                break;
-            case "putfarray":
-
-                break;
-            case "default":
-
-                break;
-        }
-
-        //统一
+        //todo
         add("bl " + callfuncname);
 
         // 若有dest，保存返回结果
+
+
+//        add("add sp, sp,  #" + (pushregs + pushargsnum));
+
+
+        add("pop {r7}");
         if (dest.length > 0) {
             storeValue("r0", dest[0]);
         }
-
-        add("pop {r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}");
+        add("pop {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}");
     }
 
     private void addReturn(Instr instr) {
