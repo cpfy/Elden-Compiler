@@ -28,7 +28,18 @@ public class LVal extends ExpPrimary {
     @Override
     public ArrayList<String> addCodePre() {
         setType(table.getVarType(id.getRawWord().getName()));
-        if (table.getValue(id.getRawWord().getName()).isConst()) {
+        ArrayList<Integer> myDims = new ArrayList<>();
+        for (Exp exp: dims) {
+            exp.calculate();
+            if (exp.isCanCal()) {
+                myDims.add(exp.getValue());
+            }
+            else {
+                setCanCal(false);
+                break;
+            }
+        }
+        if (table.getValue(id.getRawWord().getName()).isConst() && isCanCal()) {
             calculate();
             if (isCanCal()) {
                 if (type.equals("i32")) {
