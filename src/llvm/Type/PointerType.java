@@ -15,7 +15,7 @@ public class PointerType extends Type {
 
     @Override
     public int getSpace() {
-        return 0;
+        return 4;
     }
 
     @Override

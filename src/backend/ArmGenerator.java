@@ -124,6 +124,7 @@ public class ArmGenerator {
                 for (Instr i : b.getInblocklist()) {
 
                     if (outGlobalDef) {
+                        add("\n@ " + i.toString());
                         addInstr(i);
                     } else {
                         // global ident

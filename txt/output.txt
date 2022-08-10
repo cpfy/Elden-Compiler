@@ -1,7 +1,5 @@
 /* -- testcase.s */
 .arch armv7ve
-.arm
-.section .text
 .extern getint
 .extern getch
 .extern getfloat
@@ -17,83 +15,194 @@
 
 .global main
 main:
-	sub sp, sp, #80
+	sub sp, sp, #96
 	mov r7, sp
 main_label0:
+	
+@ %1 = alloca [10 x i32]
 	mov r0, r7
 	add r0, r0, #4
 	str r0, [r7, #0]
-	mov r1, #5
+	
+@ %2 = getelementptr inbounds [10 x i32], [10 x i32]* %1
+	mov r1, #0
+	add r1, r1, #0
 	ldr r2, [r7, #0]
-	str r1, [r2]
-	mov r3, r7
-	add r3, r3, #12
-	str r3, [r7, #8]
-	ldr r4, [r7, #0]
-	ldr r4, [r4]
-	str r4, [r7, #52]
-	push {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}
-	push {r7}
-	ldr r5, [r7, #52]
-	mov r0, r5
-	bl putint
-	pop {r7}
-	pop {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}
-	push {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}
-	push {r7}
-	bl getint
-	pop {r7}
-	str r0, [r7, #56]
-	pop {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}
-	ldr r6, [r7, #56]
-	ldr r8, [r7, #0]
-	str r6, [r8]
-	mov r9, #0
-	add r9, r9, #0
-	ldr r10, [r7, #8]
-	add r9, r9, r10
-	str r9, [r7, #60]
-	push {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}
-	push {r7}
-	ldr r11, [r7, #60]
-	mov r0, r11
-	bl getarray
-	pop {r7}
-	str r0, [r7, #64]
-	pop {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}
-	ldr r12, [r7, #64]
-	ldr r0, [r7, #0]
+	add r1, r1, r2
+	str r1, [r7, #44]
+	
+@ store i32 1, i32* %2
+	mov r3, #1
+	ldr r4, [r7, #44]
+	str r3, [r4]
+	
+@ %3 = getelementptr inbounds i32, i32* %2
+	mov r5, #4
+	ldr r6, [r7, #44]
+	add r5, r5, r6
+	str r5, [r7, #48]
+	
+@ store i32 2, i32* %3
+	mov r8, #2
+	ldr r9, [r7, #48]
+	str r8, [r9]
+	
+@ %4 = getelementptr inbounds i32, i32* %3
+	mov r10, #4
+	ldr r11, [r7, #48]
+	add r10, r10, r11
+	str r10, [r7, #52]
+	
+@ store i32 3, i32* %4
+	mov r12, #3
+	ldr r0, [r7, #52]
 	str r12, [r0]
-	ldr r1, [r7, #0]
-	ldr r1, [r1]
+	
+@ %5 = getelementptr inbounds i32, i32* %4
+	mov r2, #4
+	ldr r1, [r7, #52]
+	add r2, r2, r1
+	str r2, [r7, #56]
+	
+@ store i32 4, i32* %5
+	mov r3, #4
+	ldr r4, [r7, #56]
+	str r3, [r4]
+	
+@ %6 = getelementptr inbounds i32, i32* %5
+	mov r6, #4
+	ldr r5, [r7, #56]
+	add r6, r6, r5
+	str r6, [r7, #60]
+	
+@ store i32 5, i32* %6
+	mov r8, #5
+	ldr r9, [r7, #60]
+	str r8, [r9]
+	
+@ %7 = getelementptr inbounds i32, i32* %6
+	mov r11, #4
+	ldr r10, [r7, #60]
+	add r11, r11, r10
+	str r11, [r7, #64]
+	
+@ store i32 6, i32* %7
+	mov r12, #6
+	ldr r0, [r7, #64]
+	str r12, [r0]
+	
+@ %8 = getelementptr inbounds i32, i32* %7
+	mov r1, #4
+	ldr r2, [r7, #64]
+	add r1, r1, r2
 	str r1, [r7, #68]
-	mov r2, #0
-	add r2, r2, #0
-	ldr r3, [r7, #8]
-	add r2, r2, r3
-	str r2, [r7, #72]
+	
+@ store i32 7, i32* %8
+	mov r3, #7
+	ldr r4, [r7, #68]
+	str r3, [r4]
+	
+@ %9 = getelementptr inbounds i32, i32* %8
+	mov r5, #4
+	ldr r6, [r7, #68]
+	add r5, r5, r6
+	str r5, [r7, #72]
+	
+@ store i32 8, i32* %9
+	mov r8, #8
+	ldr r9, [r7, #72]
+	str r8, [r9]
+	
+@ %10 = getelementptr inbounds i32, i32* %9
+	mov r10, #4
+	ldr r11, [r7, #72]
+	add r10, r10, r11
+	str r10, [r7, #76]
+	
+@ store i32 9, i32* %10
+	mov r12, #9
+	ldr r0, [r7, #76]
+	str r12, [r0]
+	
+@ %11 = getelementptr inbounds i32, i32* %10
+	mov r2, #4
+	ldr r1, [r7, #76]
+	add r2, r2, r1
+	str r2, [r7, #80]
+	
+@ store i32 10, i32* %11
+	mov r3, #10
+	ldr r4, [r7, #80]
+	str r3, [r4]
+	
+@ %12 = getelementptr inbounds [10 x i32], [10 x i32]* %1
+	mov r6, #0
+	add r6, r6, #0
+	ldr r5, [r7, #0]
+	add r6, r6, r5
+	str r6, [r7, #84]
+	
+@ %13 = call i32 @bubblesort(i32* %12)
 	push {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}
 	push {r7}
-	ldr r4, [r7, #68]
-	mov r0, r4
-	ldr r5, [r7, #72]
-	mov r1, r5
-	bl putarray
+	sub sp, sp, #24
+	ldr r8, [r7, #84]
+	str r8, [sp, #0]
+	bl bubblesort
+	add sp, sp, #24
 	pop {r7}
+	str r0, [r7, #88]
 	pop {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}
-	ldr r6, [r7, #0]
-	ldr r6, [r6]
-	str r6, [r7, #76]
-	ldr r8, [r7, #76]
-	mov r0, r8
-	add sp, sp, #80
+	
+@ ret i32 %13
+	ldr r9, [r7, #88]
+	mov r0, r9
+	add sp, sp, #96
 	bx lr
-main_label10:
+main_label14:
+	
+@ ret i32 0
 	mov r0, #0
-	add sp, sp, #80
+	add sp, sp, #96
 	bx lr
 
-.section .data
 .align 2
-a: .word 3
-b: .word 5
+bubblesort:
+	mov r7, sp
+bubblesort_label1:
+	
+@ %2 = alloca i32*
+	mov r11, r7
+	add r11, r11, #8
+	str r11, [r7, #4]
+	
+@ store i32* %0, i32** %2
+	ldr r10, [r7, #0]
+	ldr r12, [r7, #4]
+	str r10, [r12]
+	
+@ %3 = load i32*, i32** %2
+	ldr r0, [r7, #4]
+	ldr r0, [r0]
+	str r0, [r7, #12]
+	
+@ %4 = getelementptr inbounds i32, i32* %3
+	mov r1, #12
+	ldr r2, [r7, #12]
+	add r1, r1, r2
+	str r1, [r7, #16]
+	
+@ %5 = load i32, i32* %4
+	ldr r3, [r7, #16]
+	ldr r3, [r3]
+	str r3, [r7, #20]
+	
+@ ret i32 %5
+	ldr r4, [r7, #20]
+	mov r0, r4
+	bx lr
+bubblesort_label6:
+	
+@ ret i32 0
+	mov r0, #0
+	bx lr
