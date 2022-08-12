@@ -26,9 +26,7 @@ import llvm.Type.Type;
 import llvm.Type.TypeC;
 import llvm.Type.VoidType;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -60,6 +58,10 @@ public class IRParser {
 
     public static Block searchBlockmapByLabel(String label) {
         return blockmap.get(label);
+    }
+
+    public ArrayList<Function> getAllfunctionlist() {
+        return allfunctionlist;
     }
 
     public IRParser(ArrayList<Token> tokenList) {
@@ -1376,29 +1378,30 @@ public class IRParser {
     }
 
     /* ########################## */
-    public void printllvmOutputs() {
-        System.out.println("【LLVM Print Start.】");
+    public void printllvmOutputs() throws FileNotFoundException {
+//        System.out.println("【LLVM Print Start.】");
+        PrintStream printStream = new PrintStream("llvmir_opt.ll");
         for (Function function : allfunctionlist) {
 
             boolean globalContainer = function.getFuncheader().getFname().equals("GlobalContainer");
             if (!globalContainer) {
-                System.out.println(function.toString() + "{");
+                printStream.println(function.toString() + "{");
                 for (Block block : function.getBlocklist()) {
-                    System.out.println(block.getLabel() + ":");
+                    printStream.println(block.getLabel() + ":");
                     for (Instr instr : block.getInblocklist()) {
-                        System.out.println(instr.toString());
+                        printStream.println(instr.toString());
                     }
                 }
-                System.out.println("}");
+                printStream.println("}");
 
             } else {    // Global只输出@a
                 for (Instr instr : function.getBlocklist().get(0).getInblocklist()) {
-                    System.out.println(instr.toString());
+                    printStream.println(instr.toString());
                 }
             }
 
         }
-        System.out.println("【LLVM Print End.】");
+//        System.out.println("【LLVM Print End.】");
     }
 
 }

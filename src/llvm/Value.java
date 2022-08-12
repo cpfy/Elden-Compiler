@@ -2,6 +2,7 @@ package llvm;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Value {
 
@@ -131,5 +132,19 @@ public class Value {
         Long i = Long.parseLong(hex, 16);
         Float f = Float.intBitsToFloat(i.intValue());
         return f;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof Value)) {
+            return false;
+        }
+        Value v2 = (Value) obj;
+        return v2.toString().equals(this.toString());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.toString());
     }
 }
