@@ -22,7 +22,6 @@ public class CompUnit extends Node {
         for (FuncDef funcDef: funcDefs) {
             funcDef.addMidCode();
         }
-        mainFuncDef.addMidCode();
         
     }
 }

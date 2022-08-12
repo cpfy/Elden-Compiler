@@ -84,19 +84,21 @@ public class Parser {
         ArrayList<FuncDef> funcDefs = new ArrayList<>();
         MainFuncDef mainFuncDef = null;
         while (true) {
+            if (point == rawWords.size()) {
+                break;
+            }
             if (seeNextWord().getType() == WordType.CONSTTK
                     || (seeNextWord().getType() == WordType.INTTK && seeThirdWord().getType() != WordType.LPARENT)
                     || (seeNextWord().getType() == WordType.FLOATTK && seeThirdWord().getType() != WordType.LPARENT)) {
                 decls.add(getDecl());
             } else if (seeNextWord().getType() == WordType.VOIDTK
-                    || (seeNextWord().getType() == WordType.INTTK && seeSecondWord().getType() != WordType.MAINTK && seeThirdWord().getType() == WordType.LPARENT)
-                    || (seeNextWord().getType() == WordType.FLOATTK && seeSecondWord().getType() != WordType.MAINTK && seeThirdWord().getType() == WordType.LPARENT)) {
+                    || (seeNextWord().getType() == WordType.INTTK && seeThirdWord().getType() == WordType.LPARENT)
+                    || (seeNextWord().getType() == WordType.FLOATTK && seeThirdWord().getType() == WordType.LPARENT)) {
                 funcDefs.add(getFuncDef());
             } else {
                 break;
             }
         }
-        mainFuncDef = getMainFuncDef();
         outputs.add("<CompUnit>");
         return new CompUnit(decls, funcDefs, mainFuncDef);
     }

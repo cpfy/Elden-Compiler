@@ -17,7 +17,6 @@ public class FuncFParam extends Def {
         this.id = id;
         this.dims = dims;
         this.detailType = type;
-        setType();
     }
 
     private void setType() {
@@ -33,6 +32,7 @@ public class FuncFParam extends Def {
     @Override
     public void addMidCode() {
         //todo
+        setType();
         paramTemp = newTemp();
         addCode(detailType + " " + paramTemp);
         ArrayList<Integer> dimsInt = new ArrayList<>();

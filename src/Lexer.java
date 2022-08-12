@@ -70,7 +70,6 @@ public class Lexer {
     }
 
     private void initReservedWords() {
-        reservedWords.put("main", WordType.MAINTK);
         reservedWords.put("const", WordType.CONSTTK);
         reservedWords.put("int", WordType.INTTK);
         reservedWords.put("break", WordType.BREAKTK);
