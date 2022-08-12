@@ -15,18 +15,7 @@ public abstract class Node {
 
     static HashSet<String> globalNames = new HashSet<>();
     public static String newGlobalName(String name) {
-        String ans = name;
-        for (int i = 0; i < name.length(); i++) {
-            if (name.charAt(i) >= '0' && name.charAt(i) <= '9') {
-                ans = name.substring(0, i);
-                break;
-            }
-        }
-        while (globalNames.contains(ans)) {
-            ans += 'a';
-        }
-        globalNames.add(ans);
-        return ans;
+        return name;
     }
 
     static int labels = 0;
@@ -62,7 +51,7 @@ public abstract class Node {
     static String declType = null;
 
     public String newTemp() {
-        return "%" + labels++;
+        return "%_" + labels++;
     }
 
     public void setDeclType(String s) {
@@ -92,7 +81,7 @@ public abstract class Node {
     }
 
     public String newLable() {
-        return String.valueOf(labels++);
+        return "_" + String.valueOf(labels++);
     }
 
     public abstract void addMidCode();

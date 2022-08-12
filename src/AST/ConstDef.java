@@ -82,7 +82,7 @@ public class ConstDef extends Def {
 
     void tableInsert() {
         if (isGlobal) {
-            tempName = "@" + newGlobalName(id.getRawWord().getName());
+            tempName = "@_" + newGlobalName(id.getRawWord().getName());
         }
         else if (dims.size() != 0) {
             tempName = newTemp();
