@@ -44,6 +44,8 @@ public class ArmGenerator {
     private static String OUTPUT_DIR;
     private ArrayList<Instr> gbdeflist;
 
+    private String allRegs = "{r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr,s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15,s16,s17,s18,s19,s20,s21,s22,s23,s24,s25,s26,s27,s28,s29,s30,s31}";
+
     private int tabcount = 0;
     private int printcount = 0;
     private final String tab = "\t";
@@ -83,7 +85,7 @@ public class ArmGenerator {
         add("/* -- testcase.s */");
         add(".arch armv7ve");
         add(".arm");
-//        add(".section .text");
+        add(".section .text");
 //        add(".extern getint");
 //        add(".extern getch");
 //        add(".extern getfloat");
@@ -807,8 +809,7 @@ public class ArmGenerator {
             return;
         }
 
-        add("push {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}");
-
+        add("push " + allRegs);
         // 准备传参数r0-r3为前四个参数，[sp]开始为第5个及之后参数
         int pushargsnum = max(argsnum * 4 - 16, 0);
 //        add("sub sp, sp,  #" + (pushregs + pushargsnum));
@@ -866,7 +867,7 @@ public class ArmGenerator {
         if (dest.length > 0) {
             storeValue("r0", dest[0]);
         }
-        add("pop {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}");
+        add("pop " + allRegs);
     }
 
     // 标准printf, scanf等函数
@@ -875,7 +876,7 @@ public class ArmGenerator {
         int argsnum = ((CallInst) instr).getArgsNum();  // 变量个数
         ArrayList<TypeValue> args = ((CallInst) instr).getArgs();
 
-        add("push {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}");
+        add("push " + allRegs);
 
         // 准备传参数r0-r3为前四个参数，[sp]开始为第5个及之后参数
         int pushargsnum = max(argsnum * 4 - 16, 0);
@@ -921,7 +922,7 @@ public class ArmGenerator {
         if (dest.length > 0) {
             storeValue("r0", dest[0]);
         }
-        add("pop {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}");
+        add("pop " + allRegs);
     }
 
     private void addReturn(Instr instr) {
