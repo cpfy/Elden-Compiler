@@ -302,7 +302,8 @@ public class ArmGenerator {
 
             String regtf = reg.applyFTmp();
             String dreg = reg.applyTmp();     // 整数+目的寄存器
-            add("mov " + regtf + ", #" + v.hexToFloat());
+//            add("vmov " + regtf + ", #" + v.hexToFloat());
+            vmoveFloat(regtf, v.hexToFloat());
             add("vcvt.s32.f32 " + regtf + ", " + regtf);     // (target, source)
             add("vmov " + dreg + ", " + regtf);
             reg.freeFTmp(regtf);
@@ -600,6 +601,9 @@ public class ArmGenerator {
         if (t.getTypec() == TypeC.I) {
             add(gi.getName() + ": .word " + value.toString());
 
+        } else if (t.getTypec() == TypeC.F) {
+            add(gi.getName() + ": .float " + value.hexToFloat());
+
         } else if (t.getTypec() == TypeC.A) {
 
             // zeroinitializer
@@ -871,7 +875,6 @@ public class ArmGenerator {
         int argsnum = ((CallInst) instr).getArgsNum();  // 变量个数
         ArrayList<TypeValue> args = ((CallInst) instr).getArgs();
 
-
         add("push {r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}");
 
         // 准备传参数r0-r3为前四个参数，[sp]开始为第5个及之后参数
@@ -883,16 +886,25 @@ public class ArmGenerator {
 //        if (argsnum <= 4) {
         for (int i = 0; i < argsnum; i++) {
             TypeValue tv = args.get(i);
+            Type t = tv.getType();
             Value v = tv.getValue();
-            if (v.isIdent()) {
-                String regt = reg.applyTmp();
-                loadValue(regt, v.getIdent());
-                add("mov r" + i + ", " + regt);
-                reg.freeTmp(regt);
 
-            } else {
-                moveImm("r" + i, v.getVal());
+            if (t.getTypec() == TypeC.F) {
+
             }
+            // todo 数组等情况
+            else {
+                if (v.isIdent()) {
+                    String regt = reg.applyTmp();
+                    loadValue(regt, v.getIdent());
+                    add("mov r" + i + ", " + regt);
+                    reg.freeTmp(regt);
+
+                } else {
+                    moveImm("r" + i, v.getVal());
+                }
+            }
+
 
         }
 //        }
@@ -940,11 +952,6 @@ public class ArmGenerator {
     private void addProgramEnd() {
         // return from main
         tabcount -= 1;
-//        add("");
-//        for (Instr i : this.gbdeflist) {
-//            String name = ((GlobalDefInst) i).getGi().getName();
-//            add("ad    d   r_of_" + name + ": .word " + name);
-//        }
 
     }
 
@@ -974,14 +981,9 @@ public class ArmGenerator {
         writer.close();
     }
 
-    // 增加列表
-//    private void addCode(ArrayList<String> armlist) {
-//        this.armlist.addAll(armlist);
+//    private void addCode(String arm) {
+//        this.armlist.add(arm);
 //    }
-
-    private void addCode(String arm) {
-        this.armlist.add(arm);
-    }
 
     //辅助用函数
     private void add(String armstr) {
@@ -1102,10 +1104,6 @@ public class ArmGenerator {
                 interpolating = false;
             }
 
-//            add("ldr " + regName + ", a  d  dr_of_" + destIdent.getName());
-//            add("add " + regName + ", " + regName + ", #0x10000");//todo 为什么要加0x10000(待确定，模拟器上是0x10000)，因为ad dr_of_xxx中记录的地址是相对于text段的地址，使用时需要加上text段的基地址（0x10000）
-//            add("ldr " + regName + ", [" + regName + "]");
-
         } else {
             int off = curFunc.getOffsetByName(destIdent.toString());
 
@@ -1125,8 +1123,6 @@ public class ArmGenerator {
 
         // global则存储回去
         if (destIdent.isGlobal()) {
-//            add("str " + regName + ", a d   d r_of_" + destIdent.getName());
-//            add("add " + regName + ", " + regName + ", #0x10000");
 
             // 测试新写法
             if (isfreg) {
@@ -1260,7 +1256,13 @@ public class ArmGenerator {
         if (floatnum == 0) {
             // 相当于清零，arm不支持#0
             // 见：https://stackoverflow.com/questions/11205652/why-does-vmov-f64-not-allow-me-to-load-zero
-            add("eor " + regname + ", " + regname + ", " + regname);
+            // add("eor " + regname + ", " + regname + ", " + regname);（不好使）
+
+            String regt = reg.applyTmp();
+            add("mov " + regt + ", #0");
+            add("vmov " + regname + ", " + regt);
+            add("vcvt.f32.s32 " + regname + ", " + regname);
+            reg.freeTmp(regt);
 
         } else {
             add("vmov " + regname + ", #" + floatnum);

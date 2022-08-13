@@ -75,10 +75,10 @@ public class IRDictionary {
         // 应该无用
         OPERATORS_DICT = new HashMap<>();
 
-        // 加减乘除都删了
-//        OPERATORS_DICT.put("+", "PLUS");
-//        OPERATORS_DICT.put("-", "MINUS");
-//        OPERATORS_DICT.put("*", "MULT");
+        // 加减乘除都删了；不行，负号，乘号都必须要！
+        OPERATORS_DICT.put("+", "PLUS");
+        OPERATORS_DICT.put("-", "MINUS");   // 负号
+        OPERATORS_DICT.put("*", "MULT");    // pointer指针
         OPERATORS_DICT.put("%", "PERC");    // 取percent意
         OPERATORS_DICT.put("@", "AT");
         OPERATORS_DICT.put("#", "POUND");
