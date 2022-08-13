@@ -14,7 +14,7 @@ public class StmtWhile extends Stmt {
     public void addMidCode() {
 
         String start = newLable();
-        String end = newReload();
+        String end = newLable();
         addCode("br label %" + start + "\n");
         jumps.add(0,end);
         jumps.add(0,start);
@@ -26,9 +26,8 @@ public class StmtWhile extends Stmt {
         jumps.remove(0);
         jumps.remove(0);
 
-        String label2 = newLable();
-        addReload(end, label2);
-        addCode(label2 + ":\n");
+
+        addCode(end + ":\n");
 
 
 //        String jump1 = "jump" + newJumpDst();

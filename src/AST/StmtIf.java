@@ -14,27 +14,21 @@ public class StmtIf extends Stmt {
     @Override
     public void addMidCode() {
         addCode("\n");
-
-        String jump2cond2 = newReload();
-        String end = newReload();
+        String jump2cond2 = newLable();
+        String end = newLable();
         cond.addMidCode(jump2cond2);
         stmt1.addMidCode();
-        addCode("br label %" + end + "\n");
-
+        addCode("br label %" + jump2cond2 + "\n");
 
         if (stmt2 != null) {
-            String label = newLable();
-            addReload(jump2cond2, label);
-            addCode(label + ":\n");
+            addCode(jump2cond2 + ":\n");
             stmt2.addMidCode();
             addCode("br label %" + end + "\n");
+            addCode(end + ":\n");
+        }
+        else {
+            addCode(jump2cond2 + ":\n");
         }
 
-        String label2 = newLable();
-        if (stmt2 == null) {
-            addReload(jump2cond2, label2);
-        }
-        addReload(end, label2);
-        addCode(label2 + ":\n");
     }
 }

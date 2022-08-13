@@ -36,16 +36,6 @@ public abstract class Node {
 
     static HashMap<String, String> reloadMap = new HashMap<>();
 
-    public String newReload() {
-        String key = "&" + ++reloadNum + "&";
-        reloadMap.put(key, null);
-        return key;
-    }
-
-    public void addReload(String key, String value) {
-        reloadMap.put(key, value);
-    }
-
     static boolean isGlobal = true;
 
     static String declType = null;
@@ -87,34 +77,23 @@ public abstract class Node {
     public abstract void addMidCode();
 
     public ArrayList<String> getLLVMIR() {
-        ArrayList<String> ans = new ArrayList<>();
-        for (String s: LLVMIR) {
-            for (String key: reloadMap.keySet()) {
-                if (reloadMap.get(key) == null) {
-                    continue;
-                }
-                if (!s.contains("&")) {
-                    break;
-                }
-                s = s.replaceAll(key, reloadMap.get(key));
-            }
-            ans.add(s);
-        }
-//        ans.add("declare dso_local void @starttime()\n");
-//        ans.add("declare dso_local void @stoptime()\n");
-        ans.add("declare dso_local i32 @getint()\n");
-        ans.add("declare dso_local i32 @getch()\n");
-        ans.add("declare dso_local float @getfloat()\n");
-        ans.add("declare dso_local i32 @getarray(i32*)\n");
-        ans.add("declare dso_local i32 @getfarray(float*)\n");
-        ans.add("declare dso_local void @putint(i32)\n");
-        ans.add("declare dso_local void @putch(i32)\n");
-        ans.add("declare dso_local void @putfloat(float)\n");
-        ans.add("declare dso_local void @putarray(i32, i32*)\n");
-        ans.add("declare dso_local void @putfarray(i32, float*)\n");
+
+        
+//        LLVMIR.add("declare dso_local void @starttime()\n");
+//        LLVMIR.add("declare dso_local void @stoptime()\n");
+        LLVMIR.add("declare dso_local i32 @getint()\n");
+        LLVMIR.add("declare dso_local i32 @getch()\n");
+        LLVMIR.add("declare dso_local float @getfloat()\n");
+        LLVMIR.add("declare dso_local i32 @getarray(i32*)\n");
+        LLVMIR.add("declare dso_local i32 @getfarray(float*)\n");
+        LLVMIR.add("declare dso_local void @putint(i32)\n");
+        LLVMIR.add("declare dso_local void @putch(i32)\n");
+        LLVMIR.add("declare dso_local void @putfloat(float)\n");
+        LLVMIR.add("declare dso_local void @putarray(i32, i32*)\n");
+        LLVMIR.add("declare dso_local void @putfarray(i32, float*)\n");
 
 
-        return ans;
+        return LLVMIR;
     }
 
     public String getArrayType(ArrayList<Exp> exps, String type) {

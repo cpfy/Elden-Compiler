@@ -16,13 +16,19 @@ public class Parser {
 
 
     public Parser(ArrayList<RawWord> rawWords) throws FileNotFoundException {
+        long stime = System.currentTimeMillis();
+
+
         this.rawWords = rawWords;
         compUnit = getCompUnit();
         compUnit.addMidCode();
+
         PrintStream printStream = new PrintStream("llvmir.ll");
         for (String s : compUnit.getLLVMIR()) {
             printStream.print(s);
         }
+        long etime = System.currentTimeMillis();
+        System.out.printf("执行时长：%d 毫秒.", (etime - stime));
 
     }
 
