@@ -41,7 +41,7 @@ public abstract class Node {
     static String declType = null;
 
     public String newTemp() {
-        return String.valueOf(labels++);
+        return "%" + labels++;
     }
 
     public void setDeclType(String s) {
