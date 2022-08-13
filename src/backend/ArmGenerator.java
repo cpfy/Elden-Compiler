@@ -1180,12 +1180,12 @@ public class ArmGenerator {
     private void moveImm(String regname, int num) {
         // 负数必会有问题
         if (num < 65536) {
-            add("mov " + regname + ", #" + num);
+            add("movw " + regname + ", #" + num);
 
         } else {
             int low = num & 0xffff;
             int high = (num >> 16) & 0xffff;
-            add("mov " + regname + ", #" + low);
+            add("movw " + regname + ", #" + low);
             add("movt " + regname + ", #" + high);
 
         }
