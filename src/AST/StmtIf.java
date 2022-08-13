@@ -18,15 +18,16 @@ public class StmtIf extends Stmt {
         String end = newLable();
         cond.addMidCode(jump2cond2);
         stmt1.addMidCode();
-        addCode("br label %" + jump2cond2 + "\n");
 
         if (stmt2 != null) {
+            addCode("br label %" + end + "\n");
             addCode(jump2cond2 + ":\n");
             stmt2.addMidCode();
             addCode("br label %" + end + "\n");
             addCode(end + ":\n");
         }
         else {
+            addCode("br label %" + jump2cond2 + "\n");
             addCode(jump2cond2 + ":\n");
         }
 
