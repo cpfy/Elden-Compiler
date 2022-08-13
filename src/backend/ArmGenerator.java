@@ -991,7 +991,7 @@ public class ArmGenerator {
             armstr = tab + armstr;
         }
         armlist.add(armstr);
-        System.out.println(armstr);
+//        System.out.println(armstr);
 
         // 大于lpic截断时插入.L
         if (lines > lpicConst && !interpolating) {
@@ -1033,7 +1033,7 @@ public class ArmGenerator {
         for (String s : armlist) {
             System.out.println(s);
         }
-        System.out.println("Error at next!");
+//        System.out.println("Error at next!");
         exit(0);
     }
 

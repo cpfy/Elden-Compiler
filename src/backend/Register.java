@@ -118,7 +118,7 @@ public class Register {
             no = 0;
         }
 
-        System.out.println("Info: Alloc Reg $" + regMap.get(no) + " to Ident " + i.toString());
+//        System.out.println("Info: Alloc Reg $" + regMap.get(no) + " to Ident " + i.toString());
 
         return regMap.get(no);
     }
@@ -136,7 +136,7 @@ public class Register {
             regno = 0;
         }
 
-        System.out.println("Alloc Reg $" + regMap.get(regno) + " to Tmp");
+//        System.out.println("Alloc Reg $" + regMap.get(regno) + " to Tmp");
         return this.regMap.get(regno);
     }
 
@@ -148,7 +148,7 @@ public class Register {
         } else if (!freeRegList.contains(no)) {
             removeActiveRegList(no);     //删除变量in activeregList 活跃变量表
             freeRegList.add(no);
-            System.out.println("Free Reg $" + regMap.get(no) + " from Tmp");
+//            System.out.println("Free Reg $" + regMap.get(no) + " from Tmp");
         }
         //todo 其它的free寄存器都得检查是否重复！
     }
@@ -168,7 +168,7 @@ public class Register {
             regno = 32;
         }
 
-        System.out.println("Alloc Float Reg $" + fregMap.get(regno) + " to Tmp");
+//        System.out.println("Alloc Float Reg $" + fregMap.get(regno) + " to Tmp");
         return this.fregMap.get(regno);
     }
 

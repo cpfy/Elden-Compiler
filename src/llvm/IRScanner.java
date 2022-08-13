@@ -53,7 +53,7 @@ public class IRScanner {
             scanchar(cc);
         }
         for (Token t : tokenList) {
-            System.out.println(t.tostring());
+//            System.out.println(t.tostring());
         }
         return tokenList;
     }
@@ -63,7 +63,7 @@ public class IRScanner {
         FileWriter writer = new FileWriter(file);
         for (Token t : tokenList) {
             writer.write(t.tostring() + "\n");
-            System.out.println(t.tostring());
+//            System.out.println(t.tostring());
         }
         writer.flush();
         writer.close();

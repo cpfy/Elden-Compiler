@@ -61,5 +61,6 @@ public class Compiler {
             ag.convertarm();
         }
 
+        System.out.println("Complete compile.");
     }
 }
