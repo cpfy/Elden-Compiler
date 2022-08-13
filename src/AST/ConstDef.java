@@ -32,7 +32,7 @@ public class ConstDef extends Def {
         else {  //数组形式
             if (isGlobal) {
                 addCode(tempName + " = dso_local constant ");
-                if (constInitVal != null) {
+                if (constInitVal != null && !(getDeclType().equals("i32") && constInitVal.isAllZero())) {
                     ArrayList<Integer> dimsInt = new ArrayList<>();
                     for (Exp exp: dims) {
                         dimsInt.add(exp.getValue());

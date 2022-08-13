@@ -55,7 +55,7 @@ public class VarDef extends Def {
         else {  //数组形式
             if (isGlobal) {
                 addCode(tempName + " = dso_local global ");
-                if (initVal != null) {
+                if (initVal != null && !(getDeclType().equals("i32") && initVal.isAllZero())) {
                     ArrayList<Integer> dimsInt = new ArrayList<>();
                     for (Exp exp: dims) {
                         dimsInt.add(exp.getValue());

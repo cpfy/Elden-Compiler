@@ -9,6 +9,27 @@ public class ConstInitVal extends Node {
         this.exps = exps;
     }
 
+    public boolean isAllZero() {
+        boolean isZero = true;
+        for (Object exp: exps) {
+            if (exp instanceof ConstInitVal) {
+                isZero = ((ConstInitVal) exp).isAllZero();
+                if (!isZero) {
+                    break;
+                }
+            }
+            else {
+                if (((Exp) exp).getValue() != 0) {
+                    isZero = false;
+                    break;
+                }
+            }
+        }
+        return isZero;
+    }
+
+
+
     private int getN(ArrayList<Integer> dims, int n, int p) {
         if (p == 0) {
             return n + 1;
