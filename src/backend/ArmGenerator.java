@@ -1179,7 +1179,7 @@ public class ArmGenerator {
     // 封装(16位)立即数移动
     private void moveImm(String regname, int num) {
         // 负数必会有问题
-        if (num < 65536) {
+        if (num < 65536 && num >= 0) {
             add("movw " + regname + ", #" + num);
 
         } else {
