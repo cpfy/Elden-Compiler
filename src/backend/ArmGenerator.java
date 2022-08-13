@@ -1231,9 +1231,9 @@ public class ArmGenerator {
         } else {
             String regt = reg.applyTmp();
             moveImm(regt, num);
-            add("add " + sp + ", " + sp + ", " + regt);
+            add("add " + regt + ", " + sp + ", " + regt);
+            add(instrname + " " + regname + ", [" + regt + ", #0]");
             reg.freeTmp(regt);
-            add(instrname + " " + regname + ", [" + sp + ", #0]");
         }
     }
 
