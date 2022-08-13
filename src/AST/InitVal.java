@@ -13,14 +13,15 @@ public class InitVal extends Node {
     public boolean isAllZero() {
         boolean isZero = true;
         for (Object exp: exps) {
-            if (exp instanceof ConstInitVal) {
-                isZero = ((ConstInitVal) exp).isAllZero();
+            if (exp instanceof InitVal) {
+                isZero = ((InitVal) exp).isAllZero();
                 if (!isZero) {
                     break;
                 }
             }
             else {
-                if (((Exp) exp).getValue() != 0) {
+                ((Exp) exp).calculate();
+                if (!((Exp) exp).isCanCal() || ((Exp) exp).getValue() != 0) {
                     isZero = false;
                     break;
                 }
