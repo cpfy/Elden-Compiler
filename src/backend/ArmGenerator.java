@@ -44,7 +44,8 @@ public class ArmGenerator {
     private static String OUTPUT_DIR;
     private ArrayList<Instr> gbdeflist;
 
-    private String allRegs = "{r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr,s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15,s16,s17,s18,s19,s20,s21,s22,s23,s24,s25,s26,s27,s28,s29,s30,s31}";
+    private String allRegs = "{r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}";
+    private String allFloatRegs = "{s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15,s16,s17,s18,s19,s20,s21,s22,s23,s24,s25,s26,s27,s28,s29,s30,s31}";
 
     private int tabcount = 0;
     private int printcount = 0;
@@ -809,7 +810,7 @@ public class ArmGenerator {
             return;
         }
 
-        add("push " + allRegs);
+        pushRegs();
         // 准备传参数r0-r3为前四个参数，[sp]开始为第5个及之后参数
         int pushargsnum = max(argsnum * 4 - 16, 0);
 //        add("sub sp, sp,  #" + (pushregs + pushargsnum));
@@ -867,7 +868,7 @@ public class ArmGenerator {
         if (dest.length > 0) {
             storeValue("r0", dest[0]);
         }
-        add("pop " + allRegs);
+        popRegs();
     }
 
     // 标准printf, scanf等函数
@@ -876,7 +877,7 @@ public class ArmGenerator {
         int argsnum = ((CallInst) instr).getArgsNum();  // 变量个数
         ArrayList<TypeValue> args = ((CallInst) instr).getArgs();
 
-        add("push " + allRegs);
+        pushRegs();
 
         // 准备传参数r0-r3为前四个参数，[sp]开始为第5个及之后参数
         int pushargsnum = max(argsnum * 4 - 16, 0);
@@ -922,7 +923,7 @@ public class ArmGenerator {
         if (dest.length > 0) {
             storeValue("r0", dest[0]);
         }
-        add("pop " + allRegs);
+        popRegs();
     }
 
     private void addReturn(Instr instr) {
@@ -1268,6 +1269,16 @@ public class ArmGenerator {
         } else {
             add("vmov " + regname + ", #" + floatnum);
         }
+    }
+
+    private void pushRegs() {
+        add("push " + allRegs);
+        add("vpush " + allFloatRegs);
+    }
+
+    private void popRegs() {
+        add("vpop " + allFloatRegs);
+        add("pop " + allRegs);
     }
 
 }
