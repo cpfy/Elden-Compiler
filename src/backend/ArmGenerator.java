@@ -1200,7 +1200,7 @@ public class ArmGenerator {
             add("add " + regname + ", " + regname + ", #" + num);
 
         } else {
-            String regt = reg.applyTmp();
+            String regt = "r12";
             moveImm(regt, num);
             add("add " + regname + ", " + regname + ", " + regt);
             reg.freeTmp(regt);
@@ -1214,7 +1214,7 @@ public class ArmGenerator {
             add("sub " + regname + ", " + regname + ", #" + num);
 
         } else {
-            String regt = reg.applyTmp();
+            String regt = "r12";
             moveImm(regt, num);
             add("sub " + regname + ", " + regname + ", " + regt);
             reg.freeTmp(regt);
@@ -1274,13 +1274,13 @@ public class ArmGenerator {
 
     private void pushRegs() {
         add("push " + allRegs);
-        add("vpush " + allFloatRegs1);
-        add("vpush " + allFloatRegs2);
+//        add("vpush " + allFloatRegs1);
+//        add("vpush " + allFloatRegs2);
     }
 
     private void popRegs() {
-        add("vpop " + allFloatRegs2);
-        add("vpop " + allFloatRegs1);
+//        add("vpop " + allFloatRegs2);
+//        add("vpop " + allFloatRegs1);
         add("pop " + allRegs);
     }
 
