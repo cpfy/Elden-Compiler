@@ -117,7 +117,7 @@ public class VarDef extends Def {
 
     void tableInsert() {
         if (isGlobal) {
-            tempName = "@_" + newGlobalName(id.getRawWord().getName());
+            tempName = "@" + newGlobalName(id.getRawWord().getName());
         }
         else {
             tempName = newTemp();

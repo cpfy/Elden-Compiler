@@ -41,7 +41,7 @@ public abstract class Node {
     static String declType = null;
 
     public String newTemp() {
-        return "%_" + labels++;
+        return String.valueOf(labels++);
     }
 
     public void setDeclType(String s) {
@@ -71,7 +71,7 @@ public abstract class Node {
     }
 
     public String newLable() {
-        return "_" + String.valueOf(labels++);
+        return String.valueOf(labels++);
     }
 
     public abstract void addMidCode();

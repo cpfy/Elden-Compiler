@@ -12,6 +12,9 @@ public class RawWord {
     }
 
     public String getName() {
+        if (name.charAt(0) >= '0' && name.charAt(0) <= '9') {
+            return name;
+        }
         return name;
     }
 
