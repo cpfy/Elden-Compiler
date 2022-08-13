@@ -20,10 +20,10 @@ public class Phi extends Instr{
     public String toString(){
         ArrayList<String> choices = null;
         for(Block i: params.keySet()){
-            String choice = "["+ params.get(i).getIdent().getId() + "," + i.getLabel() +"]";
+            String choice = "[%"+ params.get(i).getIdent().getId() + ",%" + i.getLabel() +"]";
             choices.add(choice);
         }
-        StringBuffer ans = new StringBuffer("phi i32 ");
+        StringBuffer ans = new StringBuffer("%" + value.toString() + " = phi i32 ");
         int size = choices.size()-1;
         for(int i = 0;i <= size;i++){
             ans.append(choices.get(i));

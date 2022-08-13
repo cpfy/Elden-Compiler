@@ -26,7 +26,7 @@ public class Rename {
         renamePhi(start);
     }
 
-    public void execute(){
+    public void execute(){ //废弃
         /*
         Stack<Block> workList = new Stack<>();
         workList.push(start);
@@ -54,9 +54,12 @@ public class Rename {
             pre = dist.peek();
         }
         //processPhi();
+        //前导基本块流入数据
         if(pre!=null){
             for(Value i:valueList.keySet()){
-                valueList.get(i).put(block,valueList.get(pre).get(i));
+                if(valueList.containsKey(i)) {
+                    valueList.get(i).put(block, valueList.get(pre).get(i));
+                }
             }
         }
         dist.push(block);
@@ -67,57 +70,89 @@ public class Rename {
         }
         for(Instr i : block.getInblocklist()){
             switch(i.getInstrname()){
-                case "add":
-                case "fadd":
-                case "sub":
-                case "fsub":
-                case "mul":
-                case "fmul":
-                case "sdiv":
-                case "fdiv":
-                    BinaryInst ins = (BinaryInst) i;
-                    Value v1 = ins.getV1();
-                    Value v2 = ins.getV2();
-                    if(valueList.containsKey(v1)){
-                        ins.setV1(valueList.get(v1).get(block));
-                    }
-                    if(valueList.containsKey(v2)){
-                        ins.setV2(valueList.get(v2).get(block));
-                    }
-                    break;
-                case "zext":
-                    ZExtInst ins1 = (ZExtInst) i;
-                    if(valueList.containsKey(ins1.getV())){
-                        ins1.setV(valueList.get(ins1.getV()).get(block));
-                    }
-                    break;
-                case "alloca":
-                    break;
                 case "assign":
                     AssignInstr ins2 = (AssignInstr) i;
+                    Instr j = ins2.getValueinstr();
+                    switch (j.getInstrname()){
+                        case "add":
+                        case "fadd":
+                        case "sub":
+                        case "fsub":
+                        case "mul":
+                        case "fmul":
+                        case "sdiv":
+                        case "fdiv":
+                            BinaryInst ins = (BinaryInst) j;
+                            Value v1 = ins.getV1();
+                            Value v2 = ins.getV2();
+                            if(valueList.containsKey(v1)){
+                                ins.setV1(valueList.get(v1).get(block));
+                            }
+                            if(valueList.containsKey(v2)){
+                                ins.setV2(valueList.get(v2).get(block));
+                            }
+                            break;
+                        case "zext":
+                            ZExtInst ins1 = (ZExtInst) j;
+                            if(valueList.containsKey(ins1.getV())){
+                                ins1.setV(valueList.get(ins1.getV()).get(block));
+                            }
+                            break;
+                        case "alloca":
+                            break;
+                        case "load":
+                            LoadInst ins3 = (LoadInst) j;
+                            if(valueList.containsKey(ins3.getV())){
+                                Value dest = null;
+                                Ident ident = ins2.getIdent();
+                                if(ident!=null) dest = new Value(ident);
+                                if(dest!=null) {
+                                    if(!valueList.containsKey(dest)) {
+                                        HashMap<Block,Value> hashmap = new HashMap<>();
+                                        hashmap.put(block,ins3.getV());
+                                        valueList.put(dest,hashmap);
+                                    }
+                                    else{
+                                        valueList.get(dest).put(block, ins3.getV());
+                                    }
+                                }
+                            }
+                            break;
+                        case "call":
+                            CallInst ins5 = (CallInst) j;
+                            for(TypeValue typevalue:ins5.getArgs()){
+                                if(valueList.containsKey(typevalue.getValue())){
+                                    typevalue.setValue(valueList.get(typevalue.getValue()).get(block));
+                                }
+                            }
+                            break;
+                    }
+                    Value value = new Value(ins2.getIdent());
                     ins2.getIdent().setId(version);
-                    Value value = new Value(new Ident(version));
-                    HashMap<Block,Value> newHash = new HashMap<>();
-                    newHash.put(block,value);
-                    valueList.put(value,newHash);
+                    if(!valueList.containsKey(value)) {
+                        HashMap<Block, Value> newHash = new HashMap<>();
+                        newHash.put(block, new Value(new Ident(version)));
+                        valueList.put(value, newHash);
+                    }
+                    else{
+                        valueList.get(value).put(block,new Value(new Ident(version)));
+                    }
                     version++;
                     break;
-                case "load":
-                    LoadInst ins3 = (LoadInst) i;
-                    if(valueList.containsKey(ins3.getV())){
-                        Value dest = null;
-                        Ident ident = getAssignDest(block,ins3);
-                        if(ident!=null) dest = new Value(ident);
-                        if(dest!=null) {
-                            valueList.get(dest).put(block,ins3.getV());
-                        }
-                    }
-                    break;
+
                 case "store":
                     StoreInstr ins4 = (StoreInstr) i;
+                    if(valueList.containsKey(ins4.getV1())){
+                        valueList.get(ins4.getV2()).put(block,valueList.get(ins4.getV1()).get(block));
+                    }
+                    else{
+                        valueList.get(ins4.getV2()).put(block,ins4.getV1());
+                    }
+                    /*
                     HashMap<Block,Value> hash = valueList.get(ins4.getV1());
                     hash.put(block,valueList.get(ins4.getV2()).get(block));
                     valueList.put(ins4.getV1(),hash);
+                     */
                     break;
                 case "call":
                     CallInst ins5 = (CallInst) i;

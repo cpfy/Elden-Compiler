@@ -41,7 +41,7 @@ public class InsertPhi {
         }
         for(Block i:function.getBlocklist()){
             Boolean cond1 = true;
-            //cond1 = hasAssigned(i,var); //判断这个基本块是否给这个变量赋过值。
+            cond1 = def.get(i).contains(var); //判断这个基本块是否给这个变量赋过值。
             if(cond1){
                 processed.put(i,true);
                 workList.push(i);

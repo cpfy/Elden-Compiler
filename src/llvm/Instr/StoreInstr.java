@@ -10,7 +10,7 @@ public class StoreInstr extends Instr {
     private Type t2;
     private Value v1;
     private Value v2;
-
+    private boolean hidden = false;
     public StoreInstr(String instrname, Type t1, Type t2, Value v1, Value v2) {
         super(instrname);
         this.t1 = t1;
@@ -21,6 +21,7 @@ public class StoreInstr extends Instr {
 
     @Override
     public String toString() {
+        if(hidden) return "";
         return "store " + t1.toString() + " " + v1.toString() + ", " + t2.toString() + " " + v2.toString();
     }
 
@@ -39,6 +40,8 @@ public class StoreInstr extends Instr {
     public Value getV2() {
         return this.v2;
     }
+
+    public void setHidden(boolean hidden){this.hidden = hidden;}
 
     @Override
     public void renameUses(Value newValue, Value oldValue) {
