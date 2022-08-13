@@ -62,14 +62,6 @@ public class IRDictionary {
         KEYWORDS_LIST.add("sge");
         KEYWORDS_LIST.add("slt");
         KEYWORDS_LIST.add("sle");
-
-
-//        KEYWORDS_LIST.add("");
-//        KEYWORDS_LIST.add("");
-//        KEYWORDS_LIST.add("");
-//        KEYWORDS_LIST.add("");
-
-
     }
 
     static {
@@ -83,17 +75,19 @@ public class IRDictionary {
         // 应该无用
         OPERATORS_DICT = new HashMap<>();
 
-        OPERATORS_DICT.put("+", "PLUS");
-        OPERATORS_DICT.put("-", "MINUS");
-        OPERATORS_DICT.put("*", "MULT");
+        // 加减乘除都删了
+//        OPERATORS_DICT.put("+", "PLUS");
+//        OPERATORS_DICT.put("-", "MINUS");
+//        OPERATORS_DICT.put("*", "MULT");
         OPERATORS_DICT.put("%", "PERC");    // 取percent意
         OPERATORS_DICT.put("@", "AT");
         OPERATORS_DICT.put("#", "POUND");
         OPERATORS_DICT.put(":", "COLON");
         OPERATORS_DICT.put(";", "SEMICN");
         OPERATORS_DICT.put(".", "POINT");   // float小数点使用
+//        OPERATORS_DICT.put("_", "UNDERLINE");    // 统一用作ident的首字符（废弃，用%,@判别）
 
-        OPERATORS_DICT.put("=", "ASSIGN");
+        OPERATORS_DICT.put("=", "ASSIGN");  // 有用，不能删
         OPERATORS_DICT.put(",", "COMMA");
         OPERATORS_DICT.put("(", "LPARENT");
         OPERATORS_DICT.put(")", "RPARENT");
@@ -105,22 +99,26 @@ public class IRDictionary {
 
     static {
         TYPE_DICT = new HashMap<>();
+
         //space: ASCII(1-32)
         for (int i = 1; i < 33; i++) {
             String c = String.valueOf(Character.toChars(i)[0]);
             TYPE_DICT.put(c, TYPE.SPACE);
         }
+
         //digit: ASCII(48-57)
         for (int i = 48; i < 58; i++) {
             String c = String.valueOf(Character.toChars(i)[0]);
             TYPE_DICT.put(c, TYPE.DIGIT);
         }
+
         //letter: ASCII(A-Z, 65-90; a-z, 97-122)
         for (int i = 65; i < 91; i++) {
             String c = String.valueOf(Character.toChars(i)[0]);
             TYPE_DICT.put(c, TYPE.LETTER);
             TYPE_DICT.put(c.toLowerCase(), TYPE.LETTER);
         }
+
         //下划线也算入Letter
         final int UNDERLINE = 95;
         TYPE_DICT.put(String.valueOf(Character.toChars(UNDERLINE)[0]), TYPE.LETTER);
@@ -129,12 +127,6 @@ public class IRDictionary {
         for (String key : OPERATORS_DICT.keySet()) {
             TYPE_DICT.put(key, TYPE.OPERATOR);
         }
-        //单双引号、冒号 : 也算入operator
-        //TYPE_DICT.put(String.valueOf('\''), TYPE.OPERATOR);
-        //TYPE_DICT.put(String.valueOf(':'), TYPE.OPERATOR);
-        TYPE_DICT.put(String.valueOf('"'), TYPE.OPERATOR);
-        TYPE_DICT.put(String.valueOf('|'), TYPE.OPERATOR);
-        TYPE_DICT.put(String.valueOf('&'), TYPE.OPERATOR);
     }
 
     public TYPE queryCharType(String value) {
