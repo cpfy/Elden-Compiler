@@ -1200,7 +1200,7 @@ public class ArmGenerator {
             add("add " + regname + ", " + regname + ", #" + num);
 
         } else {
-            String regt = "r12";
+            String regt = reg.applyTmp();
             moveImm(regt, num);
             add("add " + regname + ", " + regname + ", " + regt);
             reg.freeTmp(regt);
@@ -1214,7 +1214,7 @@ public class ArmGenerator {
             add("sub " + regname + ", " + regname + ", #" + num);
 
         } else {
-            String regt = "r12";
+            String regt = reg.applyTmp();
             moveImm(regt, num);
             add("sub " + regname + ", " + regname + ", " + regt);
             reg.freeTmp(regt);

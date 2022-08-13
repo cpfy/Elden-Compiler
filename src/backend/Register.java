@@ -75,7 +75,7 @@ public class Register {
     // 空闲reg池
     private void initFreeRegList() {
         for (int i = 0; i < 13; i++) {
-            if (i != 7) {
+            if (i != 7 && i != 0) {
                 freeRegList.add(i);
             }
         }
