@@ -14,7 +14,7 @@ public class IRScanner {
     private int curRows = 1;
     private boolean readingString = false;
     private boolean readingNumber = false;
-    private boolean readingBool = false;
+    private boolean readingIdent = false;   // 指%，@开头
     private boolean readingComments = false;
 
     private final String INPUT_DIR = "llvm.txt";
@@ -73,25 +73,16 @@ public class IRScanner {
         IRDictionary.TYPE type = tokenDictionary.queryCharType(String.valueOf(c));
         switch (type) {
             case LETTER:
-
                 if (readingComments) {
                     curToken = "";
                     break;
                 }
-//                else if(readingNumber){
-//                    createToken("INTCON");
-//                    readingNumber=false;
-//                    curToken += c;
-//                    System.err.println(curToken);
-//
-//                    break;
-//                }
 
-                else if (readingBool) {
-                    curToken = endOfOp();
-                }
                 if (curToken.isEmpty()) {
-                    readingString = true;
+                    if(!readingIdent){
+                        readingString = true;
+                    }
+
                 }
                 curToken += c;
                 break;
@@ -99,10 +90,9 @@ public class IRScanner {
                 if (readingComments) {
                     curToken = "";
                     break;
-                } else if (readingBool) {
-                    curToken = endOfOp();
+
                 } else if (readingString) {
-                    // 为了处理i32，i1这种
+                    // 为了处理i32，i1这种，如果没有readingIdent则分开读，否则继续、连在一起
                     endOfWord();
                 }
 
@@ -123,58 +113,29 @@ public class IRScanner {
                 if (readingComments) {
                     curToken = "";
                     break;
-                } else if (readingString) {
-                    curToken = endOfWord();
-                    //readingString = false;
+                } else if (readingIdent) {
+                    endOfWord();
+                    handleOperator(c);
 
-                    //curToken += c;
-                    //createToken(tokenDictionary.queryOpCode(String.valueOf(c)));
+                } else if (readingString) {
+                    endOfWord();
                     handleOperator(c);
 
                 } else if (readingNumber) {
                     createToken("INTCON");
                     readingNumber = false;
-                    //curToken += c;
-                    //createToken(tokenDictionary.queryOpCode(String.valueOf(c)));
+
                     handleOperator(c);
-
-                } else if (readingBool) {
-                    if ((curToken.equals("<") && (c == '=')) ||
-                            (curToken.equals(">") && (c == '=')) ||
-                            (curToken.equals("=") && (c == '=')) ||
-                            (curToken.equals("!") && (c == '=')) ||
-                            (curToken.equals("|") && (c == '|')) ||
-                            (curToken.equals("&") && (c == '&'))
-                    ) {
-                        curToken += c;
-                        createToken(tokenDictionary.queryOpCode(curToken));
-
-                    } else if (curToken.equals("/")) {
-//                        if (c == '/') {
-//                            readingSingleComments = true;
-//                            curToken = "";
-//                        } else if (c == '*') {
-//                            readingMultiComments = true;
-//                            curToken = "";
-//                        } else {
-                        //div
-                        createToken(tokenDictionary.queryOpCode(curToken));
-                        handleOperator(c);
-
-                    } else {
-                        createToken(tokenDictionary.queryOpCode(curToken));
-                        handleOperator(c);
-                    }
-                    readingBool = false;
 
                 } else {
                     handleOperator(c);
                 }
                 break;
             case SPACE:
-                if (c == '\n') {  //newline, \n居然算SPACE
-                    if (readingString) {
-                        curToken = endOfWord();
+                // newline, \n居然算SPACE
+                if (c == '\n') {
+                    if (readingString || readingIdent) {
+                        endOfWord();
 
                     } else if (readingNumber) {
                         createToken("INTCON");
@@ -185,19 +146,14 @@ public class IRScanner {
                 if (readingComments) {
                     curToken = "";
                     break;
-                } else if (readingBool) {
-                    createToken(tokenDictionary.queryOpCode(curToken));
-                    readingBool = false;
-
-                } else if (readingString) {
-                    curToken = endOfWord();
+                } else if (readingIdent || readingString) {
+                    endOfWord();
 
                 } else if (readingNumber) {
                     createToken("INTCON");
                     readingNumber = false;
 
                 } else {
-//                    curToken = endOfWord();
                     if (c == Character.toChars(10)[0]) {
                         curRows++;
                         resetStatus();
@@ -213,16 +169,17 @@ public class IRScanner {
         // System.out.println(c);
     }
 
-    private String endOfWord() {
+    private void endOfWord() {
         if (tokenDictionary.queryIfKeyword(curToken)) {
             createToken(tokenDictionary.queryKeywordCode(curToken));
+
         } else {
             if (curToken.length() > 0) {
                 createToken("IDENFR");
+                readingIdent = false;
             }
         }
         resetStatus();
-        return curToken;
     }
 
     private String endOfOp() {
@@ -236,23 +193,24 @@ public class IRScanner {
     }
 
     private String handleOperator(char c) {
+        // 注释
         if (c == ';') {
-//            curToken = endOfWord();
             readingComments = true;
             curToken = "";
 
-        }else if (c == '<' || c == '>' || c == '!' || c == '=' || c == '/' || c == '|' || c == '&') {
-            curToken = endOfWord();
-            readingBool = true;
-            curToken += c;
+        } else if (c == '@' || c == '%') {
+            endOfWord();
+            curToken = String.valueOf(c);
+            createToken(tokenDictionary.queryOpCode(String.valueOf(c)));
+            readingIdent = true;
 
         } else if (tokenDictionary.queryIfOpCode(String.valueOf(c))) {
-            curToken = endOfWord();
+            endOfWord();
             curToken = String.valueOf(c);
             createToken(tokenDictionary.queryOpCode(String.valueOf(c)));
 
         } else {
-            System.err.println("Unhandled operator scanned!");
+            System.err.println("Unhandled operator scanned!：" + c);
         }
         return curToken;
     }
@@ -266,15 +224,8 @@ public class IRScanner {
     private void resetStatus() {
         readingString = false;
         readingNumber = false;
-        readingBool = false;
         readingComments = false;
+        readingIdent = false;
     }
 
-//    //    判断是否新的行/文法结束
-//    private boolean newSymLine() {
-//        if (sym.getRow() > getLastToken().getRow()) {
-//            return true;
-//        }
-//        return false;
-//    }
 }
