@@ -1174,7 +1174,7 @@ public class ArmGenerator {
 
         add("add " + reg + ", " + reg + ", pc");
 
-        lpicUseList.add(name + "-(.LPIC" + lpiccount + "+8)");
+        lpicUseList.add(name + "-(.LPIC" + lpiccount + "+4)");
         lpiccount += 1;
         lpicusecount += 1;
     }
