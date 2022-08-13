@@ -8,6 +8,8 @@ import java.util.HashSet;
 
 public abstract class Node {
 
+    public static boolean isTesting = false;
+
     static String getFloatString(float in) {
         String s = Integer.toHexString(Float.floatToIntBits(in));
         return "0x" + s;
@@ -40,8 +42,10 @@ public abstract class Node {
 
     static String declType = null;
 
+    static int tempNum = 0;
+
     public String newTemp() {
-        return "%t" + labels++;
+        return "%t" + tempNum++;
     }
 
     public void setDeclType(String s) {
@@ -71,7 +75,10 @@ public abstract class Node {
     }
 
     public String newLable() {
-        return "l" + String.valueOf(labels++);
+        if (isTesting) {
+            return "l" + labels++;
+        }
+        return String.valueOf(labels++);
     }
 
     public abstract void addMidCode();
