@@ -68,6 +68,7 @@ public class Rename {
         dist.push(block);
         haveworked.add(block);
         for(Phi phi:block.getPhis()){
+            System.out.println(phi.getValue());
             valueList.get(phi.getValue()).put(block,new Value(new Ident("p"+version)));
             phi.setValue(new Value(new Ident("p" + version)));
             version++;
@@ -159,7 +160,7 @@ public class Rename {
                     if (!valueList.containsKey(oldvalue) && !j.getInstrname().equals("load")) {
                         System.out.println("assign don't have "+oldvalue);
                         HashMap<Block, Value> newHash = new HashMap<>();
-                        newHash.put(block, new Value(ins2.getIdent()));
+                        newHash.put(block, new Value(new Ident(ins2.getIdent().getName())));
                         valueList.put(oldvalue, newHash);
                     }
                     break;

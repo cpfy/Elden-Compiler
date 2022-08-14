@@ -56,7 +56,7 @@ public class CSE {
                 }
                 else {
                     for (Instr nt: block.getInblocklist()) {
-                        nt.renameUses(new Value(new Ident(s.substring(1))), new Value(assignInstr.getIdent()));
+                        nt.renameUses(new Value(new Ident(s.substring(1))), new Value(new Ident(assignInstr.getIdent().getName())));
                         System.out.println(assignInstr.getIdent().toString() + " " + s);
                     }
                 }

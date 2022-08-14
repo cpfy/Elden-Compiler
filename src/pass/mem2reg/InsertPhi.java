@@ -1,6 +1,7 @@
 package pass.mem2reg;
 
 
+import llvm.Ident;
 import llvm.Instr.Phi;
 import llvm.Block;
 import llvm.Function;
@@ -89,7 +90,7 @@ public class InsertPhi {
                     if(assign.getValueinstr() instanceof AllocaInst){
                         AllocaInst alloca = (AllocaInst) assign.getValueinstr();
                         if(alloca.getType() instanceof IntType){
-                            ans.add(new Value(assign.getIdent()));
+                            ans.add(new Value(new Ident(assign.getIdent().getName())));
                         }
                     }
                 }
