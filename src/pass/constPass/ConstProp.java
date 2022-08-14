@@ -2,6 +2,7 @@ package pass.constPass;
 
 import llvm.Block;
 import llvm.Function;
+import llvm.Ident;
 import llvm.Instr.*;
 import llvm.Value;
 
@@ -53,7 +54,7 @@ public class ConstProp {
                     Value newValue = assignInstr.mergeConst();
                     if (newValue != null) {
                         assignInstr.setCanDelete(true);
-                        rename(newValue, new Value(assignInstr.getIdent()));
+                        rename(newValue, new Value(new Ident(assignInstr.getIdent().getName())));
                         changed = true;
                     }
                 }
@@ -75,6 +76,9 @@ public class ConstProp {
             ArrayList<String> uses = instr.getUses();
             ArrayList<InstrUses> instrUsesArrayList = new ArrayList<>();
             for (String s: uses) {
+                if (s.charAt(0) != '%') {
+                    continue;
+                }
                 instrUsesArrayList.add(varName2InstrUses.get(s));
             }
 
@@ -85,6 +89,9 @@ public class ConstProp {
             }
 
             for (String s: instr.getRoots()) {
+                if (s.charAt(0) == '@') {
+                    continue;
+                }
                 roots.put(s, varName2InstrUses.get(s));
             }
         }

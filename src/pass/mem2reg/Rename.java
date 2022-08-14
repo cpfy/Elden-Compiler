@@ -71,7 +71,14 @@ public class Rename {
             System.out.println(phi.toString());
             //System.out.println("________"+phi.getValue());
             System.out.println(phi.getValue());
-            valueList.get(phi.getValue()).put(block,new Value(new Ident("p"+version)));
+            if(valueList.containsKey(phi.getValue())) {
+                valueList.get(phi.getValue()).put(block, new Value(new Ident("p" + version)));
+            }
+            else{
+                HashMap<Block,Value> hashMap = new HashMap<>();
+                hashMap.put(block,new Value(new Ident("p" + version)));
+                valueList.put(phi.getValue(),hashMap);
+            }
             phi.setValue(new Value(new Ident("p" + version)));
             version++;
         }
