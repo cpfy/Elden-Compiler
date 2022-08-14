@@ -23,7 +23,7 @@ public class Rename {
         start = function.getBlocklist().get(0);
         System.out.println("rename start");
         dfs(start);
-        //renamePhi(start);
+        renamePhi(start);
         deleteInstr();
     }
 
@@ -106,9 +106,7 @@ public class Rename {
                             i.setCanDelete(true);
                             LoadInst ins3 = (LoadInst) j;
                             if (valueList.containsKey(ins3.getV())) {
-                                Value dest = null;
-                                Ident ident = ins2.getIdent();
-                                if (ident != null) dest = new Value(ident);
+                                Value dest = new Value(new Ident(ins2.getIdent().getName()));
                                 if (dest != null) {
                                     if (!valueList.containsKey(dest)) {
                                         HashMap<Block, Value> hashmap = new HashMap<>();
@@ -153,20 +151,16 @@ public class Rename {
                     }
                     //System.out.println(ins2.getIdent());
                     //System.out.println(ins2.getIdent());
-                    Value value = new Value(ins2.getIdent());
-                    if (!valueList.containsKey(value)) {
-                        System.out.println("assign don't have "+value);
+                    String name = ins2.getIdent().getName();
+                    Value oldvalue = new Value(new Ident(name));
+                    ins2.getIdent().setName("t"+version);
+                    version++;
+                    if (!valueList.containsKey(oldvalue) && !j.getInstrname().equals("load")) {
+                        System.out.println("assign don't have "+oldvalue);
                         HashMap<Block, Value> newHash = new HashMap<>();
-                        newHash.put(block, new Value(new Ident("t"+version)));
-                        valueList.put(value, newHash);
-                        ins2.getIdent().setName("t"+version);
-                        version++;
-                    } else if(!j.getInstrname().equals("load")){
-                        valueList.get(value).put(block, new Value(new Ident("t"+version)));
-                        ins2.getIdent().setName("t"+version);
-                        version++;
+                        newHash.put(block, new Value(ins2.getIdent()));
+                        valueList.put(oldvalue, newHash);
                     }
-
                     break;
 
                 case "store":
@@ -283,7 +277,7 @@ public class Rename {
         for(Phi i:block.getPhis()){
             for(Block j:i.getParams().keySet()){
                 System.out.println("in renamephi:"+j.getLabel());
-                i.reName(valueList.get(i.getValue()).get(j),j);
+                i.reName(valueList.get(i.getOriginValue()).get(j),j);
             }
         }
         for(Block j:block.getSucBlocks()){

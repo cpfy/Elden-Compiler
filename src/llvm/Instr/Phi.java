@@ -8,11 +8,13 @@ import llvm.Value;
 public class Phi extends Instr{
     // 基本块的Phi函数
     private Value value;
+    private Value originValue; //初始化后不可变。
     //<label,value>键值对,由于block决定value名，因此block的label为key。
     private HashMap<Block,Value> params = new HashMap();
     public Phi (String instrname, Value value, ArrayList<Block> blocks){
         super(instrname);
         this.value = value;
+        this.originValue = value;
         for (Block i : blocks){
             params.put(i,value);
         }
@@ -42,7 +44,7 @@ public class Phi extends Instr{
     public void setValue(Value value){this.value = value;}
     public void reName(Value value,Block block){params.put(block,value);}
     public void reName(Value value){this.value = value;}
-
+    public Value getOriginValue(){return originValue;}
     @Override
     public void renameUses(Value newValue, Value oldValue) {
         for (Block block: params.keySet()) {
