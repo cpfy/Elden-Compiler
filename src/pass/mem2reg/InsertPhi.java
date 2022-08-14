@@ -53,9 +53,15 @@ public class InsertPhi {
             Block i = workList.pop();
             for(Block j:i.getDominatorFrontiers()){
                 if(!hasPhi.get(j)){
-                    Phi phi = new Phi("phi",var,j.getPreBlocks());
-                    System.out.println("insert new phi in block " + j.getLabel()+ ":" + phi.toString());
-                    j.addPhi(phi);
+                    int source = 0;
+                    for(Block block:j.getPreBlocks()){
+                        if(hasDefined(var,block)) source++;
+                    }
+                    if(source>1) {
+                        Phi phi = new Phi("phi", var, j.getPreBlocks());
+                        System.out.println("insert new phi in block " + j.getLabel() + ":" + phi.toString());
+                        j.addPhi(phi);
+                    }
                     hasPhi.put(j,true);
                     if(!processed.get(j)){
                         processed.put(j,true);
@@ -97,5 +103,12 @@ public class InsertPhi {
             }
         }
         return ans;
+    }
+    public Boolean hasDefined(Value value,Block block){
+        if(hasAssigned(block,value)){return true;}
+        for(Block i:block.getPreBlocks()){
+            return hasDefined(value,i);
+        }
+        return false;
     }
 }
