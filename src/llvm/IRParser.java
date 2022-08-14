@@ -1387,7 +1387,7 @@ public class IRParser {
             if (!globalContainer) {
                 printStream.println(function.toString() + "{");
                 for (Block block : function.getBlocklist()) {
-                    printStream.println(block.getLabel() + ":");
+                    printStream.println("l" + block.getLabel() + ":");
                     for (Instr instr: block.getPhis()) {
                         printStream.println(instr.toString());
                     }

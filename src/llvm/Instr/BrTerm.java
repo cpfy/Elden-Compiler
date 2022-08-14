@@ -17,7 +17,7 @@ public class BrTerm extends Instr {
 
     @Override
     public String toString() {
-        return "br label " + li.toString();
+        return "br label l" + li.toString();
     }
 
     public Ident getLi() {

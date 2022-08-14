@@ -134,6 +134,8 @@ public abstract class Instr {
 //    }
 
 
+    public static boolean isTesting;
+
     public boolean isGlobal() {
         return global;
     }
