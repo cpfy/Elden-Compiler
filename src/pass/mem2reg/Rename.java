@@ -68,6 +68,8 @@ public class Rename {
         dist.push(block);
         haveworked.add(block);
         for(Phi phi:block.getPhis()){
+            System.out.println(phi.toString());
+            //System.out.println("________"+phi.getValue());
             valueList.get(phi.getValue()).put(block,new Value(new Ident("p"+version)));
             phi.setValue(new Value(new Ident("p" + version)));
             version++;
@@ -86,7 +88,7 @@ public class Rename {
                             Value v2 = ins.getV2();
                             //System.out.println("a binary instr");
                             if (valueList.containsKey(v1)) {
-                                System.out.println("change in binary1:" + valueList.get(v1).get(block).toString());
+                                //System.out.println("change in binary1:" + valueList.get(v1).get(block).toString());
                                 ins.setV1(valueList.get(v1).get(block));
                             }
                             if (valueList.containsKey(v2)) {
@@ -153,13 +155,13 @@ public class Rename {
                     //System.out.println(ins2.getIdent());
                     String name = ins2.getIdent().getName();
                     Value oldvalue = new Value(new Ident(name));
-                    ins2.getIdent().setName("t"+version);
-                    version++;
-                    System.out.println("........................................."+name);
+                    //System.out.println("........................................."+name);
                     if (!valueList.containsKey(oldvalue) && !j.getInstrname().equals("load")) {
+                        ins2.getIdent().setName("t"+version);
+                        version++;
                         System.out.println("assign don't have "+oldvalue);
                         HashMap<Block, Value> newHash = new HashMap<>();
-                        newHash.put(block, new Value(ins2.getIdent()));
+                        newHash.put(block, new Value(new Ident(ins2.getIdent().getName())));
                         valueList.put(oldvalue, newHash);
                     }
                     break;
@@ -241,6 +243,8 @@ public class Rename {
                         ins10.setV(valueList.get(ins10.getV()).get(block));
                     }
                     break;
+                default:
+                    break;
             }
             System.out.println("worked:" + i.toString());
         }
@@ -280,6 +284,7 @@ public class Rename {
     public void renamePhi (Block block){
         havePhi.add(block);
         for(Phi i:block.getPhis()){
+            //System.out.println(i.toString());
             for(Block j:i.getParams().keySet()){
                 System.out.println("in renamephi:"+j.getLabel());
                 i.reName(valueList.get(i.getOriginValue()).get(j),j);

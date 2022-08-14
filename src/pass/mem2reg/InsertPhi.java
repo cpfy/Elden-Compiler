@@ -1,6 +1,7 @@
 package pass.mem2reg;
 
 
+import llvm.Ident;
 import llvm.Instr.Phi;
 import llvm.Block;
 import llvm.Function;
@@ -53,7 +54,7 @@ public class InsertPhi {
             for(Block j:i.getDominatorFrontiers()){
                 if(!hasPhi.get(j)){
                     Phi phi = new Phi("phi",var,j.getPreBlocks());
-                    System.out.println("insert new phi:" + phi.toString());
+                    System.out.println("insert new phi in block " + i.getLabel()+ ":" + phi.toString());
                     j.addPhi(phi);
                     hasPhi.put(j,true);
                     if(!processed.get(j)){
@@ -89,7 +90,7 @@ public class InsertPhi {
                     if(assign.getValueinstr() instanceof AllocaInst){
                         AllocaInst alloca = (AllocaInst) assign.getValueinstr();
                         if(alloca.getType() instanceof IntType){
-                            ans.add(new Value(assign.getIdent()));
+                            ans.add(new Value(new Ident(assign.getIdent().getName())));
                         }
                     }
                 }
