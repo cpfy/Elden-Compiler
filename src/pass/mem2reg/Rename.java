@@ -290,10 +290,20 @@ public class Rename {
     public void renamePhi (Block block){
         havePhi.add(block);
         for(Phi i:block.getPhis()){
+            HashSet<Block> needDeleted = new HashSet<>();
+            System.out.println("in renamephi:" + block.getLabel()+":"+i.toString());
             for(Block j:i.getParams().keySet()){
-                System.out.println("in renamephi:"+j.getLabel());
-                i.reName(valueList.get(i.getOriginValue()).get(j),j);
+                if(valueList.get(i.getOriginValue()).containsKey(j)) {
+                    i.reName(valueList.get(i.getOriginValue()).get(j), j);
+                }
+                else{
+                    needDeleted.add(j);
+                }
             }
+            for(Block j:needDeleted){
+                i.deleteBlock(j);
+            }
+            System.out.println("renamed:"+i.toString());
         }
         for(Block j:block.getSucBlocks()){
             if(!havePhi.contains(j)){
