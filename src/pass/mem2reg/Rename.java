@@ -4,14 +4,13 @@ import llvm.Instr.Phi;
 import llvm.*;
 import llvm.Instr.*;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Stack;
+import java.util.*;
 
 public class Rename {
     private Function function;
     private HashMap<Value,HashMap<Block,Value>> valueList = new HashMap();
     private Stack<Block> dist = new Stack<>();
+    private HashMap<String,String> renamedLabel = new HashMap<>();
     HashSet<Block> haveworked = new HashSet();
     HashSet<Block> havePhi = new HashSet<>();
     Block start = new Block();
@@ -19,11 +18,13 @@ public class Rename {
     private int label;
     public Rename(Function function){
         this.function = function;
-        version = 1;
+        version = 0;
         label = 1;
-        //start = function.getStart();
+        start = function.getBlocklist().get(0);
+        System.out.println("rename start");
         dfs(start);
-        renamePhi(start);
+        //renamePhi(start);
+        deleteInstr();
     }
 
     public void execute(){ //废弃
@@ -55,37 +56,37 @@ public class Rename {
         }
         //processPhi();
         //前导基本块流入数据
+        System.out.println("label:" + block.getLabel());
         if(pre!=null){
+            System.out.println("prelabel:"+pre.getLabel());
             for(Value i:valueList.keySet()){
-                if(valueList.containsKey(i)) {
-                    valueList.get(i).put(block, valueList.get(pre).get(i));
+                if(valueList.get(i).containsKey(pre)) {
+                    valueList.get(i).put(block, valueList.get(i).get(pre));
                 }
             }
         }
         dist.push(block);
         haveworked.add(block);
         for(Phi phi:block.getPhis()){
+            valueList.get(phi.getValue()).put(block,new Value(new Ident("p"+version)));
             phi.setValue(new Value(new Ident("p" + version)));
             version++;
         }
         for(Instr i : block.getInblocklist()){
+            System.out.println("working:" + i.toString() + ",its name:" + i.getInstrname());
             switch(i.getInstrname()) {
                 case "assign":
                     AssignInstr ins2 = (AssignInstr) i;
                     Instr j = ins2.getValueinstr();
+                    //System.out.println("an assign instr:"+j.getInstrname());
                     switch (j.getInstrname()) {
-                        case "add":
-                        case "fadd":
-                        case "sub":
-                        case "fsub":
-                        case "mul":
-                        case "fmul":
-                        case "sdiv":
-                        case "fdiv":
+                        case "binary":
                             BinaryInst ins = (BinaryInst) j;
                             Value v1 = ins.getV1();
                             Value v2 = ins.getV2();
+                            //System.out.println("a binary instr");
                             if (valueList.containsKey(v1)) {
+                                System.out.println("change in binary1:" + valueList.get(v1).get(block).toString());
                                 ins.setV1(valueList.get(v1).get(block));
                             }
                             if (valueList.containsKey(v2)) {
@@ -99,8 +100,10 @@ public class Rename {
                             }
                             break;
                         case "alloca":
+                            i.setCanDelete(true);
                             break;
                         case "load":
+                            i.setCanDelete(true);
                             LoadInst ins3 = (LoadInst) j;
                             if (valueList.containsKey(ins3.getV())) {
                                 Value dest = null;
@@ -109,10 +112,21 @@ public class Rename {
                                 if (dest != null) {
                                     if (!valueList.containsKey(dest)) {
                                         HashMap<Block, Value> hashmap = new HashMap<>();
-                                        hashmap.put(block, ins3.getV());
+                                        if(valueList.containsKey(ins3.getV())){
+                                            System.out.println("yes,it's:"+valueList.get(ins3.getV()).get(block));
+                                            hashmap.put(block,valueList.get(ins3.getV()).get(block));
+                                        }
+                                        else {
+                                            hashmap.put(block, ins3.getV());
+                                        }
                                         valueList.put(dest, hashmap);
                                     } else {
-                                        valueList.get(dest).put(block, ins3.getV());
+                                        if(valueList.containsKey(ins3.getV())){
+                                            valueList.get(dest).put(block,valueList.get(ins3.getV()).get(block));
+                                        }
+                                        else {
+                                            valueList.get(dest).put(block, ins3.getV());
+                                        }
                                     }
                                 }
                             }
@@ -125,25 +139,45 @@ public class Rename {
                                 }
                             }
                             break;
+                        case "icmp":
+                            IcmpInst ins8 = (IcmpInst) j;
+                            Value v3 = ins8.getV1();
+                            Value v4 = ins8.getV2();
+                            if (valueList.containsKey(v3)) {
+                                ins8.setV1(valueList.get(v3).get(block));
+                            }
+                            if (valueList.containsKey(v4)) {
+                                ins8.setV2(valueList.get(v4).get(block));
+                            }
+                            break;
                     }
+                    //System.out.println(ins2.getIdent());
+                    //System.out.println(ins2.getIdent());
                     Value value = new Value(ins2.getIdent());
-                    ins2.getIdent().setId(version);
                     if (!valueList.containsKey(value)) {
+                        System.out.println("assign don't have "+value);
                         HashMap<Block, Value> newHash = new HashMap<>();
-                        newHash.put(block, new Value(new Ident(version)));
+                        newHash.put(block, new Value(new Ident("t"+version)));
                         valueList.put(value, newHash);
-                    } else {
-                        valueList.get(value).put(block, new Value(new Ident(version)));
+                        ins2.getIdent().setName("t"+version);
+                        version++;
+                    } else if(!j.getInstrname().equals("load")){
+                        valueList.get(value).put(block, new Value(new Ident("t"+version)));
+                        ins2.getIdent().setName("t"+version);
+                        version++;
                     }
-                    version++;
+
                     break;
 
                 case "store":
                     StoreInstr ins4 = (StoreInstr) i;
-                    if (valueList.containsKey(ins4.getV1())) {
-                        valueList.get(ins4.getV2()).put(block, valueList.get(ins4.getV1()).get(block));
-                    } else {
-                        valueList.get(ins4.getV2()).put(block, ins4.getV1());
+                    if(valueList.containsKey(ins4.getV2())) {
+                        i.setCanDelete(true);
+                        if (valueList.containsKey(ins4.getV1())) {
+                            valueList.get(ins4.getV2()).put(block, valueList.get(ins4.getV1()).get(block));
+                        } else {
+                            valueList.get(ins4.getV2()).put(block, ins4.getV1());
+                        }
                     }
                     /*
                     HashMap<Block,Value> hash = valueList.get(ins4.getV1());
@@ -172,36 +206,44 @@ public class Rename {
                         ins7.setV(valueList.get(ins7.getV()).get(block));
                     }
                     break;
-                case "icmp":
-                    IcmpInst ins8 = (IcmpInst) i;
-                    Value v3 = ins8.getV1();
-                    Value v4 = ins8.getV2();
-                    if (valueList.containsKey(v3)) {
-                        ins8.setV1(valueList.get(v3).get(block));
-                    }
-                    if (valueList.containsKey(v4)) {
-                        ins8.setV2(valueList.get(v4).get(block));
-                    }
-                    break;
                 case "br":
                     BrTerm ins9 = (BrTerm) i;
-                    renameLabel(ins9.getLabelName(), String.valueOf(version));
-                    ins9.setLi(new Ident(version));
-                    version++;
+                    if(renamedLabel.containsKey(ins9.getLabelName())){
+                        ins9.setLi(new Ident(renamedLabel.get(ins9.getLabelName())));
+                    }
+                    else{
+                        renamedLabel.put(ins9.getLabelName(),String.valueOf(version));
+                        renameLabel(ins9.getLabelName(), String.valueOf(version));
+                        ins9.setLi(new Ident(version));
+                        version++;
+                    }
                     break;
                 case "condbr":
                     CondBrTerm ins10 = (CondBrTerm) i;
-                    renameLabel(ins10.getLabel1Name(), String.valueOf(version));
-                    ins10.setI1(new Ident(version));
-                    version++;
-                    renameLabel(ins10.getLabel1Name(), String.valueOf(version));
-                    ins10.setI2(new Ident(version));
-                    version++;
+                    if(!renamedLabel.containsKey(ins10.getLabel1Name())) {
+                        renamedLabel.put(ins10.getLabel1Name(), String.valueOf(version));
+                        renameLabel(ins10.getLabel1Name(), String.valueOf(version));
+                        ins10.setI1(new Ident(renamedLabel.get(ins10.getLabel1Name())));
+                        version++;
+                    }
+                    else{
+                        ins10.setI1(new Ident(version));
+                    }
+                    if(!renamedLabel.containsKey(ins10.getLabel2Name())) {
+                        renamedLabel.put(ins10.getLabel2Name(), String.valueOf(version));
+                        renameLabel(ins10.getLabel2Name(), String.valueOf(version));
+                        ins10.setI2(new Ident(renamedLabel.get(ins10.getLabel2Name())));
+                        version++;
+                    }
+                    else{
+                        ins10.setI2(new Ident(version));
+                    }
                     if (valueList.containsKey(ins10.getV())) {
                         ins10.setV(valueList.get(ins10.getV()).get(block));
                     }
                     break;
             }
+            System.out.println("worked:" + i.toString());
         }
         for(Block i:block.getSucBlocks()){
             if(!haveworked.contains(i)){
@@ -231,6 +273,7 @@ public class Rename {
         for(Block i:function.getBlocklist()){
             if(i.getLabel().equals(name)){
                 i.setLabel(newname);
+                //System.out.println("succeed in renamelabel");
             }
         }
     }
@@ -239,13 +282,21 @@ public class Rename {
         havePhi.add(block);
         for(Phi i:block.getPhis()){
             for(Block j:i.getParams().keySet()){
-                i.reName(valueList.get(i.getValue()).get(block),j);
+                System.out.println("in renamephi:"+j.getLabel());
+                i.reName(valueList.get(i.getValue()).get(j),j);
             }
         }
         for(Block j:block.getSucBlocks()){
             if(!havePhi.contains(j)){
                 renamePhi(j);
             }
+        }
+    }
+
+    public void deleteInstr(){
+        for(Block i:function.getBlocklist()){
+            ArrayList<Instr> instrlist = i.getInblocklist();
+            instrlist.removeIf(Instr::isCanDelete);
         }
     }
 }

@@ -20,7 +20,7 @@ public class Phi extends Instr{
     public String toString(){
         ArrayList<String> choices = new ArrayList<>();
         for(Block i: params.keySet()){
-            String choice = "[%"+ params.get(i).getIdent().getId() + ",%l" + i.getLabel() +"]";
+            String choice = "["+ params.get(i).toString() + ",%l" + i.getLabel() +"]";
             choices.add(choice);
         }
         StringBuffer ans = new StringBuffer(value.toString() + " = phi i32 ");

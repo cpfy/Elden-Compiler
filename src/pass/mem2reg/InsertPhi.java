@@ -21,6 +21,7 @@ public class InsertPhi {
     private HashMap<Block, HashSet<Value>> def = new HashMap<>();
     public InsertPhi(Function function){
         this.function = function;
+        System.out.println("insertphi start");
         execute();
     }
     public void execute(){
@@ -52,6 +53,7 @@ public class InsertPhi {
             for(Block j:i.getDominatorFrontiers()){
                 if(!hasPhi.get(j)){
                     Phi phi = new Phi("phi",var,j.getPreBlocks());
+                    System.out.println("insert new phi:" + phi.toString());
                     j.addPhi(phi);
                     hasPhi.put(j,true);
                     if(!processed.get(j)){
