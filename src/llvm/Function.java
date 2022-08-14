@@ -17,7 +17,13 @@ public class Function {
         this.blocklist = new ArrayList<>();
     }
 
+    public void setBlocklist(ArrayList<Block> blocklist) {
+        this.blocklist = blocklist;
+    }
+
     /*** add start by sujunzhe ***/
+
+
     private int funcSize = 0;       //函数需要分配的大小
     private HashMap<String, Integer> offsetTable; //记录变量名对应的偏移量
 

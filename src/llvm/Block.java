@@ -18,6 +18,16 @@ public class Block {
 //    private int instrnum;   // b内指令条数
 
     /*** add start by sujunzhe ***/
+    private boolean isDead = true;
+
+    public boolean isDead() {
+        return isDead;
+    }
+
+    public void setDead(boolean dead) {
+        isDead = dead;
+    }
+
     private ArrayList<Block> preBlocks = new ArrayList<>();     //前驱基本块
     private ArrayList<Block> sucBlocks = new ArrayList<>();     //后继基本块
 
@@ -55,7 +65,7 @@ public class Block {
 
     public Block getIDom() {
         if (IDOM == null) {
-            System.err.println("Error! 请先计算支配节点树");
+            System.err.println(this.getLabel());
         }
         return IDOM;
     }

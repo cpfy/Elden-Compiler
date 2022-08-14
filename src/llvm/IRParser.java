@@ -1404,6 +1404,18 @@ public class IRParser {
             }
 
         }
+        //        printStream.println("declare dso_local void @starttime()\n");
+//        printStream.println("declare dso_local void @stoptime()\n");
+        printStream.println("declare dso_local i32 @getint()\n");
+        printStream.println("declare dso_local i32 @getch()\n");
+        printStream.println("declare dso_local float @getfloat()\n");
+        printStream.println("declare dso_local i32 @getarray(i32*)\n");
+        printStream.println("declare dso_local i32 @getfarray(float*)\n");
+        printStream.println("declare dso_local void @putint(i32)\n");
+        printStream.println("declare dso_local void @putch(i32)\n");
+        printStream.println("declare dso_local void @putfloat(float)\n");
+        printStream.println("declare dso_local void @putarray(i32, i32*)\n");
+        printStream.println("declare dso_local void @putfarray(i32, float*)\n");
 //        System.out.println("【LLVM Print End.】");
     }
 

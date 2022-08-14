@@ -18,7 +18,10 @@ public class DataFlowGraph {
 
         for (Block block: blocks) {
             ArrayList<Block> sucs = block.getBrInfo();
+            System.out.println();
+            System.out.println("suncs size = " + sucs.size());
             for (Block suc: sucs) {
+                System.out.println("Block_" + block.getLabel() + " has suc " + suc.getLabel());
                 block.addSucBlock(suc);
                 suc.addPreBlock(block);
             }

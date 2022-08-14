@@ -22,7 +22,8 @@ public class FuncDef extends Def {
         addCode("\n");
         table.addFunc(new FunctionItem(id.getRawWord().getName(), funcType, null));
         table.newFunc();
-        labels = 0;
+//        labels = 0;
+//        tempNum = 0;
         addCode("define dso_local " + funcType + " @" + id.getRawWord().getName() + "(");
         for (int i = 0; i < funcFParams.size(); i++) {
             if (i > 0) {
