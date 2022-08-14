@@ -54,7 +54,7 @@ public class InsertPhi {
             for(Block j:i.getDominatorFrontiers()){
                 if(!hasPhi.get(j)){
                     Phi phi = new Phi("phi",var,j.getPreBlocks());
-                    System.out.println("insert new phi in block " + i.getLabel()+ ":" + phi.toString());
+                    System.out.println("insert new phi in block " + j.getLabel()+ ":" + phi.toString());
                     j.addPhi(phi);
                     hasPhi.put(j,true);
                     if(!processed.get(j)){
