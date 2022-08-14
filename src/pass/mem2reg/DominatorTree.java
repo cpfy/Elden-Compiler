@@ -18,14 +18,6 @@ public class DominatorTree {
     public DominatorTree(Function function) {
         this.function = function;
         execute();
-
-        ArrayList<Block> newBlocks = new ArrayList<>();
-        for (Block block: function.getBlocklist()) {
-            if (!block.isDead()) {
-                newBlocks.add(block);
-            }
-        }
-        function.setBlocklist(newBlocks);
     }
 
     private void execute() {
@@ -83,7 +75,6 @@ public class DominatorTree {
     }
 
     private void postOrderWalk(Block block) {
-        block.setDead(false);
         walked.add(block);
         for (Block suc: block.getSucBlocks()) {
             if (!walked.contains(suc)) {
