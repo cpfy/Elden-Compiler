@@ -23,7 +23,7 @@ public class CondBrTerm extends Instr {
 
     @Override
     public String toString() {
-        return "br " + it.toString() + " " + v.toString() + ", label l" + i1.toString() + ", label l" + i2.toString();
+        return "br " + it.toString() + " " + v.toString() + ", label %l" + i1.toString().replace("%", "") + ", label %l" + i2.toString().replace("%", "");
     }
 
     public IntType getIt() {
