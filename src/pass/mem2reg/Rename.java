@@ -155,6 +155,7 @@ public class Rename {
                     Value oldvalue = new Value(new Ident(name));
                     ins2.getIdent().setName("t"+version);
                     version++;
+                    System.out.println("........................................."+name);
                     if (!valueList.containsKey(oldvalue) && !j.getInstrname().equals("load")) {
                         System.out.println("assign don't have "+oldvalue);
                         HashMap<Block, Value> newHash = new HashMap<>();
@@ -202,6 +203,7 @@ public class Rename {
                     break;
                 case "br":
                     BrTerm ins9 = (BrTerm) i;
+                    /*
                     if(renamedLabel.containsKey(ins9.getLabelName())){
                         ins9.setLi(new Ident(renamedLabel.get(ins9.getLabelName())));
                     }
@@ -211,27 +213,30 @@ public class Rename {
                         ins9.setLi(new Ident(version));
                         version++;
                     }
+                    */
                     break;
                 case "condbr":
                     CondBrTerm ins10 = (CondBrTerm) i;
-                    if(!renamedLabel.containsKey(ins10.getLabel1Name())) {
+                    /*
+                    if(renamedLabel.containsKey(ins10.getLabel1Name())) {
+                        ins10.setI1(new Ident(renamedLabel.get(ins10.getLabel1Name())));
+                    }
+                    else{
                         renamedLabel.put(ins10.getLabel1Name(), String.valueOf(version));
                         renameLabel(ins10.getLabel1Name(), String.valueOf(version));
-                        ins10.setI1(new Ident(renamedLabel.get(ins10.getLabel1Name())));
+                        ins10.setI1(new Ident(version));
                         version++;
                     }
-                    else{
-                        ins10.setI1(new Ident(version));
+                    if(renamedLabel.containsKey(ins10.getLabel2Name())) {
+                        ins10.setI2(new Ident(renamedLabel.get(ins10.getLabel2Name())));
                     }
-                    if(!renamedLabel.containsKey(ins10.getLabel2Name())) {
+                    else{
                         renamedLabel.put(ins10.getLabel2Name(), String.valueOf(version));
                         renameLabel(ins10.getLabel2Name(), String.valueOf(version));
-                        ins10.setI2(new Ident(renamedLabel.get(ins10.getLabel2Name())));
+                        ins10.setI2(new Ident(version));
                         version++;
                     }
-                    else{
-                        ins10.setI2(new Ident(version));
-                    }
+                    */
                     if (valueList.containsKey(ins10.getV())) {
                         ins10.setV(valueList.get(ins10.getV()).get(block));
                     }
