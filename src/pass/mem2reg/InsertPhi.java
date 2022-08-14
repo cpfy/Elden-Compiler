@@ -69,6 +69,7 @@ public class InsertPhi {
 
     public void caldef(){
         for(Block i:function.getBlocklist()){
+            def.put(i,new HashSet<>());
             for(Instr j:i.getInblocklist()){
                 if(j instanceof StoreInstr){
                     StoreInstr store = (StoreInstr) j;
