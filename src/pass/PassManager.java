@@ -21,7 +21,7 @@ public class PassManager {
             new DominatorFrontier(function);
             new InsertPhi(function);
             new Rename(function);
-            //new ConstProp(function);
+//            new ConstProp(function);
         }
     }
 }

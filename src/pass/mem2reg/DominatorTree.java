@@ -18,14 +18,13 @@ public class DominatorTree {
     public DominatorTree(Function function) {
         this.function = function;
         execute();
-
-
     }
 
     private void execute() {
         Block root = function.getBlocklist().get(0);
-
         postOrderWalk(root);
+
+
 
         doms.put(root, root);
 
@@ -65,12 +64,6 @@ public class DominatorTree {
         Block finger1 = b1;
         Block finger2 = b2;
         while (finger1 != finger2) {
-            if (order.get(finger1) == null) {
-                System.out.println("finger1 " + finger1.getLabel());
-            }
-            if (order.get(finger2) == null) {
-                System.out.println("finger2 " + finger2.getLabel());
-            }
             while (order.get(finger1) < order.get(finger2)) {
                 finger1 = doms.get(finger1);
             }
@@ -81,9 +74,7 @@ public class DominatorTree {
         return finger1;
     }
 
-
     private void postOrderWalk(Block block) {
-        block.setDead(false);
         walked.add(block);
         for (Block suc: block.getSucBlocks()) {
             if (!walked.contains(suc)) {
