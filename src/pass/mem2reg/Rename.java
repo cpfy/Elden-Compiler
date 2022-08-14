@@ -65,15 +65,15 @@ public class Rename {
         dist.push(block);
         haveworked.add(block);
         for(Phi phi:block.getPhis()){
-            phi.setValue(new Value(new Ident(version)));
+            phi.setValue(new Value(new Ident("p" + version)));
             version++;
         }
         for(Instr i : block.getInblocklist()){
-            switch(i.getInstrname()){
+            switch(i.getInstrname()) {
                 case "assign":
                     AssignInstr ins2 = (AssignInstr) i;
                     Instr j = ins2.getValueinstr();
-                    switch (j.getInstrname()){
+                    switch (j.getInstrname()) {
                         case "add":
                         case "fadd":
                         case "sub":
@@ -85,16 +85,16 @@ public class Rename {
                             BinaryInst ins = (BinaryInst) j;
                             Value v1 = ins.getV1();
                             Value v2 = ins.getV2();
-                            if(valueList.containsKey(v1)){
+                            if (valueList.containsKey(v1)) {
                                 ins.setV1(valueList.get(v1).get(block));
                             }
-                            if(valueList.containsKey(v2)){
+                            if (valueList.containsKey(v2)) {
                                 ins.setV2(valueList.get(v2).get(block));
                             }
                             break;
                         case "zext":
                             ZExtInst ins1 = (ZExtInst) j;
-                            if(valueList.containsKey(ins1.getV())){
+                            if (valueList.containsKey(ins1.getV())) {
                                 ins1.setV(valueList.get(ins1.getV()).get(block));
                             }
                             break;
@@ -102,17 +102,16 @@ public class Rename {
                             break;
                         case "load":
                             LoadInst ins3 = (LoadInst) j;
-                            if(valueList.containsKey(ins3.getV())){
+                            if (valueList.containsKey(ins3.getV())) {
                                 Value dest = null;
                                 Ident ident = ins2.getIdent();
-                                if(ident!=null) dest = new Value(ident);
-                                if(dest!=null) {
-                                    if(!valueList.containsKey(dest)) {
-                                        HashMap<Block,Value> hashmap = new HashMap<>();
-                                        hashmap.put(block,ins3.getV());
-                                        valueList.put(dest,hashmap);
-                                    }
-                                    else{
+                                if (ident != null) dest = new Value(ident);
+                                if (dest != null) {
+                                    if (!valueList.containsKey(dest)) {
+                                        HashMap<Block, Value> hashmap = new HashMap<>();
+                                        hashmap.put(block, ins3.getV());
+                                        valueList.put(dest, hashmap);
+                                    } else {
                                         valueList.get(dest).put(block, ins3.getV());
                                     }
                                 }
@@ -120,8 +119,8 @@ public class Rename {
                             break;
                         case "call":
                             CallInst ins5 = (CallInst) j;
-                            for(TypeValue typevalue:ins5.getArgs()){
-                                if(valueList.containsKey(typevalue.getValue())){
+                            for (TypeValue typevalue : ins5.getArgs()) {
+                                if (valueList.containsKey(typevalue.getValue())) {
                                     typevalue.setValue(valueList.get(typevalue.getValue()).get(block));
                                 }
                             }
@@ -129,24 +128,22 @@ public class Rename {
                     }
                     Value value = new Value(ins2.getIdent());
                     ins2.getIdent().setId(version);
-                    if(!valueList.containsKey(value)) {
+                    if (!valueList.containsKey(value)) {
                         HashMap<Block, Value> newHash = new HashMap<>();
                         newHash.put(block, new Value(new Ident(version)));
                         valueList.put(value, newHash);
-                    }
-                    else{
-                        valueList.get(value).put(block,new Value(new Ident(version)));
+                    } else {
+                        valueList.get(value).put(block, new Value(new Ident(version)));
                     }
                     version++;
                     break;
 
                 case "store":
                     StoreInstr ins4 = (StoreInstr) i;
-                    if(valueList.containsKey(ins4.getV1())){
-                        valueList.get(ins4.getV2()).put(block,valueList.get(ins4.getV1()).get(block));
-                    }
-                    else{
-                        valueList.get(ins4.getV2()).put(block,ins4.getV1());
+                    if (valueList.containsKey(ins4.getV1())) {
+                        valueList.get(ins4.getV2()).put(block, valueList.get(ins4.getV1()).get(block));
+                    } else {
+                        valueList.get(ins4.getV2()).put(block, ins4.getV1());
                     }
                     /*
                     HashMap<Block,Value> hash = valueList.get(ins4.getV1());
@@ -156,8 +153,8 @@ public class Rename {
                     break;
                 case "call":
                     CallInst ins5 = (CallInst) i;
-                    for(TypeValue typevalue:ins5.getArgs()){
-                        if(valueList.containsKey(typevalue.getValue())){
+                    for (TypeValue typevalue : ins5.getArgs()) {
+                        if (valueList.containsKey(typevalue.getValue())) {
                             typevalue.setValue(valueList.get(typevalue.getValue()).get(block));
                         }
                     }
@@ -165,13 +162,13 @@ public class Rename {
                 //似乎不应当有
                 case "getelementptr":
                     GetElementPtrInst ins6 = (GetElementPtrInst) i;
-                    if(valueList.containsKey(ins6.getV())){
+                    if (valueList.containsKey(ins6.getV())) {
                         ins6.setValue(valueList.get(ins6.getV()).get(block));
                     }
                     break;
                 case "ret":
                     RetTerm ins7 = (RetTerm) i;
-                    if(valueList.containsKey(ins7.getV())){
+                    if (valueList.containsKey(ins7.getV())) {
                         ins7.setV(valueList.get(ins7.getV()).get(block));
                     }
                     break;
@@ -179,28 +176,28 @@ public class Rename {
                     IcmpInst ins8 = (IcmpInst) i;
                     Value v3 = ins8.getV1();
                     Value v4 = ins8.getV2();
-                    if(valueList.containsKey(v3)){
+                    if (valueList.containsKey(v3)) {
                         ins8.setV1(valueList.get(v3).get(block));
                     }
-                    if(valueList.containsKey(v4)){
+                    if (valueList.containsKey(v4)) {
                         ins8.setV2(valueList.get(v4).get(block));
                     }
                     break;
                 case "br":
                     BrTerm ins9 = (BrTerm) i;
-                    renameLabel(ins9.getLabelName(),String.valueOf(version));
+                    renameLabel(ins9.getLabelName(), String.valueOf(version));
                     ins9.setLi(new Ident(version));
                     version++;
                     break;
                 case "condbr":
                     CondBrTerm ins10 = (CondBrTerm) i;
-                    renameLabel(ins10.getLabel1Name(),String.valueOf(version));
+                    renameLabel(ins10.getLabel1Name(), String.valueOf(version));
                     ins10.setI1(new Ident(version));
                     version++;
-                    renameLabel(ins10.getLabel1Name(),String.valueOf(version));
+                    renameLabel(ins10.getLabel1Name(), String.valueOf(version));
                     ins10.setI2(new Ident(version));
                     version++;
-                    if(valueList.containsKey(ins10.getV())){
+                    if (valueList.containsKey(ins10.getV())) {
                         ins10.setV(valueList.get(ins10.getV()).get(block));
                     }
                     break;

@@ -18,16 +18,16 @@ public class Phi extends Instr{
         }
     }
     public String toString(){
-        ArrayList<String> choices = null;
+        ArrayList<String> choices = new ArrayList<>();
         for(Block i: params.keySet()){
             String choice = "[%"+ params.get(i).getIdent().getId() + ",%" + i.getLabel() +"]";
             choices.add(choice);
         }
-        StringBuffer ans = new StringBuffer("%" + value.toString() + " = phi i32 ");
+        StringBuffer ans = new StringBuffer(value.toString() + " = phi i32 ");
         int size = choices.size()-1;
         for(int i = 0;i <= size;i++){
             ans.append(choices.get(i));
-            if(i != size-1) ans.append(",");
+            if(i != size) ans.append(",");
         }
         return ans.toString();
     }
