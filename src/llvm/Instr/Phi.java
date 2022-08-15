@@ -22,6 +22,9 @@ public class Phi extends Instr{
     public String toString(){
         ArrayList<String> choices = new ArrayList<>();
         for(Block i: params.keySet()){
+            if (params.get(i) == null) {
+                continue;
+            }
             String choice = "["+ params.get(i).toString() + ",%l" + i.getLabel() +"]";
             choices.add(choice);
         }

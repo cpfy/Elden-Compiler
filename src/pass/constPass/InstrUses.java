@@ -18,7 +18,7 @@ public class InstrUses {
     }
 
     public void dfs() {
-        if (traversed) {
+        if (traversed || instr == null) {
             return;
         }
         instr.setCanDelete(false);

@@ -65,6 +65,25 @@ public class ConstProp {
     }
 
     private void deadCodeKill() {
+        for (Ident ident: function.getFuncheader().getParas()) {
+            InstrUses instrUses = new InstrUses(null);
+            varName2InstrUses.put(ident.toString(), instrUses);
+        }
+        for (Instr instr: instrs) {
+            if (!(instr instanceof StoreInstr || instr instanceof BrTerm
+                    || instr instanceof CondBrTerm || instr instanceof CallInst
+                    || instr instanceof RetTerm)) {
+                instr.setCanDelete(true);
+            }
+
+            String def = instr.getDef();
+            if (def != null) {
+                InstrUses instrUses = new InstrUses(instr);
+                varName2InstrUses.put(def, instrUses);
+            }
+        }
+
+
         for (Instr instr: instrs) {
             if (!(instr instanceof StoreInstr || instr instanceof BrTerm
                     || instr instanceof CondBrTerm || instr instanceof CallInst
@@ -79,23 +98,24 @@ public class ConstProp {
                 if (s.charAt(0) != '%') {
                     continue;
                 }
+                if (varName2InstrUses.get(s) == null) {
+                    System.err.println("\t" + s);
+                }
                 instrUsesArrayList.add(varName2InstrUses.get(s));
             }
 
             if (def != null) {
-                InstrUses instrUses = new InstrUses(instr);
-                varName2InstrUses.put(def, instrUses);
+                InstrUses instrUses = varName2InstrUses.get(def);
                 instrUses.addUses(instrUsesArrayList);
             }
 
             for (String s: instr.getRoots()) {
-                if (s.charAt(0) == '@') {
+                if (s.charAt(0) != '%') {
                     continue;
                 }
                 roots.put(s, varName2InstrUses.get(s));
             }
         }
-
         for (InstrUses instrUses: roots.values()) {
             instrUses.dfs();
         }
