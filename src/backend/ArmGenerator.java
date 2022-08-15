@@ -621,7 +621,11 @@ public class ArmGenerator {
                 add(gi.getName() + ":");
                 tabcount += 1;
                 int usedSpace = 0;
+
+                System.out.println(t.toString());
+
                 for (TypeValue tv : value.getTclist()) {
+                    System.out.println(tv.toString());
                     Type tvt = tv.getType();
                     // float写法见：https://stackoverflow.com/questions/6970438/arm-assembly-float-variables
                     if (tvt.getTypec() == TypeC.F) {

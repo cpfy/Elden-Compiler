@@ -20,6 +20,7 @@ import java.util.Stack;
 public class InsertPhi {
     private Function function;
     private HashMap<Block, HashSet<Value>> def = new HashMap<>();
+    private HashSet<Block> worked = new HashSet<>();
     public InsertPhi(Function function){
         this.function = function;
         System.out.println("insertphi start");
@@ -55,6 +56,7 @@ public class InsertPhi {
                 if(!hasPhi.get(j)){
                     int source = 0;
                     for(Block block:j.getPreBlocks()){
+                        worked = new HashSet<>();
                         if(hasDefined(var,block)) source++;
                     }
                     if(source>1) {
@@ -105,10 +107,16 @@ public class InsertPhi {
         return ans;
     }
     public Boolean hasDefined(Value value,Block block){
+        worked.add(block);
         if(hasAssigned(block,value)){return true;}
-        for(Block i:block.getPreBlocks()){
-            return hasDefined(value,i);
+        else {
+            Boolean hasDefined = false;
+            for (Block i : block.getPreBlocks()) {
+                if (!worked.contains(i)) {
+                    hasDefined |= hasDefined(value, i);
+                }
+            }
+            return hasDefined;
         }
-        return false;
     }
 }
