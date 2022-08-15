@@ -49,7 +49,11 @@ public class FPToSIInst extends Instr {
 
     @Override
     public ArrayList<String> getUses() {
-        return null;
+        ArrayList<String> ans = new ArrayList<>();
+        if (v.isIdent()) {
+            ans.add(v.getIdent().toString());
+        }
+        return ans;
     }
 
     @Override
@@ -59,6 +63,6 @@ public class FPToSIInst extends Instr {
 
     @Override
     public ArrayList<String> getRoots() {
-        return null;
+        return new ArrayList<>();
     }
 }

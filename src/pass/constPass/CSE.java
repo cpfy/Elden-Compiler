@@ -8,6 +8,7 @@ import llvm.Instr.Instr;
 import llvm.Value;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class CSE {
     private static final int MOD = 1000000007;
@@ -68,16 +69,16 @@ public class CSE {
         switch (op) {
             case "add":
             case "fadd":
-                return (l + r) % MOD;
+                return (l - r + 1) % MOD;
             case "sub":
             case "fsub":
-                return (l - r) % MOD;
+                return (l - r - 1) % MOD;
             case "mul":
             case "fmul":
-                return (int) (((long)l * r) % MOD);
+                return (int) (((long)l * r + 1) % MOD);
             case "sdiv":
             case "fdiv":
-                return (l / r) % MOD;
+                return (l / r - 1) % MOD;
             case "srem":
                 return (l % r) % MOD;
             default:
@@ -85,4 +86,5 @@ public class CSE {
         }
         return 0;
     }
+
 }
