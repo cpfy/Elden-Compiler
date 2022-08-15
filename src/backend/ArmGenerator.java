@@ -250,7 +250,7 @@ public class ArmGenerator {
         } else {
 //            moveImm(reg1, v1.getVal());
 //            add("vm ov " + reg1 + ", #" + v1.hexToFloat());
-            vmoveFloat(reg1, v1.hexToFloat());
+            vmoveFloat(reg1, v1);
         }
 
         String reg2 = reg.applyFTmp();
@@ -260,7 +260,7 @@ public class ArmGenerator {
         } else {
 //            moveImm(reg2, v2.getVal());
 //            add("vm ov " + reg2 + ", #" + v2.hexToFloat());
-            vmoveFloat(reg2, v2.hexToFloat());
+            vmoveFloat(reg2, v2);
 
         }
 
@@ -307,7 +307,7 @@ public class ArmGenerator {
             String regtf = reg.applyFTmp();
             String dreg = reg.applyTmp();     // 整数+目的寄存器
 //            add("vmov " + regtf + ", #" + v.hexToFloat());
-            vmoveFloat(regtf, v.hexToFloat());
+            vmoveFloat(regtf, v);
             add("vcvt.s32.f32 " + regtf + ", " + regtf);     // (target, source)
             add("vmov " + dreg + ", " + regtf);
             reg.freeFTmp(regtf);
@@ -336,7 +336,7 @@ public class ArmGenerator {
 
             String dregf = reg.applyFTmp();     // 浮点+目的寄存器
 //            add("vmov " + dregf + ", #" + v.getVal());
-            vmoveFloat(dregf, v.getVal());
+            vmoveFloat(dregf, v);
 //            add("vcvt.f32.s32 " + dregf + ", " + dregf);
             reg.freeFTmp(dregf);
 
@@ -452,7 +452,7 @@ public class ArmGenerator {
             // 操作浮点时指令变为 vmov
 //            moveImm(reg1, v1.getVal());
 //            add("v  m   ov  " + reg1 + ", #" + v1.hexToFloat());
-            vmoveFloat(reg1, v1.hexToFloat());
+            vmoveFloat(reg1, v1);
 
         }
 
@@ -464,7 +464,7 @@ public class ArmGenerator {
             // 操作浮点时指令变为 vmov
 //            moveImm(reg2, v2.getVal());
 //            add("vm ov " + reg2 + ", #" + v2.hexToFloat());
-            vmoveFloat(reg2, v2.hexToFloat());
+            vmoveFloat(reg2, v2);
         }
 
         String destreg = reg.applyFTmp();
@@ -580,7 +580,7 @@ public class ArmGenerator {
 
         } else {
 //            if (f) add("vm     ov " + regs + ", #" + v1.hexToFloat());
-            if (f) vmoveFloat(regs, v1.hexToFloat());
+            if (f) vmoveFloat(regs, v1);
             else moveImm(regs, v1.getVal());  // 仅支持int
 
         }
@@ -694,7 +694,7 @@ public class ArmGenerator {
 
         } else {
 //            if (f) add("vm  ov " + dreg + ", #" + v.hexToFloat());
-            if (f) vmoveFloat(dreg, v.hexToFloat());
+            if (f) vmoveFloat(dreg, v);
             else moveImm(dreg, v.getVal());
         }
 
@@ -1259,7 +1259,12 @@ public class ArmGenerator {
     }
 
     // 封装如：add("vmov " + reg1 + ", #" + v1.hexToFloat());
-    private void vmoveFloat(String regname, float floatnum) {
+    private void vmoveFloat(String regname, Value vfloat) {
+
+        float floatnum;
+        if (vfloat.isHex()) floatnum = vfloat.hexToFloat();
+        else floatnum = vfloat.getVal();    // sitofp
+
         if (floatnum == 0) {
             // 相当于清零，arm不支持#0
             // 见：https://stackoverflow.com/questions/11205652/why-does-vmov-f64-not-allow-me-to-load-zero
@@ -1272,16 +1277,20 @@ public class ArmGenerator {
             reg.freeTmp(regt);
 
         } else {
-            add("vmov " + regname + ", #" + floatnum);
+//            add("vmov " + regname + ", #" + floatnum);
+            add("vmovw " + regname + ", #" + vfloat.hexToIntLow());
+            add("vmovt " + regname + ", #" + vfloat.hexToIntHigh());
         }
     }
 
+    // push浮点寄存器
     private void pushRegs() {
         add("push " + allRegs);
 //        add("vpush " + allFloatRegs1);
 //        add("vpush " + allFloatRegs2);
     }
 
+    // pop浮点寄存器
     private void popRegs() {
 //        add("vpop " + allFloatRegs2);
 //        add("vpop " + allFloatRegs1);

@@ -134,6 +134,20 @@ public class Value {
         return f;
     }
 
+    public int hexToIntLow() {
+        String hex = this.hexVal.substring(2, this.hexVal.length());   // 0x...去除首两字符
+        int i = Integer.parseInt(hex, 16);
+        i = i & 0xffff;
+        return i;
+    }
+
+    public int hexToIntHigh() {
+        String hex = this.hexVal.substring(2, this.hexVal.length());   // 0x...去除首两字符
+        int i = Integer.parseInt(hex, 16);
+        i = (i >> 16) & 0xffff;
+        return i;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Value)) {
