@@ -20,6 +20,7 @@ import llvm.Instr.RetTerm;
 import llvm.Instr.SIToFPInst;
 import llvm.Instr.StoreInstr;
 import llvm.Instr.ZExtInst;
+import llvm.Type.ArrayType;
 import llvm.Type.IntType;
 import llvm.Type.Type;
 import llvm.Type.TypeC;
@@ -622,19 +623,22 @@ public class ArmGenerator {
                 tabcount += 1;
                 int usedSpace = 0;
 
-                System.out.println(t.toString());
+//                System.out.println(t.toString());
 
-                for (TypeValue tv : value.getTclist()) {
-                    System.out.println(tv.toString());
-                    Type tvt = tv.getType();
+                for (Value v : value.getTCValuePackage()) {
+
                     // float写法见：https://stackoverflow.com/questions/6970438/arm-assembly-float-variables
-                    if (tvt.getTypec() == TypeC.F) {
-                        add(".single 0e" + tv.getValue().getF());
+
+                    if (((ArrayType) t).getCoreType().getTypec() == TypeC.F) {
+                        add(".single 0e" + v.toString());
 
                     } else {
-                        add(".word " + tv.getValue().toString());
+                        add(".word " + v.toString());
                     }
                     usedSpace += 4;
+
+//                    todo 目前写法float数组还不行（已完成）
+
                 }
                 // 不会出现，llvm ir时已经所有0显式写了
                 if (t.getSpace() - usedSpace > 0) add(".space " + (t.getSpace() - usedSpace));

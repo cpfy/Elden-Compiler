@@ -6,6 +6,17 @@ import java.util.Objects;
 
 public class Value {
 
+    private String type;    // 废弃，先堆屎山
+
+    /* type所有种类如下（仅目前，可能还会增加）：
+
+    [变量]: ident
+    [整数]: int
+    [float浮点]: float
+    [16进制浮点]: hex
+
+    */
+
     private boolean hex;    // 10 or 16进制
     private int val;
     private String hexVal;
@@ -67,9 +78,20 @@ public class Value {
     public String toString() {
         if (isIdent) {
             return ident.toString();
+
         } else if (isHex()) {
             return hexVal;
+
+        } else if (isTClist) {
+            // 好神奇，ArrayList自己能处理成带括号的
+            return tclist.toString();
+
+        } else if (isfloat) {
+            return String.valueOf(this.f);
         }
+
+
+        //todo 一些种类如zeroinitializer有隐患
         return String.valueOf(val);
     }
 
@@ -160,5 +182,23 @@ public class Value {
     @Override
     public int hashCode() {
         return Objects.hash(this.toString());
+    }
+
+    // 当tclist为多维数组array时，返回拆解
+    public ArrayList<Value> getTCValuePackage() {
+//        assert isTClist;
+        ArrayList<Value> pkg = new ArrayList<>();
+
+        if (isTClist) {
+            for (TypeValue tv : tclist) {
+                ArrayList<Value> vpkg = tv.getValue().getTCValuePackage();
+                pkg.addAll(vpkg);
+            }
+
+        } else {
+            pkg.add(this);
+        }
+
+        return pkg;
     }
 }

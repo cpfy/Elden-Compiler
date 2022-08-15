@@ -3,7 +3,7 @@ package llvm.Type;
 import java.util.ArrayList;
 
 public class ArrayType extends Type {
-    private int dimen;
+    //    private int dimen;
     private ArrayList<Integer> dimenlist;
 
     // ArrayType : "[" int_lit "x" Type "]"
@@ -38,5 +38,13 @@ public class ArrayType extends Type {
             return t.getOffset();
         }
         return int_lit * t.getOffset();
+    }
+
+    // 获取核心（数组元素）的Type，仅可能为i32或float
+    public Type getCoreType() {
+        if (t instanceof ArrayType) {
+            return ((ArrayType) t).getCoreType();
+        }
+        return t;
     }
 }
