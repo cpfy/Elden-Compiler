@@ -1284,7 +1284,7 @@ public class ArmGenerator {
             String regt = reg.applyTmp();
             moveImm(regt, num);
 //            add("add " + regt + ", " + sp + ", " + regt);
-            add(new ThreeArm("add", regt, "sp", regt));
+            add(new ThreeArm("add", regt, sp, regt));
             add(new TmpArm(instrname + " " + regname + ", [" + regt + ", #0]"));
             reg.freeTmp(regt);
         }
