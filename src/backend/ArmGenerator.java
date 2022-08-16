@@ -1267,16 +1267,31 @@ public class ArmGenerator {
     // 封装形如 add("str " + regt + ", [sp, #" + off + "]");
     // 要求 off < 4096；目前来看并未出现 <0 的报错
     private void addInstrRegSpOffset(String instrname, String regname, String sp, int num) {
-        if (num < 4096) {
-            add(new TmpArm(instrname + " " + regname + ", [" + sp + ", #" + num + "]"));
+        if (instrname.charAt(0) == 'v') {       //浮点数寄存器offset范围更小
+            if (num < 1024) {
+                add(new TmpArm(instrname + " " + regname + ", [" + sp + ", #" + num + "]"));
 
-        } else {
-            String regt = reg.applyTmp();
-            moveImm(regt, num);
+            } else {
+                String regt = reg.applyTmp();
+                moveImm(regt, num);
 //            add("add " + regt + ", " + sp + ", " + regt);
-            add(new ThreeArm("add", regt, sp, regt));
-            add(new TmpArm(instrname + " " + regname + ", [" + regt + ", #0]"));
-            reg.freeTmp(regt);
+                add(new ThreeArm("add", regt, sp, regt));
+                add(new TmpArm(instrname + " " + regname + ", [" + regt + ", #0]"));
+                reg.freeTmp(regt);
+            }
+        }
+        else {
+            if (num < 4096) {
+                add(new TmpArm(instrname + " " + regname + ", [" + sp + ", #" + num + "]"));
+
+            } else {
+                String regt = reg.applyTmp();
+                moveImm(regt, num);
+//            add("add " + regt + ", " + sp + ", " + regt);
+                add(new ThreeArm("add", regt, sp, regt));
+                add(new TmpArm(instrname + " " + regname + ", [" + regt + ", #0]"));
+                reg.freeTmp(regt);
+            }
         }
     }
 
