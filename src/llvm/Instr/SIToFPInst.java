@@ -35,6 +35,7 @@ public class SIToFPInst extends Instr {
         return v;
     }
 
+    public void setV(Value v) {this.v = v;}
     //todo 补充
 
     @Override

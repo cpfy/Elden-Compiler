@@ -2,6 +2,8 @@ package llvm;
 
 import llvm.Type.Type;
 
+import java.util.Objects;
+
 public class Ident {
 
     private boolean isIdent;
@@ -10,7 +12,7 @@ public class Ident {
     private Type type;
     private String name;
     private int id;
-
+    private boolean isPointer = false; //是否为指针；
     // 初始化为0
     private boolean zeroinit = false;
 
@@ -41,6 +43,10 @@ public class Ident {
         }
         return "%" + String.valueOf(id);
     }
+
+    public void setPointer(Boolean isPointer){this.isPointer = isPointer;}
+
+    public Boolean getIsPointer(){return isPointer;}
 
     public String getName() {
         return name;
@@ -88,6 +94,10 @@ public class Ident {
         return this.toString().equals(obj.toString());
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.toString());
+    }
     // Reg分配时的key
     public String getMapname() {
         if (this.global) {
@@ -95,4 +105,5 @@ public class Ident {
         }
         return String.valueOf(this.id);
     }
+
 }

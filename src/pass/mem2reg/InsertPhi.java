@@ -9,6 +9,7 @@ import llvm.Instr.AllocaInst;
 import llvm.Instr.AssignInstr;
 import llvm.Instr.Instr;
 import llvm.Instr.StoreInstr;
+import llvm.Type.FloatType;
 import llvm.Type.IntType;
 import llvm.Value;
 
@@ -97,7 +98,7 @@ public class InsertPhi {
                     AssignInstr assign = (AssignInstr) j;
                     if(assign.getValueinstr() instanceof AllocaInst){
                         AllocaInst alloca = (AllocaInst) assign.getValueinstr();
-                        if(alloca.getType() instanceof IntType){
+                        if(alloca.getType() instanceof IntType || alloca.getType() instanceof FloatType){
                             ans.add(new Value(new Ident(assign.getIdent().getName())));
                         }
                     }

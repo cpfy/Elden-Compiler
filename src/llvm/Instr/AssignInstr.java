@@ -8,7 +8,7 @@ import java.util.ArrayList;
 public class AssignInstr extends Instr {
     private Ident localident;
     private Instr valueinstr;
-    private boolean deleted = false;
+    private boolean isPointer = false;
     // LocalIdent "=" ValueInstruction
     public AssignInstr(String instrname, Ident localident, Instr valueinstr) {
         super(instrname);
@@ -18,7 +18,6 @@ public class AssignInstr extends Instr {
 
     @Override
     public String toString() {
-        if(deleted) return "";
         return localident.toString() + " = " + valueinstr.toString();
     }
 
@@ -26,7 +25,7 @@ public class AssignInstr extends Instr {
         return localident;
     }
 
-    public void setDeleted(boolean deleted){this.deleted = deleted;}
+    //public void setDeleted(boolean deleted){this.deleted = deleted;}
     public void setIdent(Ident localident) {
         this.localident = localident;
     }
