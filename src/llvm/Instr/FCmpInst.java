@@ -53,7 +53,7 @@ public class FCmpInst extends Instr {
         switch (fpred) {
             case "oeq":
                 return "eq";
-            case "one":
+            case "une":
                 return "ne";
             case "oge":
                 return "ge";
@@ -68,6 +68,7 @@ public class FCmpInst extends Instr {
             case "ule":
             case "ult":
             default:
+                System.err.println(fpred);
                 return "qqqq";
             //todo
         }
@@ -78,7 +79,7 @@ public class FCmpInst extends Instr {
         switch (fpred) {
             case "oeq":
                 return "ne";
-            case "one":
+            case "une":
                 return "eq";
             case "oge":
                 return "lt";
@@ -93,6 +94,7 @@ public class FCmpInst extends Instr {
             case "ule":
             case "ult":
             default:
+                System.err.println(fpred);
                 return "qqqq";
             //todo
         }
