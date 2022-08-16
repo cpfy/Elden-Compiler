@@ -8,6 +8,8 @@ public class PointerType extends Type {
         this.t = t;
     }
 
+    public Type getT() { return t; }
+
     @Override
     public String toString() {
         return t.toString() + "*";

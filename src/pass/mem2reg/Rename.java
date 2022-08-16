@@ -3,7 +3,9 @@ package pass.mem2reg;
 import llvm.Instr.Phi;
 import llvm.*;
 import llvm.Instr.*;
+import llvm.Type.*;
 
+import java.io.PipedOutputStream;
 import java.util.*;
 
 public class Rename {
@@ -11,6 +13,7 @@ public class Rename {
     private HashMap<Value,HashMap<Block,Value>> valueList = new HashMap();
     private Stack<Block> dist = new Stack<>();
     private HashMap<String,String> renamedLabel = new HashMap<>();
+    private HashSet<Ident> isPointer = new HashSet<>();
     HashSet<Block> haveworked = new HashSet();
     HashSet<Block> havePhi = new HashSet<>();
     Block start = new Block();
@@ -88,6 +91,7 @@ public class Rename {
                 case "assign":
                     AssignInstr ins2 = (AssignInstr) i;
                     Instr j = ins2.getValueinstr();
+                    Boolean renameNewIdent = true;
                     //System.out.println("an assign instr:"+j.getInstrname());
                     switch (j.getInstrname()) {
                         case "binary":
@@ -109,26 +113,50 @@ public class Rename {
                                 ins1.setV(valueList.get(ins1.getV()).get(block));
                             }
                             break;
+                        case "sitofp":
+                            SIToFPInst si_ins = (SIToFPInst) j;
+                            if(valueList.containsKey(si_ins.getV())){
+                                si_ins.setV(valueList.get(si_ins.getV()).get(block));
+                            }
+                            break;
+                        case "fptosi":
+                            FPToSIInst fp_ins = (FPToSIInst) j;
+                            if(valueList.containsKey(fp_ins.getV())){
+                                fp_ins.setV(valueList.get(fp_ins.getV()).get(block));
+                            }
+                            break;
                         case "alloca":
-                            i.setCanDelete(true);
+                            AllocaInst alloc_ins = (AllocaInst) j;
+                            if(alloc_ins.getType() instanceof FloatType || alloc_ins.getT() instanceof IntType) {
+                                if(!ins2.getIdent().isGlobal()) i.setCanDelete(true);
+                            }
                             break;
                         case "load":
-                            i.setCanDelete(true);
                             LoadInst ins3 = (LoadInst) j;
+                            if(ins3.getT1() instanceof FloatType || ins3.getT1() instanceof IntType) {
+                                if(!ins3.getV().getIdent().isGlobal() && !isPointer.contains(ins3.getV().getIdent())) i.setCanDelete(true);
+                            }
                             if (valueList.containsKey(ins3.getV())) {
                                 Value dest = new Value(new Ident(ins2.getIdent().getName()));
                                 if (dest != null) {
                                     if (!valueList.containsKey(dest)) {
                                         HashMap<Block, Value> hashmap = new HashMap<>();
-                                        if(valueList.containsKey(ins3.getV())){
-                                            System.out.println("yes,it's:"+valueList.get(ins3.getV()).get(block));
-                                            hashmap.put(block,valueList.get(ins3.getV()).get(block));
+                                        //判断value是否为pointer，如果是则不作操作。
+                                        if(!isPointer.contains(ins3.getV().getIdent())) {
+                                            if (valueList.containsKey(ins3.getV())) {
+                                                //System.out.println("yes,it's:"+valueList.get(ins3.getV()).get(block));
+                                                hashmap.put(block, valueList.get(ins3.getV()).get(block));
+                                            } else {
+                                                hashmap.put(block, ins3.getV());
+                                            }
                                         }
-                                        else {
-                                            hashmap.put(block, ins3.getV());
+                                        else{
+                                            hashmap.put(block,dest);
                                         }
                                         valueList.put(dest, hashmap);
-                                    } else {
+                                    }
+                                    //实际上按照程序逻辑不可能出现else的情况
+                                    else {
                                         if(valueList.containsKey(ins3.getV())){
                                             valueList.get(dest).put(block,valueList.get(ins3.getV()).get(block));
                                         }
@@ -158,6 +186,24 @@ public class Rename {
                                 ins8.setV2(valueList.get(v4).get(block));
                             }
                             break;
+                        case "fcmp":
+                            FCmpInst ins9 = (FCmpInst) j;
+                            Value v5 = ins9.getV1();
+                            Value v6 = ins9.getV2();
+                            if (valueList.containsKey(v5)) {
+                                ins9.setV1(valueList.get(v5).get(block));
+                            }
+                            if (valueList.containsKey(v6)) {
+                                ins9.setV2(valueList.get(v6).get(block));
+                            }
+                            break;
+                        case "getelementptr":
+                            GetElementPtrInst ins6 = (GetElementPtrInst) j;
+                            isPointer.add(ins2.getIdent());
+                            if (valueList.containsKey(ins6.getV())) {
+                                ins6.setValue(valueList.get(ins6.getV()).get(block));
+                            }
+                            break;
                     }
                     //System.out.println(ins2.getIdent());
                     //System.out.println(ins2.getIdent());
@@ -176,12 +222,18 @@ public class Rename {
 
                 case "store":
                     StoreInstr ins4 = (StoreInstr) i;
-                    if(valueList.containsKey(ins4.getV2())) {
-                        i.setCanDelete(true);
-                        if (valueList.containsKey(ins4.getV1())) {
-                            valueList.get(ins4.getV2()).put(block, valueList.get(ins4.getV1()).get(block));
-                        } else {
-                            valueList.get(ins4.getV2()).put(block, ins4.getV1());
+                    PointerType pointer = (PointerType) ins4.getT2();
+                    if(pointer.getT() instanceof IntType
+                            || pointer.getT() instanceof FloatType) {
+                        if(!ins4.getV2().getIdent().isGlobal() && !isPointer.contains(ins4.getV2().getIdent())) {
+                            i.setCanDelete(true);
+                            if (valueList.containsKey(ins4.getV2())) {
+                                if (valueList.containsKey(ins4.getV1())) {
+                                    valueList.get(ins4.getV2()).put(block, valueList.get(ins4.getV1()).get(block));
+                                } else {
+                                    valueList.get(ins4.getV2()).put(block, ins4.getV1());
+                                }
+                            }
                         }
                     }
                     /*
@@ -199,12 +251,6 @@ public class Rename {
                     }
                     break;
                 //似乎不应当有
-                case "getelementptr":
-                    GetElementPtrInst ins6 = (GetElementPtrInst) i;
-                    if (valueList.containsKey(ins6.getV())) {
-                        ins6.setValue(valueList.get(ins6.getV()).get(block));
-                    }
-                    break;
                 case "ret":
                     RetTerm ins7 = (RetTerm) i;
                     if (valueList.containsKey(ins7.getV())) {
@@ -291,7 +337,7 @@ public class Rename {
         havePhi.add(block);
         for(Phi i:block.getPhis()){
             HashSet<Block> needDeleted = new HashSet<>();
-            System.out.println("in renamephi:" + block.getLabel()+":"+i.toString());
+            System.out.println("in renamePhi:" + block.getLabel()+":"+i.toString());
             for(Block j:i.getParams().keySet()){
                 if(valueList.get(i.getOriginValue()).containsKey(j)) {
                     i.reName(valueList.get(i.getOriginValue()).get(j), j);

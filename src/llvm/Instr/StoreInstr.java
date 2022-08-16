@@ -21,7 +21,7 @@ public class StoreInstr extends Instr {
 
     @Override
     public String toString() {
-        if(hidden) return "";
+        if(hidden) return "F";
         return "store " + t1.toString() + " " + v1.toString() + ", " + t2.toString() + " " + v2.toString();
     }
 
