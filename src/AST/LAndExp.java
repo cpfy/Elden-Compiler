@@ -63,7 +63,7 @@ public class LAndExp extends Node {
             String tt = exp.getTemp();
             if (exp.getType().equals("float")) {
                 tt = newTemp();
-                exp.getCodes().add(tt + " = fptosi float " + exp.getTemp() + " to i32\n");
+                exp.getCodes().add(tt + " = fcmp une float " + exp.getTemp() + ", 0x00000000\n");
             }
             String t = newTemp();
             temps.add(t);
