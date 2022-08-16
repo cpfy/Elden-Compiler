@@ -867,8 +867,17 @@ public class ArmGenerator {
                 reg.freeTmp(regt);
             } else {
                 String regt = reg.applyTmp();
-                moveImm(regt, v.getVal());
-                add(new TmpArm("str " + regt + ", [sp, #" + i * 4 + "]"));
+                if (v.isHex()) {//todo 可能会出问题！！！！！ by sjz
+                    int low = v.hexToIntLow();
+                    int high = v.hexToIntHigh();
+                    add(new TwoArm("movw", regt, "#" + low));
+                    add(new TwoArm("movt", regt, "#" + high));
+                    add(new TmpArm("str " + regt + ", [sp, #" + i * 4 + "]"));
+                }
+                else {
+                    moveImm(regt, v.getVal());
+                    add(new TmpArm("str " + regt + ", [sp, #" + i * 4 + "]"));
+                }
                 reg.freeTmp(regt);
             }
 
