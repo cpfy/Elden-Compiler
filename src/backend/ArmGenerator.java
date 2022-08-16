@@ -75,9 +75,6 @@ public class ArmGenerator {
     private boolean interpolating = false;  // 是否正在插入，不触发500
 
     public ArmGenerator(ArrayList<Function> allfunclist, String outputfile) {
-//        Function mainFunc = allfunclist.get(allfunclist.size() - 1);
-//        allfunclist.remove(allfunclist.size() - 1);
-//        allfunclist.add(0, mainFunc);
         for (Function function : allfunclist) {
             function.initOffsetTable();
         }
@@ -112,6 +109,8 @@ public class ArmGenerator {
             if (f.getFuncheader().getFname().equals("GlobalContainer")) {
                 addinterpoL();  // addInterpol收尾
 
+                interpolating = true;   // 保证.data中必不会出现中转块
+
                 add(new HeadArm(""));
                 add(new HeadArm(".section .data"));
                 add(new HeadArm(".align 2"));
@@ -137,7 +136,7 @@ public class ArmGenerator {
             tabcount -= 1;
         }
 
-//        addProgramEnd();
+        addProgramEnd();
 
         printout(1);
     }
@@ -953,20 +952,14 @@ public class ArmGenerator {
                     moveImm("r" + i, v.getVal());
                 }
             }
-
-
         }
-//        }
         //暂时全用内存传参
 
         //todo
-//        add("bl " + callfuncname);
         add(new OneArm("bl", callfuncname));
+        add(new OneArm("pop", "{r7}"));
 
 //        add("add sp, sp,  #" + (pushregs + pushargsnum));
-
-//        add("pop {r7}");
-        add(new OneArm("pop", "{r7}"));
 
         // 若有dest，保存返回结果
         if (dest.length > 0) {
