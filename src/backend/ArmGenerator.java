@@ -347,8 +347,16 @@ public class ArmGenerator {
         } else {
 
             String dregf = reg.applyFTmp();     // 浮点+目的寄存器
+
 //            add("vmov " + dregf + ", #" + v.getVal());
-            vmoveFloat(dregf, v);
+//            vmoveFloat(dregf, v);   // 不再使用vmovefloat，需要加额外判断
+
+            String regt = reg.applyTmp();
+            moveImm(regt, v.getVal());
+            add(new TwoArm("vmov", dregf, regt));
+            add(new TwoArm("vcvt.f32.s32", dregf, dregf));
+
+            reg.freeTmp(regt);
             reg.freeFTmp(dregf);
 
         }
@@ -1309,9 +1317,13 @@ public class ArmGenerator {
     // 封装如：add("vmov " + reg1 + ", #" + v1.hexToFloat());
     private void vmoveFloat(String regname, Value vfloat) {
 
-        float floatnum;
-        if (vfloat.isHex()) floatnum = vfloat.hexToFloat();
-        else floatnum = vfloat.getVal();    // sitofp
+        // 修改，sitofp不使用这个函数了
+
+//        float floatnum;
+//        if (vfloat.isHex()) floatnum = vfloat.hexToFloat();
+//        else floatnum = vfloat.getVal();    // sitofp
+
+        float floatnum = vfloat.hexToFloat();
 
         if (floatnum == 0) {
             // 相当于清零，arm不支持#0

@@ -186,7 +186,7 @@ public class Value {
 
     // 当tclist为多维数组array时，返回拆解
     public ArrayList<Value> getTCValuePackage() {
-//        assert isTClist;
+
         ArrayList<Value> pkg = new ArrayList<>();
 
         if (isTClist) {
