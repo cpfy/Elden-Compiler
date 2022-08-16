@@ -3,20 +3,23 @@ package backend.Arm;
 public abstract class Arm {
 
     private String instrname;
+    private boolean withtab = false;    // 是否有tab前缀，默认false
 
     // 与Instr类似
 
-    /* instr所有种类如下（仅目前，可能还会增加）：
+    /* Arm所有种类如下（仅目前，可能还会增加）：
 
-    [基本运算]: add fadd sub fsub mul fmul sdiv fdiv（均归属于BinaryInst类）
-    [运算扩展]: zext
-    [空间分配]: alloca
-    [元素赋值]: assign  (左为元素对象，右为另一个独立Instr，例如：%123 = load i32, i32* %3)
-    [存储加载]: load store
-    [函数调用]: call
-    [数组指针]: getelementptr
-    [比较跳转]: icmp
-    [跳转相关]: br condbr ret
+    [.extern等头]: head
+    [位移]：mov，mov+后缀(如moveq),vmov,vmovw,vmovt
+    [比较]: vcmp.f32,cmp
+    [状态]: vmrs
+    [类型转换]： vcvt.s32.f32
+    [运算]：mul,add,sub,sdiv
+    [浮点运算]：vadd.f32,vsub.f32,vmul.f32,v?
+    [跳转]：bne，beq等
+    [标签]：label
+
+    [临时]:tmp。暂时给ldr，str过渡
 
     */
 
@@ -26,5 +29,9 @@ public abstract class Arm {
 
     public String getInstrname() {
         return instrname;
+    }
+
+    public void setWithtab(boolean withtab) {
+        this.withtab = withtab;
     }
 }
