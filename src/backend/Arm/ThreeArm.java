@@ -15,7 +15,11 @@ public class ThreeArm extends Arm {
 
     @Override
     public String toString() {
-        return super.getInstrname() + " " + op1 + ", " + op2 + ", " + op3;
+        String str = super.getInstrname() + " " + op1 + ", " + op2 + ", " + op3;
+        if (super.isWithtab()) {
+            return "\t" + str;
+        }
+        return str;
     }
 
     public String getOp1() {

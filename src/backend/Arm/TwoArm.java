@@ -13,7 +13,11 @@ public class TwoArm extends Arm {
 
     @Override
     public String toString() {
-        return super.getInstrname() + " " + op1 + ", " + op2;
+        String str = super.getInstrname() + " " + op1 + ", " + op2;
+        if (super.isWithtab()) {
+            return "\t" + str;
+        }
+        return str;
     }
 
     public String getOp1() {

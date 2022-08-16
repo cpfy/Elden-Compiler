@@ -12,6 +12,7 @@ public class LabelArm extends Arm {
 
     @Override
     public String toString() {
+        // 必无缩进
         return label + ":";
     }
 

@@ -31,6 +31,10 @@ public abstract class Arm {
         return instrname;
     }
 
+    public boolean isWithtab() {
+        return withtab;
+    }
+
     public void setWithtab(boolean withtab) {
         this.withtab = withtab;
     }

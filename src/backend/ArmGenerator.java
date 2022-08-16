@@ -1073,7 +1073,7 @@ public class ArmGenerator {
         lpicusecount = 0;
         lpicUseList.clear();
 
-        add(new LabelArm(".L_auto_Generate_No_" + lcount + ":"));
+        add(new LabelArm(".L_auto_Generate_No_" + lcount));
         lcount += 1;    // important!
         tabcount += 1;
         interpolating = false;
@@ -1220,7 +1220,7 @@ public class ArmGenerator {
     private void addLpic(String reg, String name) {
         tabcount -= 1;
 //        add(".LPIC" + lpiccount + ":");
-        add(new LabelArm(".LPIC" + lpiccount + ":"));
+        add(new LabelArm(".LPIC" + lpiccount));
         tabcount += 1;
 
 //        add("add " + reg + ", " + reg + ", pc");

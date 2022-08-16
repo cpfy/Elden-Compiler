@@ -11,6 +11,9 @@ public class TmpArm extends Arm {
 
     @Override
     public String toString() {
+        if (super.isWithtab()) {
+            return "\t" + str;
+        }
         return str;
     }
 

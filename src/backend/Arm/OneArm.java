@@ -12,7 +12,11 @@ public class OneArm extends Arm {
 
     @Override
     public String toString() {
-        return super.getInstrname() + " " + onestr;
+        String str = super.getInstrname() + " " + onestr;
+        if (super.isWithtab()) {
+            return "\t" + str;
+        }
+        return str;
     }
 
     public String getOnestr() {
