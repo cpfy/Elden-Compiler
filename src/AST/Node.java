@@ -86,8 +86,8 @@ public abstract class Node {
     public ArrayList<String> getLLVMIR() {
 
         
-//        LLVMIR.add("declare dso_local void @starttime()\n");
-//        LLVMIR.add("declare dso_local void @stoptime()\n");
+        LLVMIR.add("declare dso_local void @_sysy_starttime(i32)\n");
+        LLVMIR.add("declare dso_local void @_sysy_stoptime(i32)\n");
         LLVMIR.add("declare dso_local i32 @getint()\n");
         LLVMIR.add("declare dso_local i32 @getch()\n");
         LLVMIR.add("declare dso_local float @getfloat()\n");

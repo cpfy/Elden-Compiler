@@ -21,6 +21,10 @@ public class FuncCall extends ExpUnary {
 
     @Override
     public ArrayList<String> addCodePre() {
+        if (id.getRawWord().getName().equals("starttime") || id.getRawWord().getName().equals("stoptime")) {
+            addCode("call void @_sysy_" + id.getRawWord().getName() + "(i32 0)\n");
+            return getCodes();
+        }
         setType(table.getFunction(id.getRawWord().getName()).getRetType());
         String retType = table.getFuncType(id.getRawWord().getName());
         ArrayList<TableItem> funcFParams = table.getFunction(id.getRawWord().getName()).getParamItems();

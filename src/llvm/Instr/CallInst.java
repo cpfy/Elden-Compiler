@@ -66,7 +66,7 @@ public class CallInst extends Instr {
                 name.equals("putint") || name.equals("putch") ||
                 name.equals("putfloat") || name.equals("putarray") ||
                 name.equals("putfarray") ||
-                name.equals("starttime") || name.equals("stoptime");
+                name.equals("_sysy_starttime") || name.equals("_sysy_stoptime");
     }
 
 
