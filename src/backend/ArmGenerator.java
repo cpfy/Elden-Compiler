@@ -912,23 +912,23 @@ public class ArmGenerator {
             Value v = tv.getValue();
 
             if (t.getTypec() == TypeC.F) {
+                if (v.isIdent()) {
+                    loadValue("s" + i, v.getIdent());
 
+                } else {
+                    moveImm("r" + i, v.getVal());
+                }
             }
             // todo 数组等情况
             else {
                 if (v.isIdent()) {
-                    String regt = reg.applyTmp();
-                    loadValue(regt, v.getIdent());
-//                    add("mov r" + i + ", " + regt);
-                    add(new TwoArm("mov", "r" + i, regt));
-                    reg.freeTmp(regt);
+                    loadValue("r" + i, v.getIdent());
 
                 } else {
                     moveImm("r" + i, v.getVal());
                 }
             }
         }
-        //暂时全用内存传参
 
         //todo
         add(new OneArm("bl", callfuncname));
@@ -938,7 +938,12 @@ public class ArmGenerator {
 
         // 若有dest，保存返回结果
         if (dest.length > 0) {
-            storeValue("r0", dest[0]);
+            if (callfuncname.equals("getfloat")) {
+                storeValue("s0", dest[0]);
+            }
+            else {
+                storeValue("r0", dest[0]);
+            }
         }
         popRegs();
     }
