@@ -1316,8 +1316,11 @@ public class ArmGenerator {
         } else {
 //            add("vmovw " + regname + ", #" + vfloat.hexToIntLow());
 //            add("vmovt " + regname + ", #" + vfloat.hexToIntHigh());
-            add(new TwoArm("vmovw.f32", regname, "#" + vfloat.hexToIntLow()));
-            add(new TwoArm("vmovt.f32", regname, "#" + vfloat.hexToIntHigh()));
+            String regt = reg.applyTmp();
+            add(new TwoArm("movw", regt, "#" + vfloat.hexToIntLow()));
+            add(new TwoArm("movt", regt, "#" + vfloat.hexToIntHigh()));
+            add(new TwoArm("vmov.f32", regname, regt));
+            reg.freeTmp(regt);
         }
     }
 
