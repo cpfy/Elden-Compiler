@@ -92,6 +92,7 @@ public class ArmGenerator {
         add(new HeadArm("/* -- testcase.s */"));
         add(new HeadArm(".arch armv7ve"));
         add(new HeadArm(".arm"));
+        add(new HeadArm(".fpu vfpv3-d16"));
         add(new HeadArm(".section .text"));
 
 //        add(".cpu cortex-a15");
@@ -308,7 +309,7 @@ public class ArmGenerator {
         add(new TwoArm("vcvt.s32.f32", regtf, regtf));  // 注意：vcvt的两个参数都必须是float reg
 
         // add("vmov " + dreg + ", " + regtf);
-        add(new TwoArm("vmov", reg_d, regtf));
+        add(new TwoArm("vmov.f32", reg_d, regtf));
 
         reg.freeFTmp(regtf);
 
@@ -333,7 +334,7 @@ public class ArmGenerator {
         }
 
         //add("vmov " + dregf + ", " + regt);
-        add(new TwoArm("vmov", dregf, regt));
+        add(new TwoArm("vmov.f32", dregf, regt));
 
         //add("vcvt.f32.s32 " + dregf + ", " + dregf);    // Converts {$reg} signed integer value to a single-precision value and stores it in {$reg}(前)
         add(new TwoArm("vcvt.f32.s32", dregf, dregf));
@@ -592,7 +593,7 @@ public class ArmGenerator {
 
         String regt = reg.applyTmp();
         loadValue(regt, v2.getIdent());     // float v2的地址仍为int
-        if (f) add(new TmpArm("vstr " + regs + ", [" + regt + "]"));
+        if (f) add(new TmpArm("vstr.f32 " + regs + ", [" + regt + "]"));
         else add(new TmpArm("str " + regs + ", [" + regt + "]"));
         reg.freeTmp(regt);
 
@@ -697,7 +698,7 @@ public class ArmGenerator {
             loadValue(addrreg, v.getIdent());
 
             // 从addr加载value
-            if (f) add(new TmpArm("vldr " + dreg + ", [" + addrreg + "]"));
+            if (f) add(new TmpArm("vldr.f32 " + dreg + ", [" + addrreg + "]"));
             else add(new TmpArm("ldr " + dreg + ", [" + addrreg + "]"));
             reg.freeTmp(addrreg);
 
@@ -1117,7 +1118,7 @@ public class ArmGenerator {
         if (destIdent.isGlobal()) {
             if (isfreg) {
                 interpolating = true;
-                add(new TmpArm("vldr " + regName + ", .L" + lcount + "+" + lpicusecount * 4));
+                add(new TmpArm("vldr.f32 " + regName + ", .L" + lcount + "+" + lpicusecount * 4));
                 addLpic(regName, destIdent.getName());
                 interpolating = false;
 
@@ -1134,7 +1135,7 @@ public class ArmGenerator {
             int off = curFunc.getOffsetByName(destIdent.toString());
 
             if (isfreg) {
-                addInstrRegSpOffset("vldr", regName, "r7", off);
+                addInstrRegSpOffset("vldr.f32", regName, "r7", off);
 
             } else {
                 // 封装 add("ldr " + regName + ", [sp,  #" + off + "]");
@@ -1160,7 +1161,7 @@ public class ArmGenerator {
                 addLpic(regt, destIdent.getName());
                 interpolating = false;
 
-                add(new TmpArm("vstr " + regname + ", [" + regt + "]"));
+                add(new TmpArm("vstr.f32 " + regname + ", [" + regt + "]"));
                 reg.freeTmp(regt);
 
             } else {
@@ -1180,7 +1181,7 @@ public class ArmGenerator {
             int off = curFunc.getOffsetByName(destIdent.toString());
 
             if (isfreg) {
-                addInstrRegSpOffset("vstr", regname, "r7", off);
+                addInstrRegSpOffset("vstr.f32", regname, "r7", off);
 
             } else {
                 // 封装 add("str " + regName + ", [sp, #" + off + "]");
@@ -1308,7 +1309,7 @@ public class ArmGenerator {
 //            add("vmov " + regname + ", " + regt);
 //            add("vcvt.f32.s32 " + regname + ", " + regname);
             add(new TwoArm("mov", regt, "#0"));
-            add(new TwoArm("vmov", regname, regt));
+            add(new TwoArm("vmov.f32", regname, regt));
             add(new TwoArm("vcvt.f32.s32", regname, regname));
             reg.freeTmp(regt);
 
