@@ -36,6 +36,8 @@ public class LoadInst extends Instr {
         return v;
     }
 
+    public void setV(Value v){this.v = v;}
+
     @Override
     public void renameUses(Value newValue, Value oldValue) {
         if (v.isIdent() && v.getIdent().equals(oldValue.getIdent())) {

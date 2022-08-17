@@ -21,7 +21,7 @@ public class Rename {
     private int label;
     public Rename(Function function){
         this.function = function;
-        version = 0;
+        version = function.getFuncheader().getParas().size();
         label = 1;
         start = function.getBlocklist().get(0);
         System.out.println("rename start");
@@ -130,11 +130,16 @@ public class Rename {
                             if(alloc_ins.getType() instanceof FloatType || alloc_ins.getT() instanceof IntType) {
                                 if(!ins2.getIdent().isGlobal()) i.setCanDelete(true);
                             }
+                            else if(alloc_ins.getType() instanceof PointerType){
+                                isPointer.add(new Ident(ins2.getIdent().getName()));
+                            }
                             break;
                         case "load":
                             LoadInst ins3 = (LoadInst) j;
+                            System.out.println("in load:" + ins3.getV().getIdent());
                             if(ins3.getT1() instanceof FloatType || ins3.getT1() instanceof IntType) {
                                 if(!ins3.getV().getIdent().isGlobal() && !isPointer.contains(ins3.getV().getIdent())) i.setCanDelete(true);
+                                else{System.out.println("cannot delete");}
                             }
                             if (valueList.containsKey(ins3.getV())) {
                                 Value dest = new Value(new Ident(ins2.getIdent().getName()));
@@ -151,6 +156,9 @@ public class Rename {
                                             }
                                         }
                                         else{
+                                            if(valueList.containsKey(ins3.getV())){
+                                                ins3.setV(valueList.get(ins3.getV()).get(block));
+                                            }
                                             hashmap.put(block,dest);
                                         }
                                         valueList.put(dest, hashmap);
@@ -199,7 +207,8 @@ public class Rename {
                             break;
                         case "getelementptr":
                             GetElementPtrInst ins6 = (GetElementPtrInst) j;
-                            isPointer.add(ins2.getIdent());
+                            //System.out.println("in getele:" + ins2.getIdent());
+                            isPointer.add(new Ident(ins2.getIdent().getName()));
                             if (valueList.containsKey(ins6.getV())) {
                                 ins6.setValue(valueList.get(ins6.getV()).get(block));
                             }
