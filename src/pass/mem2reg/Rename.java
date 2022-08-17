@@ -159,7 +159,7 @@ public class Rename {
                                             if(valueList.containsKey(ins3.getV())){
                                                 ins3.setV(valueList.get(ins3.getV()).get(block));
                                             }
-                                            hashmap.put(block,dest);
+                                            hashmap.put(block,new Value(new Ident("t" + version)));
                                         }
                                         valueList.put(dest, hashmap);
                                     }
@@ -212,6 +212,12 @@ public class Rename {
                             if (valueList.containsKey(ins6.getV())) {
                                 ins6.setValue(valueList.get(ins6.getV()).get(block));
                             }
+                            ArrayList<TypeValue> typeValues = ins6.getCommas();
+                            for(TypeValue k:typeValues){
+                                if(valueList.containsKey(k.getValue())){
+                                    k.setValue(valueList.get(k.getValue()).get(block));
+                                }
+                            }
                             break;
                     }
                     //System.out.println(ins2.getIdent());
@@ -220,7 +226,7 @@ public class Rename {
                     Value oldvalue = new Value(new Ident(name));
                     ins2.getIdent().setName("t"+version);
                     version++;
-                    System.out.println("........................................."+name);
+                    //System.out.println("........................................."+name);
                     if (!valueList.containsKey(oldvalue) && !j.getInstrname().equals("load")) {
                         System.out.println("assign don't have "+oldvalue);
                         HashMap<Block, Value> newHash = new HashMap<>();
