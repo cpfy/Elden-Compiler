@@ -141,24 +141,18 @@ public class Rename {
                                 if(!ins3.getV().getIdent().isGlobal() && !isPointer.contains(ins3.getV().getIdent())) i.setCanDelete(true);
                                 else{System.out.println("cannot delete");}
                             }
+                            Value dest = new Value(new Ident(ins2.getIdent().getName()));
+                            //不为全局变量
                             if (valueList.containsKey(ins3.getV())) {
-                                Value dest = new Value(new Ident(ins2.getIdent().getName()));
-                                if (dest != null) {
                                     if (!valueList.containsKey(dest)) {
                                         HashMap<Block, Value> hashmap = new HashMap<>();
                                         //判断value是否为pointer，如果是则不作操作。
                                         if(!isPointer.contains(ins3.getV().getIdent())) {
-                                            if (valueList.containsKey(ins3.getV())) {
                                                 //System.out.println("yes,it's:"+valueList.get(ins3.getV()).get(block));
                                                 hashmap.put(block, valueList.get(ins3.getV()).get(block));
-                                            } else {
-                                                hashmap.put(block, ins3.getV());
-                                            }
                                         }
                                         else{
-                                            if(valueList.containsKey(ins3.getV())){
-                                                ins3.setV(valueList.get(ins3.getV()).get(block));
-                                            }
+                                            ins3.setV(valueList.get(ins3.getV()).get(block));
                                             hashmap.put(block,new Value(new Ident("t" + version)));
                                         }
                                         valueList.put(dest, hashmap);
@@ -172,7 +166,12 @@ public class Rename {
                                             valueList.get(dest).put(block, ins3.getV());
                                         }
                                     }
-                                }
+                            }
+                            //全局变量
+                            else{
+                                HashMap<Block,Value> hashmap = new HashMap<>();
+                                hashmap.put(block,new Value(new Ident("t"+version)));
+                                valueList.put(dest,hashmap);
                             }
                             break;
                         case "call":
