@@ -873,8 +873,7 @@ public class ArmGenerator {
                     add(new TwoArm("movw", regt, "#" + low));
                     add(new TwoArm("movt", regt, "#" + high));
                     add(new TmpArm("str " + regt + ", [sp, #" + i * 4 + "]"));
-                }
-                else {
+                } else {
                     moveImm(regt, v.getVal());
                     add(new TmpArm("str " + regt + ", [sp, #" + i * 4 + "]"));
                 }
@@ -950,8 +949,7 @@ public class ArmGenerator {
         if (dest.length > 0) {
             if (callfuncname.equals("getfloat")) {
                 storeValue("s0", dest[0]);
-            }
-            else {
+            } else {
                 storeValue("r0", dest[0]);
             }
         }
@@ -1037,6 +1035,11 @@ public class ArmGenerator {
         } else {
             lines += 1;
         }
+    }
+
+    // 也支持str类型。转成TmpArm再调用add
+    private void add(String str) {
+        add(new TmpArm(str));
     }
 
     // 插入.L
@@ -1279,8 +1282,7 @@ public class ArmGenerator {
                 add(new TmpArm(instrname + " " + regname + ", [" + regt + ", #0]"));
                 reg.freeTmp(regt);
             }
-        }
-        else {
+        } else {
             if (num < 4096) {
                 add(new TmpArm(instrname + " " + regname + ", [" + sp + ", #" + num + "]"));
 
@@ -1364,6 +1366,254 @@ public class ArmGenerator {
 
 //        add("pop " + allRegs);
         add(new OneArm("pop", allRegs));
+    }
+
+
+    /************** 之后部分为乘除优化 ****************/
+    private void MultOptimize(String dreg, String op1reg, int num) {
+//        if (num == 100) {
+//            /*if (calcu100) {
+//                //add("move $" + dreg + ", $a0");
+//            }
+//            //add("div $t1, $t1");
+//            else {*/
+//            //testf3 = true;
+//
+//            add("bnez $a0, multoptend3");
+//
+//            add("li $v1, " + num);
+//            add("mult $" + op1reg + ", $v1");
+//            add("mflo $" + dreg);
+//            add("mflo $a0");
+//
+//            //add("j multopt3jumpout");
+//            add("multoptend3:");
+//            //add("move $" + dreg + ", $a0");
+//            //add("multopt3jumpout:");
+//
+//            return;
+//        }
+
+        if (num == 0) {
+            add("li $" + dreg + ", 0");
+
+        } else if (num == 1) {
+            add("move $" + dreg + ", $" + op1reg);
+
+        } else if (isPowerOfTwo(num)) {
+            int mi = (int) (Math.log(num) / Math.log(2));
+            add("sll $" + dreg + ", $" + op1reg + ", " + mi);
+
+        } else if (isPowerOfTwo(num - 1)) {
+            int mi = (int) (Math.log(num - 1) / Math.log(2));
+            add("sll $" + dreg + ", $" + op1reg + ", " + mi);
+            add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
+
+        } else if (isPowerOfTwo(num + 1)) {
+            int mi = (int) (Math.log(num + 1) / Math.log(2));
+            add("sll $" + dreg + ", $" + op1reg + ", " + mi);
+            add("sub $" + dreg + ", $" + dreg + ", $" + op1reg);
+
+        } else if (isPowerOfTwo(num - 2)) {
+            int mi = (int) (Math.log(num - 2) / Math.log(2));
+            add("sll $" + dreg + ", $" + op1reg + ", " + mi);
+            add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
+            add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
+
+        } else if (isPowerOfTwo(num + 2)) {
+            int mi = (int) (Math.log(num + 2) / Math.log(2));
+            add("sll $" + dreg + ", $" + op1reg + ", " + mi);
+            add("sub $" + dreg + ", $" + dreg + ", $" + op1reg);
+            add("sub $" + dreg + ", $" + dreg + ", $" + op1reg);
+
+        } else if (isPowerOfTwo(num - 3)) {
+            int mi = (int) (Math.log(num - 3) / Math.log(2));
+            add("sll $" + dreg + ", $" + op1reg + ", " + mi);
+            add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
+            add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
+            add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
+
+        } else if (isPowerOfTwo(num + 3)) {
+            int mi = (int) (Math.log(num + 3) / Math.log(2));
+            add("sll $" + dreg + ", $" + op1reg + ", " + mi);
+            add("sub $" + dreg + ", $" + dreg + ", $" + op1reg);
+            add("sub $" + dreg + ", $" + dreg + ", $" + op1reg);
+            add("sub $" + dreg + ", $" + dreg + ", $" + op1reg);
+
+        } else {
+            add("li $v1, " + num);
+            add("mult $" + op1reg + ", $v1");
+            add("mflo $" + dreg);
+        }
+    }
+
+    //判断是否2的幂次
+    private boolean isPowerOfTwo(int n) {
+        return n > 0 && (n & (n - 1)) == 0;
+    }
+
+    //除法优化
+    private void DivOptimize(String dreg, String op1reg, int d, boolean reverse, SymbolTable.Scope scope) {
+        /* add("li $v1, " + num);
+        add("div $" + op1reg + ", $v1");
+        add("mflo $" + dreg);*/ //除法？狗都不用？
+
+        if (reverse) {  //d÷x
+            if (d == 0) {
+                add("li $" + dreg + ", 0");
+            } else {
+                add("li $v1, " + d);
+                add("div $v1, $" + op1reg);
+                add("mflo $" + dreg);
+            }
+
+        } else {    //x÷d
+            DivMShL msl = ChooseMultiplier(Math.abs(d), 31);
+            long m = msl.m_high;
+            int sh_post = msl.sh_post;
+
+            if (Math.abs(d) == 1) {
+                add("move $" + dreg + ", $" + op1reg);
+
+            } else if (isPowerOfTwo(Math.abs(d))) {
+                int mi = (int) (Math.log(d) / Math.log(2));
+                add("sra $" + dreg + ", $" + op1reg + ", " + (mi - 1));
+                add("srl $" + dreg + ", $" + dreg + ", " + (32 - mi));
+                add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
+                add("sra $" + dreg + ", $" + dreg + ", " + mi);
+
+            } else if (m < Math.pow(2, 31)) {  // q = SRA(MULSH(m, n), shpost) − XSIGN(n)
+
+
+                add("li $v1, " + m);
+                add("mult $" + op1reg + ", $v1");
+                add("mfhi $" + dreg);
+                add("sra $" + dreg + ", $" + dreg + ", " + sh_post);
+
+                add("slti $v1, $" + op1reg + ", 0");    //若x<0, v1 = 1
+                add("add $" + dreg + ", $" + dreg + ", $v1");
+
+
+            } else {    //q = SRA(n + MULSH(m − 2^N, n), shpost) − XSIGN(n)
+
+
+                add("li $v1, " + (int) (m - Math.pow(2, 32)));
+                add("mult $" + op1reg + ", $v1");
+                add("mfhi $" + dreg);
+                add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
+                add("sra $" + dreg + ", $" + dreg + ", " + sh_post);
+
+                add("slti $v1, $" + op1reg + ", 0");    //若x<0, v1 = 1
+                add("add $" + dreg + ", $" + dreg + ", $v1");
+
+
+            }
+
+            if (d < 0) {
+                add("sub $" + dreg + ", $zero, $" + dreg);
+            }
+
+        }
+    }
+
+    private DivMShL ChooseMultiplier(int d, int prec /*=31*/) {
+        final int N = 32;
+        int l = (int) Math.ceil(Math.log(d) / Math.log(2));
+        int sh_post = l;
+        long m_low = (long) Math.floor(Math.pow(2, N + l) / d);
+        long m_high = (long) Math.floor((Math.pow(2, N + l) + Math.pow(2, N + l - prec)) / d);
+
+        while ((Math.floor(m_low / 2) < Math.floor(m_high / 2)) && sh_post > 0) {
+            m_low = (long) Math.floor(m_low / 2);
+            m_high = (long) Math.floor(m_high / 2);
+            sh_post -= 1;
+        }
+
+        return new DivMShL(m_high, sh_post, l);
+    }
+
+    //取余数优化: a % b 翻译为 a - a / b * b
+    private void ModOptimize(String dreg, String op1reg, int d, boolean reverse, SymbolTable.Scope scope) {
+        if (reverse) {
+            if (d == 0) {
+                add("li $" + dreg + ", 0");
+
+            } else {
+                add("li $v1, " + d);
+                add("div $v1, $" + op1reg);
+                add("mfhi $" + dreg);
+            }
+
+        } else {
+            if (d == 1) {
+                add("li $" + dreg + ", 0");
+
+            } else {
+                //todo
+                if (operationInWhileScope(scope) && d == 5) {
+//                if ( d == 5) {
+
+                    //testf3 = true;
+
+                    DivOptimizeFive(dreg, op1reg, d);    //不能用"v1"当dreg！
+
+                    /*//优化前
+                    add("li $v1, " + d);
+                    add("mult $" + dreg + ", $v1");
+                    add("mflo $v1");
+                    add("sub $" + dreg + ", $" + op1reg + ", $v1");*/
+
+                    add("sll $v1, $" + dreg + ", 2");
+                    add("add $" + dreg + ", $" + dreg + ", $v1");
+                    add("sub $" + dreg + ", $" + op1reg + ", $" + dreg);
+
+                } else {
+                    DivOptimize(dreg, op1reg, d, reverse, scope);    //不能用"v1"当dreg！
+
+                    add("li $v1, " + d);
+                    add("mult $" + dreg + ", $v1");
+                    add("mflo $v1");
+                    add("sub $" + dreg + ", $" + op1reg + ", $v1");
+                }
+            }
+        }
+    }
+
+
+    //判断在while内
+    private boolean operationInWhileScope(SymbolTable.Scope scope) {
+        SymbolTable.Scope curscope = scope;
+        if (curscope.type != null && curscope.type.equals("while")) {
+            return true;
+        }
+        while (curscope.father != null) {
+            curscope = curscope.father;
+            if (curscope.type != null && curscope.type.equals("while")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //除法优化
+    private void DivOptimizeFive(String dreg, String op1reg, int d) {
+        DivMShL msl = ChooseMultiplier(Math.abs(d), 31);
+        long m = msl.m_high;
+        int sh_post = msl.sh_post;
+
+        if (m < Math.pow(2, 31)) {  // q = SRA(MULSH(m, n), shpost) − XSIGN(n)
+
+            //inthis
+
+            //add("li $v1, " + m);
+            add("mult $" + op1reg + ", $a1");
+            add("mfhi $" + dreg);
+            add("sra $" + dreg + ", $" + dreg + ", " + sh_post);
+
+            add("slti $v1, $" + op1reg + ", 0");    //若x<0, v1 = 1
+            add("add $" + dreg + ", $" + dreg + ", $v1");
+
+        }
     }
 
 }
