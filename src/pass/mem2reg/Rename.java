@@ -284,6 +284,9 @@ public class Rename {
                 //似乎不应当有
                 case "ret":
                     RetTerm ins7 = (RetTerm) i;
+                    if (ins7.getV() == null) {
+                        break;
+                    }
                     if (valueList.containsKey(ins7.getV())) {
                         ins7.setV(valueList.get(ins7.getV()).get(block));
                     }
@@ -370,6 +373,7 @@ public class Rename {
             HashSet<Block> needDeleted = new HashSet<>();
             System.out.println("in renamePhi:" + block.getLabel()+":"+i.toString());
             for(Block j:i.getParams().keySet()){
+                System.out.println(i.getOriginValue());
                 if(valueList.get(i.getOriginValue()).containsKey(j) && !alreadyDeleted.contains(valueList.get(i.getOriginValue()).get(j).getIdent())) {
                     i.reName(valueList.get(i.getOriginValue()).get(j), j);
                 }

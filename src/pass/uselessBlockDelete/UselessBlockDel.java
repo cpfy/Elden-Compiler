@@ -19,24 +19,19 @@ public class UselessBlockDel {
     private boolean changed;
     private ArrayList<Instr> brList = new ArrayList<>();
     private HashMap<Instr, Block> instrBlockHashMap = new HashMap<>();
-    private HashMap<Value, Block> valueBlockHashMap = new HashMap<>();
-    private ArrayList<Phi> phis = new ArrayList<>();
 
     public UselessBlockDel(Function function) {
         this.function = function;
-        for (Block block: function.getBlocklist()) {
-            phis.addAll(block.getPhis());
-            valueBlockHashMap.put(new Value(new Ident(block.getLabel())), block);
-        }
         changed = true;
         while (changed) {
+            brList = new ArrayList<>();
+            instrBlockHashMap = new HashMap<>();
             changed = false;
             execute();
         }
     }
 
     private void execute() {
-        brList = new ArrayList<>();
         for (Block block: function.getBlocklist()) {
             block.setDead(false);
             Instr instr = block.getInblocklist().get(block.getInblocklist().size() - 1);
@@ -52,7 +47,7 @@ public class UselessBlockDel {
                 changed = true;
                 BrTerm brTerm = (BrTerm) instr;
                 block.setDead(true);
-                rename(new Value(new Ident(String.valueOf(brTerm.getLi().getId()))), new Value(new Ident(block.getLabel())));
+                rename(new Value(new Ident(brTerm.getLi().getId())), new Value(new Ident(block.getLabel())));
             }
         }
 
@@ -70,11 +65,9 @@ public class UselessBlockDel {
     }
 
     private void rename(Value newValue, Value oldValue) {
+        System.out.println("tttt " + newValue);
         for (Instr instr: brList) {
             instr.renameUses(newValue, oldValue);
-        }
-        for (Phi phi: phis) {
-            phi.setBlock(valueBlockHashMap.get(newValue), valueBlockHashMap.get(oldValue));
         }
     }
 
