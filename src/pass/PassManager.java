@@ -3,6 +3,7 @@ package pass;
 import llvm.Function;
 import pass.constPass.ConstProp;
 import pass.mem2reg.*;
+import pass.uselessBlockDelete.CondSimplify;
 import pass.uselessBlockDelete.UselessBlockDel;
 
 import javax.xml.crypto.Data;
@@ -17,15 +18,16 @@ public class PassManager {
                 i++;
                 continue;
             }
-            new UselessBlockDel(function);
 
+            new CondSimplify(function);
+//            new UselessBlockDel(function);
 //            new DataFlowGraph(function);
 //            new DominatorTree(function);
 //            new DominatorFrontier(function);
 //            new InsertPhi(function);
 //            new Rename(function);
-            new ConstProp(function);
-            new UselessBlockDel(function);
+//            new ConstProp(function);
+//            new UselessBlockDel(function);
         }
     }
 }

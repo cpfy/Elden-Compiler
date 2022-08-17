@@ -10,7 +10,6 @@ public class DataFlowGraph {
     private Function function;
     private HashSet<Block> walked = new HashSet<>();
 
-
     public DataFlowGraph(Function function) {
         this.function = function;
         execute();
