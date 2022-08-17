@@ -29,6 +29,7 @@ public class UselessBlockDel {
     }
 
     private void execute() {
+        brList = new ArrayList<>();
         for (Block block: function.getBlocklist()) {
             block.setDead(false);
             Instr instr = block.getInblocklist().get(block.getInblocklist().size() - 1);
@@ -41,7 +42,7 @@ public class UselessBlockDel {
         for (Instr instr: brList) {
             Block block = instrBlockHashMap.get(instr);
             if (block.getInblocklist().size() == 1 && block.getPhis().size() == 0 && instr instanceof BrTerm) {
-
+                changed = true;
                 BrTerm brTerm = (BrTerm) instr;
                 block.setDead(true);
                 rename(new Value(new Ident(String.valueOf(brTerm.getLi().getId()))), new Value(new Ident(block.getLabel())));
@@ -72,9 +73,6 @@ public class UselessBlockDel {
         for (Block block: function.getBlocklist()) {
             if (!block.isDead()) {
                 newBlocks.add(block);
-            }
-            else {
-                changed = true;
             }
         }
         function.setBlocklist(newBlocks);

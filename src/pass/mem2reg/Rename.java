@@ -21,7 +21,12 @@ public class Rename {
     private int label;
     public Rename(Function function){
         this.function = function;
-        version = function.getFuncheader().getParas().size();
+        if (function.getFuncheader().getParas().size() == 0) {
+            version = 0;
+        }
+        else {
+            version = Integer.parseInt(function.getFuncheader().getParas().get(function.getFuncheader().getParas().size() - 1).getName().substring(1)) + 1;
+        }
         label = 1;
         start = function.getBlocklist().get(0);
         System.out.println("rename start");

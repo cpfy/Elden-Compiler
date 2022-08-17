@@ -205,6 +205,9 @@ public class Block {
         inblocklist = newInblocklist;
     }
 
+    public void setPhis(ArrayList<Phi> phis) {
+        this.phis = phis;
+    }
 
     public void addPhi(Phi phi) {
         phis.add(phi);
