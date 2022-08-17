@@ -251,6 +251,14 @@ public class Rename {
                             }
                         }
                     }
+                    if(!i.isCanDelete()){
+                        if(valueList.containsKey(ins4.getV1())){
+                            ins4.setV1(valueList.get(ins4.getV1()).get(block));
+                        }
+                        if(valueList.containsKey(ins4.getV2())){
+                            ins4.setV2(valueList.get(ins4.getV2()).get(block));
+                        }
+                    }
                     /*
                     HashMap<Block,Value> hash = valueList.get(ins4.getV1());
                     hash.put(block,valueList.get(ins4.getV2()).get(block));

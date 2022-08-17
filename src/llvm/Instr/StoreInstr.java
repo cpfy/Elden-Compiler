@@ -41,6 +41,10 @@ public class StoreInstr extends Instr {
         return this.v2;
     }
 
+    public void setV1(Value v1){this.v1 = v1;}
+
+    public void setV2(Value v2){this.v2 = v2;}
+
     public void setHidden(boolean hidden){this.hidden = hidden;}
 
     @Override
