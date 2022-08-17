@@ -21,7 +21,10 @@ import java.util.Stack;
 public class InsertPhi {
     private Function function;
     private HashMap<Block, HashSet<Value>> def = new HashMap<>();
+    private HashMap<Block, HashSet<Value>> defined = new HashMap<>(); //每个基本块存在的所有定义的value
+    private HashSet<Block> haveworked = new HashSet<>();
     private HashSet<Block> worked = new HashSet<>();
+    private Stack<Block> dist = new Stack<>();
     public InsertPhi(Function function){
         this.function = function;
         System.out.println("insertphi start");
@@ -31,6 +34,8 @@ public class InsertPhi {
         ArrayList<Value> vars = new ArrayList<>();
         vars = getVariables(function); //遍历这个函数内的所有变量
         caldef(); //计算哪些alloca变量曾被store赋过值。
+        System.out.println("caldefined start");
+        calDefined(function.getBlocklist().get(0)); //计算到达-定义链;
         for(Value i : vars){
             process(i);
         }
@@ -107,17 +112,83 @@ public class InsertPhi {
         }
         return ans;
     }
+
+    public void calDefined(Block block){
+        Block pre = null;
+        if(!dist.isEmpty()){
+            pre = dist.peek();
+        }
+
+        //processPhi();
+        //前导基本块流入数据
+        System.out.println("label:" + block.getLabel());
+        if(!defined.containsKey(block)){
+            HashSet<Value> hashmap = new HashSet<>();
+            defined.put(block,hashmap);
+        }
+        if(pre!=null){
+            System.out.println("prelabel:"+pre.getLabel());
+            for(Value i: defined.get(pre)){
+                defined.get(block).add(i);
+            }
+        }
+        dist.push(block);
+        haveworked.add(block);
+        for(Instr ins:block.getInblocklist()){
+            System.out.println(ins);
+            /*
+            if(ins instanceof StoreInstr){
+                //System.out.println("working:" + ins);
+                StoreInstr store = (StoreInstr) ins;
+                //System.out.println("add " + store.getV2() + " in " + block.getLabel());
+                def.get(block).add(store.getV2());
+            }
+            */
+            if(ins instanceof AssignInstr){
+                AssignInstr assignInstr = (AssignInstr) ins;
+                if(assignInstr.getValueinstr() instanceof AllocaInst) {
+                    AllocaInst alloca = (AllocaInst) assignInstr.getValueinstr();
+                    if (alloca.getType() instanceof IntType || alloca.getType() instanceof FloatType) {
+                        //System.out.println("add " + assignInstr.getIdent() + " in " + block.getLabel());
+                        defined.get(block).add(new Value(new Ident(assignInstr.getIdent().getName())));
+                    }
+                }
+            }
+
+        }
+        for(Block i:block.getSucBlocks()){
+            if(!haveworked.contains(i)){
+                calDefined(i);
+            }
+        }
+        dist.pop();
+    }
+
     public Boolean hasDefined(Value value,Block block){
+        if(defined.get(block).contains(value)){
+            //System.out.println("find " + value + " in " + block.getLabel());
+        }
+        else{
+            //System.out.println("cannot find " + value + " in " + block.getLabel());
+
+        }
+        return defined.get(block).contains(value);
+        /*
         worked.add(block);
-        if(hasAssigned(block,value)){return true;}
+        if(hasAssigned(block,value)){
+            System.out.println(block.getLabel() +"has" + value);
+            return true;
+        }
         else {
             Boolean hasDefined = false;
             for (Block i : block.getPreBlocks()) {
                 if (!worked.contains(i)) {
+                    System.out.println("calling from " + block.getLabel() + " to " + i.getLabel());
                     hasDefined |= hasDefined(value, i);
                 }
             }
             return hasDefined;
         }
+        */
     }
 }

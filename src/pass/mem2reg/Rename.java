@@ -14,6 +14,7 @@ public class Rename {
     private Stack<Block> dist = new Stack<>();
     private HashMap<String,String> renamedLabel = new HashMap<>();
     private HashSet<Ident> isPointer = new HashSet<>();
+    private HashSet<Ident> alreadyDeleted = new HashSet<>();
     HashSet<Block> haveworked = new HashSet();
     HashSet<Block> havePhi = new HashSet<>();
     Block start = new Block();
@@ -128,7 +129,10 @@ public class Rename {
                         case "alloca":
                             AllocaInst alloc_ins = (AllocaInst) j;
                             if(alloc_ins.getType() instanceof FloatType || alloc_ins.getT() instanceof IntType) {
-                                if(!ins2.getIdent().isGlobal()) i.setCanDelete(true);
+                                if(!ins2.getIdent().isGlobal()) {
+                                    i.setCanDelete(true);
+                                    alreadyDeleted.add(new Ident("x" + version));
+                                }
                             }
                             else if(alloc_ins.getType() instanceof PointerType){
                                 isPointer.add(new Ident(ins2.getIdent().getName()));
@@ -153,7 +157,7 @@ public class Rename {
                                         }
                                         else{
                                             ins3.setV(valueList.get(ins3.getV()).get(block));
-                                            hashmap.put(block,new Value(new Ident("t" + version)));
+                                            hashmap.put(block,new Value(new Ident("x" + version)));
                                         }
                                         valueList.put(dest, hashmap);
                                     }
@@ -170,7 +174,7 @@ public class Rename {
                             //全局变量
                             else{
                                 HashMap<Block,Value> hashmap = new HashMap<>();
-                                hashmap.put(block,new Value(new Ident("t"+version)));
+                                hashmap.put(block,new Value(new Ident("x"+version)));
                                 valueList.put(dest,hashmap);
                             }
                             break;
@@ -223,7 +227,7 @@ public class Rename {
                     //System.out.println(ins2.getIdent());
                     String name = ins2.getIdent().getName();
                     Value oldvalue = new Value(new Ident(name));
-                    ins2.getIdent().setName("t"+version);
+                    ins2.getIdent().setName("x"+version);
                     version++;
                     //System.out.println("........................................."+name);
                     if (!valueList.containsKey(oldvalue) && !j.getInstrname().equals("load")) {
@@ -361,7 +365,7 @@ public class Rename {
             HashSet<Block> needDeleted = new HashSet<>();
             System.out.println("in renamePhi:" + block.getLabel()+":"+i.toString());
             for(Block j:i.getParams().keySet()){
-                if(valueList.get(i.getOriginValue()).containsKey(j)) {
+                if(valueList.get(i.getOriginValue()).containsKey(j) && !alreadyDeleted.contains(valueList.get(i.getOriginValue()).get(j).getIdent())) {
                     i.reName(valueList.get(i.getOriginValue()).get(j), j);
                 }
                 else{
