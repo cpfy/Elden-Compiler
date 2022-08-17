@@ -18,7 +18,7 @@ public class Block {
 //    private int instrnum;   // b内指令条数
 
     /*** add start by sujunzhe ***/
-    private boolean isDead = true;
+    private boolean isDead;
 
     public boolean isDead() {
         return isDead;
@@ -205,6 +205,9 @@ public class Block {
         inblocklist = newInblocklist;
     }
 
+    public void setPhis(ArrayList<Phi> phis) {
+        this.phis = phis;
+    }
 
     public void addPhi(Phi phi) {
         phis.add(phi);
