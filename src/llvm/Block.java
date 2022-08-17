@@ -18,7 +18,7 @@ public class Block {
 //    private int instrnum;   // b内指令条数
 
     /*** add start by sujunzhe ***/
-    private boolean isDead = true;
+    private boolean isDead;
 
     public boolean isDead() {
         return isDead;

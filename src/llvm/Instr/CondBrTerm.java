@@ -68,6 +68,12 @@ public class CondBrTerm extends Instr {
         if (v.isIdent() && v.getIdent().equals(oldValue.getIdent())) {
             v = newValue;
         }
+        else if (i1.equals(oldValue.getIdent())) {
+            i1 = newValue.getIdent();
+        }
+        else if (i2.equals(oldValue.getIdent())) {
+            i2 = newValue.getIdent();
+        }
     }
 
     @Override

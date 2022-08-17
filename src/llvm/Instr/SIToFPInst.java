@@ -40,7 +40,9 @@ public class SIToFPInst extends Instr {
 
     @Override
     public void renameUses(Value newValue, Value oldValue) {
-
+        if (v.isIdent() && v.getIdent().equals(oldValue.getIdent())) {
+            v = newValue;
+        }
     }
 
     @Override

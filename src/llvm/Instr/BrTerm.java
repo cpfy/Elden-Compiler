@@ -35,7 +35,9 @@ public class BrTerm extends Instr {
 
     @Override
     public void renameUses(Value newValue, Value oldValue) {
-
+        if (li.equals(oldValue.getIdent())) {
+            li = newValue.getIdent();
+        }
     }
 
     @Override

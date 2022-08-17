@@ -36,6 +36,9 @@ public class DataFlowGraph {
     }
 
     private void deleteDeadBlock() {
+        for (Block block: function.getBlocklist()) {
+            block.setDead(true);
+        }
         postOrderWalk(function.getBlocklist().get(0));
         ArrayList<Block> newBlocks = new ArrayList<>();
         for (Block block: function.getBlocklist()) {
