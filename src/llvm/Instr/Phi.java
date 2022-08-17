@@ -49,6 +49,15 @@ public class Phi extends Instr{
     public void reName(Value value){this.value = value;}
     public Value getOriginValue(){return originValue;}
     public void deleteBlock(Block block){params.remove(block);}
+
+    public void setBlock(Block newBlock, Block oldBlock) {
+        if (!params.containsKey(oldBlock)) {
+            return;
+        }
+        Value value = params.get(oldBlock);
+        params.remove(oldBlock);
+        params.put(newBlock, value);
+    }
     @Override
     public void renameUses(Value newValue, Value oldValue) {
         for (Block block: params.keySet()) {

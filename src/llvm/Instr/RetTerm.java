@@ -43,6 +43,9 @@ public class RetTerm extends Instr {
 
     @Override
     public void renameUses(Value newValue, Value oldValue) {
+        if (v == null) {
+            return;
+        }
         if (v.isIdent() && v.getIdent().equals(oldValue.getIdent())) {
             v = newValue;
         }
@@ -56,7 +59,7 @@ public class RetTerm extends Instr {
     @Override
     public ArrayList<String> getUses() {
         ArrayList<String> ans = new ArrayList<>();
-        if (v.isIdent()) {
+        if (v != null && v.isIdent()) {
             ans.add(v.getIdent().toString());
         }
         return ans;
@@ -70,7 +73,7 @@ public class RetTerm extends Instr {
     @Override
     public ArrayList<String> getRoots() {
         ArrayList<String> ans = new ArrayList<>();
-        if (v.isIdent()) {
+        if (v != null && v.isIdent()) {
             ans.add(v.getIdent().toString());
         }
         return ans;

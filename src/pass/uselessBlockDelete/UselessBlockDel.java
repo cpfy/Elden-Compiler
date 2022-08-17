@@ -6,6 +6,7 @@ import llvm.Ident;
 import llvm.Instr.BrTerm;
 import llvm.Instr.CondBrTerm;
 import llvm.Instr.Instr;
+import llvm.Instr.Phi;
 import llvm.Value;
 
 import java.util.ArrayList;
@@ -18,9 +19,15 @@ public class UselessBlockDel {
     private boolean changed;
     private ArrayList<Instr> brList = new ArrayList<>();
     private HashMap<Instr, Block> instrBlockHashMap = new HashMap<>();
+    private HashMap<Value, Block> valueBlockHashMap = new HashMap<>();
+    private ArrayList<Phi> phis = new ArrayList<>();
 
     public UselessBlockDel(Function function) {
         this.function = function;
+        for (Block block: function.getBlocklist()) {
+            phis.addAll(block.getPhis());
+            valueBlockHashMap.put(new Value(new Ident(block.getLabel())), block);
+        }
         changed = true;
         while (changed) {
             changed = false;
@@ -65,6 +72,9 @@ public class UselessBlockDel {
     private void rename(Value newValue, Value oldValue) {
         for (Instr instr: brList) {
             instr.renameUses(newValue, oldValue);
+        }
+        for (Phi phi: phis) {
+            phi.setBlock(valueBlockHashMap.get(newValue), valueBlockHashMap.get(oldValue));
         }
     }
 

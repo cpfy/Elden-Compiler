@@ -84,6 +84,14 @@ public class GetElementPtrInst extends Instr {
         if (v.isIdent() && v.getIdent().equals(oldValue.getIdent())) {
             v = newValue;
         }
+        if (commas.get(0).getValue().isIdent() && commas.get(0).getValue().getIdent().equals(oldValue.getIdent())) {
+            commas.get(0).setValue(newValue);
+        }
+        if (hasFourth) {
+            if (commas.get(1).getValue().isIdent() && commas.get(1).getValue().getIdent().equals(oldValue.getIdent())) {
+                commas.get(1).setValue(newValue);
+            }
+        }
     }
 
     @Override
@@ -93,8 +101,18 @@ public class GetElementPtrInst extends Instr {
 
     @Override
     public ArrayList<String> getUses() {
-        //todo
         ArrayList<String> ans = new ArrayList<>();
+        if (v.isIdent()) {
+            ans.add(v.getIdent().toString());
+        }
+        if (commas.get(0).getValue().isIdent()) {
+            ans.add(commas.get(0).getValue().getIdent().toString());
+        }
+        if (hasFourth) {
+            if (commas.get(1).getValue().isIdent()) {
+                ans.add(commas.get(1).getValue().getIdent().toString());
+            }
+        }
         return ans;
     }
 
