@@ -1498,7 +1498,7 @@ public class ArmGenerator {
         //除法？狗都不用？
         if (reverse) {  //d÷x
             if (num == 0) {
-                add("mov " + reg_d + ", 0");
+                add("mov " + reg_d + ", #0");
 
             } else {
                 String reg2 = reg.applyTmp();
@@ -1536,14 +1536,19 @@ public class ArmGenerator {
                 reg.freeTmp(reg2);
 
             } else {    //q = SRA(n + MULSH(m − 2^N, n), shpost) − XSIGN(n)
+                String regt = reg.applyTmp();
+                String reg2 = reg.applyTmp();
 
-                add("mov v1, " + (int) (m - Math.pow(2, 32)));
-                add("mult $" + reg1 + ", $v1");
-                add("mfhi $" + reg_d);
+                moveImm(reg2, (int) (m - Math.pow(2, 32)));
+                add("smull " + regt + ", " + reg_d + ", " + reg1 + ", " + reg2);
+
+//                add("mov "+regt+", " + (int) (m - Math.pow(2, 32)));
+//                add("mult $" + reg1 + ", $v1");
+//                add("mfhi $" + reg_d);
                 add("add " + reg_d + ", " + reg_d + ", " + reg1);
                 add("asr " + reg_d + ", " + reg_d + ", #" + sh_post);
 
-                String reg2 = reg.applyTmp();
+//                String reg2 = reg.applyTmp();
                 add("mov " + reg2 + ", #0");
                 add("cmp " + reg1 + ", " + reg2);
                 add("movlt " + reg2 + ", #1");
@@ -1551,6 +1556,7 @@ public class ArmGenerator {
                 add("add " + reg_d + ", " + reg_d + ", " + reg2);
 
                 reg.freeTmp(reg2);
+                reg.freeTmp(regt);
             }
 
             if (num < 0) {
