@@ -40,7 +40,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static java.lang.Math.floor;
 import static java.lang.Math.max;
 import static java.lang.System.*;
 
@@ -422,9 +421,13 @@ public class ArmGenerator {
         switch (op) {
             case "add":
             case "sub":
-            case "mul":
-            case "sdiv":
                 addOp(instr, dest);
+                break;
+            case "mul":
+                addMultOptimize(instr, dest);
+                break;
+            case "sdiv":
+                addSdivOptimize(instr, dest);
                 break;
             case "srem":    // 取模
                 addSrem(instr, dest);
@@ -514,9 +517,6 @@ public class ArmGenerator {
 
         String reg_d = reg.applyTmp();
 
-//        add("sdiv " + reg_d + ", " + reg1 + ", " + reg2);
-//        add("mul " + reg_d + ", " + reg_d + ", " + reg2);
-//        add("sub " + reg_d + ", " + reg1 + ", " + reg_d);
         add(new ThreeArm("sdiv", reg_d, reg1, reg2));
         add(new ThreeArm("mul", reg_d, reg_d, reg2));
         add(new ThreeArm("sub", reg_d, reg1, reg_d));
@@ -524,7 +524,6 @@ public class ArmGenerator {
 
         reg.freeTmp(reg1);
         reg.freeTmp(reg2);
-
         reg.freeTmp(reg_d);
 
     }
@@ -536,6 +535,22 @@ public class ArmGenerator {
         Value v2 = ((BinaryInst) instr).getV2();
 
         String reg1, reg2;
+
+        // 操作数中一个是0
+        if (v1.isIdent() && !v2.isIdent() && v2.getVal() == 0) {
+            reg1 = reg.applyTmp();
+            loadValue(reg1, v1.getIdent());
+            storeValue(reg1, dest);
+            reg.freeTmp(reg1);
+            return;
+
+        } else if (v2.isIdent() && !v1.isIdent() && v1.getVal() == 0) {
+            reg1 = reg.applyTmp();
+            loadValue(reg1, v2.getIdent());
+            storeValue(reg1, dest);
+            reg.freeTmp(reg1);
+            return;
+        }
 
         //v1
         reg1 = reg.applyTmp();
@@ -1354,97 +1369,96 @@ public class ArmGenerator {
     private void pushRegs() {
 //        add("push " + allRegs);
         add(new OneArm("push", allRegs));
-
-//        add("vpush " + allFloatRegs1);
-//        add("vpush " + allFloatRegs2);
     }
 
     // pop浮点寄存器
     private void popRegs() {
-//        add("vpop " + allFloatRegs2);
-//        add("vpop " + allFloatRegs1);
-
-//        add("pop " + allRegs);
         add(new OneArm("pop", allRegs));
     }
 
 
     /************** 之后部分为乘除优化 ****************/
-    private void MultOptimize(String dreg, String op1reg, int num) {
-//        if (num == 100) {
-//            /*if (calcu100) {
-//                //add("move $" + dreg + ", $a0");
-//            }
-//            //add("div $t1, $t1");
-//            else {*/
-//            //testf3 = true;
-//
-//            add("bnez $a0, multoptend3");
-//
-//            add("li $v1, " + num);
-//            add("mult $" + op1reg + ", $v1");
-//            add("mflo $" + dreg);
-//            add("mflo $a0");
-//
-//            //add("j multopt3jumpout");
-//            add("multoptend3:");
-//            //add("move $" + dreg + ", $a0");
-//            //add("multopt3jumpout:");
-//
-//            return;
-//        }
+    private void addMultOptimize(Instr instr, Ident dest) {
+        String op = ((BinaryInst) instr).getOp();   // 必为mul
+        Type t = ((BinaryInst) instr).getT();
+        Value v1 = ((BinaryInst) instr).getV1();
+        Value v2 = ((BinaryInst) instr).getV2();
+
+        String reg_d = reg.applyTmp();
+        String reg1 = reg.applyTmp();
+        int num;
+
+        if (v1.isIdent() && !v2.isIdent()) {
+            loadValue(reg1, v1.getIdent());
+            num = v2.getVal();
+
+        } else if (!v1.isIdent() && v2.isIdent()) {
+            loadValue(reg1, v2.getIdent());
+            num = v1.getVal();
+
+        } else {
+//            exit(0);
+            num = 287368785;
+            error();
+        }
 
         if (num == 0) {
-            add("li $" + dreg + ", 0");
+            add("mov " + reg_d + ", 0");
 
         } else if (num == 1) {
-            add("move $" + dreg + ", $" + op1reg);
+            add("mov " + reg_d + ", " + reg1);
 
         } else if (isPowerOfTwo(num)) {
             int mi = (int) (Math.log(num) / Math.log(2));
-            add("sll $" + dreg + ", $" + op1reg + ", " + mi);
+            add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
 
         } else if (isPowerOfTwo(num - 1)) {
             int mi = (int) (Math.log(num - 1) / Math.log(2));
-            add("sll $" + dreg + ", $" + op1reg + ", " + mi);
-            add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
+            add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
+            add("add " + reg_d + ", " + reg_d + ", " + reg1);
 
         } else if (isPowerOfTwo(num + 1)) {
             int mi = (int) (Math.log(num + 1) / Math.log(2));
-            add("sll $" + dreg + ", $" + op1reg + ", " + mi);
-            add("sub $" + dreg + ", $" + dreg + ", $" + op1reg);
+            add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
+            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
 
         } else if (isPowerOfTwo(num - 2)) {
             int mi = (int) (Math.log(num - 2) / Math.log(2));
-            add("sll $" + dreg + ", $" + op1reg + ", " + mi);
-            add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
-            add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
+            add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
+            add("add " + reg_d + ", " + reg_d + ", " + reg1);
+            add("add " + reg_d + ", " + reg_d + ", " + reg1);
 
         } else if (isPowerOfTwo(num + 2)) {
             int mi = (int) (Math.log(num + 2) / Math.log(2));
-            add("sll $" + dreg + ", $" + op1reg + ", " + mi);
-            add("sub $" + dreg + ", $" + dreg + ", $" + op1reg);
-            add("sub $" + dreg + ", $" + dreg + ", $" + op1reg);
+            add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
+            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
+            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
 
         } else if (isPowerOfTwo(num - 3)) {
             int mi = (int) (Math.log(num - 3) / Math.log(2));
-            add("sll $" + dreg + ", $" + op1reg + ", " + mi);
-            add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
-            add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
-            add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
+            add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
+            add("add " + reg_d + ", " + reg_d + ", " + reg1);
+            add("add " + reg_d + ", " + reg_d + ", " + reg1);
+            add("add " + reg_d + ", " + reg_d + ", " + reg1);
 
         } else if (isPowerOfTwo(num + 3)) {
             int mi = (int) (Math.log(num + 3) / Math.log(2));
-            add("sll $" + dreg + ", $" + op1reg + ", " + mi);
-            add("sub $" + dreg + ", $" + dreg + ", $" + op1reg);
-            add("sub $" + dreg + ", $" + dreg + ", $" + op1reg);
-            add("sub $" + dreg + ", $" + dreg + ", $" + op1reg);
+            add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
+            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
+            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
+            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
 
         } else {
-            add("li $v1, " + num);
-            add("mult $" + op1reg + ", $v1");
-            add("mflo $" + dreg);
+            String reg2 = reg.applyTmp();
+            add("mov " + reg2 + ", #" + num);
+            add("mul " + reg_d + ", " + reg1 + ", " + reg2);
         }
+
+        storeValue(reg_d, dest);
+
+        reg.freeTmp(reg1);
+        reg.freeTmp(reg_d);
+
     }
 
     //判断是否2的幂次
@@ -1453,66 +1467,110 @@ public class ArmGenerator {
     }
 
     //除法优化
-    private void DivOptimize(String dreg, String op1reg, int d, boolean reverse, SymbolTable.Scope scope) {
-        /* add("li $v1, " + num);
-        add("div $" + op1reg + ", $v1");
-        add("mflo $" + dreg);*/ //除法？狗都不用？
+    private void addSdivOptimize(Instr instr, Ident dest) {
+        String op = ((BinaryInst) instr).getOp();   // 必为sdiv
+        Type t = ((BinaryInst) instr).getT();
+        Value v1 = ((BinaryInst) instr).getV1();
+        Value v2 = ((BinaryInst) instr).getV2();
 
+        String reg_d = reg.applyTmp();
+        String reg1 = reg.applyTmp();
+        int num;
+        boolean reverse;
+
+        if (v1.isIdent() && !v2.isIdent()) {
+            loadValue(reg1, v1.getIdent());
+            num = v2.getVal();
+            reverse = false;
+
+        } else if (!v1.isIdent() && v2.isIdent()) {
+            loadValue(reg1, v2.getIdent());
+            num = v1.getVal();
+            reverse = true;
+
+        } else {
+//            exit(0);
+            num = 287368785;
+            reverse = false;
+            error();
+        }
+
+        //除法？狗都不用？
         if (reverse) {  //d÷x
-            if (d == 0) {
-                add("li $" + dreg + ", 0");
+            if (num == 0) {
+                add("mov " + reg_d + ", #0");
+
             } else {
-                add("li $v1, " + d);
-                add("div $v1, $" + op1reg);
-                add("mflo $" + dreg);
+                String reg2 = reg.applyTmp();
+                moveImm(reg2, num);
+                add("sdiv " + reg_d + ", " + reg2 + ", " + reg1);
             }
 
         } else {    //x÷d
-            DivMShL msl = ChooseMultiplier(Math.abs(d), 31);
+            DivMShL msl = ChooseMultiplier(Math.abs(num), 31);
             long m = msl.m_high;
             int sh_post = msl.sh_post;
 
-            if (Math.abs(d) == 1) {
-                add("move $" + dreg + ", $" + op1reg);
+            if (Math.abs(num) == 1) {
+                add("mov " + reg_d + ", " + reg1);
 
-            } else if (isPowerOfTwo(Math.abs(d))) {
-                int mi = (int) (Math.log(d) / Math.log(2));
-                add("sra $" + dreg + ", $" + op1reg + ", " + (mi - 1));
-                add("srl $" + dreg + ", $" + dreg + ", " + (32 - mi));
-                add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
-                add("sra $" + dreg + ", $" + dreg + ", " + mi);
+            } else if (isPowerOfTwo(Math.abs(num))) {
+                int mi = (int) (Math.log(num) / Math.log(2));
+                add("asr " + reg_d + ", " + reg1 + ", #" + (mi - 1));
+                add("lsr " + reg_d + ", " + reg_d + ", #" + (32 - mi));
+                add("add " + reg_d + ", " + reg_d + ", " + reg1);
+                add("asr " + reg_d + ", " + reg_d + ", #" + mi);
 
             } else if (m < Math.pow(2, 31)) {  // q = SRA(MULSH(m, n), shpost) − XSIGN(n)
 
+                String reg2 = reg.applyTmp();
+                moveImm(reg2, (int) m);
+                add(new ThreeArm("mul", reg_d, reg1, reg2));
+                add("asr " + reg_d + ", " + reg_d + ", #" + sh_post);
 
-                add("li $v1, " + m);
-                add("mult $" + op1reg + ", $v1");
-                add("mfhi $" + dreg);
-                add("sra $" + dreg + ", $" + dreg + ", " + sh_post);
-
-                add("slti $v1, $" + op1reg + ", 0");    //若x<0, v1 = 1
-                add("add $" + dreg + ", $" + dreg + ", $v1");
-
+                add("mov " + reg2 + ", #0");
+                add("cmp " + reg1 + ", " + reg2);
+                add("movlt " + reg2 + ", #1");
+//                add("slti $v1, $" + reg1 + ", 0");    //若x<0, v1 = 1
+                add("add " + reg_d + ", " + reg_d + ", " + reg2);
+                reg.freeTmp(reg2);
 
             } else {    //q = SRA(n + MULSH(m − 2^N, n), shpost) − XSIGN(n)
+                String regt = reg.applyTmp();
+                String reg2 = reg.applyTmp();
 
+                moveImm(reg2, (int) (m - Math.pow(2, 32)));
+                add("smull " + regt + ", " + reg_d + ", " + reg1 + ", " + reg2);
 
-                add("li $v1, " + (int) (m - Math.pow(2, 32)));
-                add("mult $" + op1reg + ", $v1");
-                add("mfhi $" + dreg);
-                add("add $" + dreg + ", $" + dreg + ", $" + op1reg);
-                add("sra $" + dreg + ", $" + dreg + ", " + sh_post);
+//                add("mov "+regt+", " + (int) (m - Math.pow(2, 32)));
+//                add("mult $" + reg1 + ", $v1");
+//                add("mfhi $" + reg_d);
+                add("add " + reg_d + ", " + reg_d + ", " + reg1);
+                add("asr " + reg_d + ", " + reg_d + ", #" + sh_post);
 
-                add("slti $v1, $" + op1reg + ", 0");    //若x<0, v1 = 1
-                add("add $" + dreg + ", $" + dreg + ", $v1");
+//                String reg2 = reg.applyTmp();
+                add("mov " + reg2 + ", #0");
+                add("cmp " + reg1 + ", " + reg2);
+                add("movlt " + reg2 + ", #1");
+//                add("slti $v1, $" + reg1 + ", 0");    //若x<0, v1 = 1
+                add("add " + reg_d + ", " + reg_d + ", " + reg2);
 
-
+                reg.freeTmp(reg2);
+                reg.freeTmp(regt);
             }
 
-            if (d < 0) {
-                add("sub $" + dreg + ", $zero, $" + dreg);
+            if (num < 0) {
+
+                String reg2 = reg.applyTmp();
+                add("mov " + reg2 + ", #0");
+                add("sub " + reg_d + ", " + reg2 + ", " + reg_d);
+                reg.freeTmp(reg2);
             }
 
+            storeValue(reg_d, dest);
+
+            reg.freeTmp(reg_d);
+            reg.freeTmp(reg1);
         }
     }
 
@@ -1533,87 +1591,31 @@ public class ArmGenerator {
     }
 
     //取余数优化: a % b 翻译为 a - a / b * b
-    private void ModOptimize(String dreg, String op1reg, int d, boolean reverse, SymbolTable.Scope scope) {
+    private void ModOptimize(String dreg, String op1reg, int d, boolean reverse) {
         if (reverse) {
             if (d == 0) {
-                add("li $" + dreg + ", 0");
+                add("mov " + dreg + ", 0");
 
             } else {
-                add("li $v1, " + d);
+                add("mov v1, " + d);
                 add("div $v1, $" + op1reg);
                 add("mfhi $" + dreg);
             }
 
         } else {
             if (d == 1) {
-                add("li $" + dreg + ", 0");
+                add("mov " + dreg + ", 0");
 
             } else {
-                //todo
-                if (operationInWhileScope(scope) && d == 5) {
-//                if ( d == 5) {
+//                addSdivOptimize(dreg, op1reg, d, reverse);    // 不能用"v1"当dreg！
+//todo
 
-                    //testf3 = true;
+                add("mov v1, " + d);
+                add("mult $" + dreg + ", $v1");
+                add("mflo $v1");
+                add("sub $" + dreg + ", " + op1reg + ", $v1");
 
-                    DivOptimizeFive(dreg, op1reg, d);    //不能用"v1"当dreg！
-
-                    /*//优化前
-                    add("li $v1, " + d);
-                    add("mult $" + dreg + ", $v1");
-                    add("mflo $v1");
-                    add("sub $" + dreg + ", $" + op1reg + ", $v1");*/
-
-                    add("sll $v1, $" + dreg + ", 2");
-                    add("add $" + dreg + ", $" + dreg + ", $v1");
-                    add("sub $" + dreg + ", $" + op1reg + ", $" + dreg);
-
-                } else {
-                    DivOptimize(dreg, op1reg, d, reverse, scope);    //不能用"v1"当dreg！
-
-                    add("li $v1, " + d);
-                    add("mult $" + dreg + ", $v1");
-                    add("mflo $v1");
-                    add("sub $" + dreg + ", $" + op1reg + ", $v1");
-                }
             }
         }
     }
-
-
-    //判断在while内
-    private boolean operationInWhileScope(SymbolTable.Scope scope) {
-        SymbolTable.Scope curscope = scope;
-        if (curscope.type != null && curscope.type.equals("while")) {
-            return true;
-        }
-        while (curscope.father != null) {
-            curscope = curscope.father;
-            if (curscope.type != null && curscope.type.equals("while")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    //除法优化
-    private void DivOptimizeFive(String dreg, String op1reg, int d) {
-        DivMShL msl = ChooseMultiplier(Math.abs(d), 31);
-        long m = msl.m_high;
-        int sh_post = msl.sh_post;
-
-        if (m < Math.pow(2, 31)) {  // q = SRA(MULSH(m, n), shpost) − XSIGN(n)
-
-            //inthis
-
-            //add("li $v1, " + m);
-            add("mult $" + op1reg + ", $a1");
-            add("mfhi $" + dreg);
-            add("sra $" + dreg + ", $" + dreg + ", " + sh_post);
-
-            add("slti $v1, $" + op1reg + ", 0");    //若x<0, v1 = 1
-            add("add $" + dreg + ", $" + dreg + ", $v1");
-
-        }
-    }
-
 }
