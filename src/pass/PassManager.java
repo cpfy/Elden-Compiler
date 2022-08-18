@@ -34,7 +34,7 @@ public class PassManager {
             new SinglePhiDel(function);           //删除参数列表只有一个元素的phi函数，并将变量传播
             new ConstProp(function);              //常数折叠、局部公共子表达式删除、死代码删除
 //            new UselessBlockDel(function);        //空基本块删除
-
+            new removePhi(function);
 
         }
     }

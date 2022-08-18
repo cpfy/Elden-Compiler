@@ -37,7 +37,9 @@ public class removePhi {
     public void deletePhi(Block block){
         for(Phi phi:block.getPhis()){
             for(Block i:phi.getParams().keySet()){
-                addnewInstr(i,phi.getParams().get(i),phi.getValue(),phi.getType());
+                if(!phi.getValue().equals(phi.getParams().get(i))) {
+                    addnewInstr(i, phi.getParams().get(i), phi.getValue(), phi.getType());
+                }
             }
         }
         block.setPhis(new ArrayList<>());
