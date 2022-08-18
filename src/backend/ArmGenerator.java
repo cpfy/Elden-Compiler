@@ -1391,6 +1391,8 @@ public class ArmGenerator {
 
         if (v1.isIdent() && v2.isIdent()) {
             addOp(instr, dest);
+            reg.freeTmp(reg1);
+            reg.freeTmp(reg_d);
             return;
         }
         else if (v1.isIdent() && !v2.isIdent()) {
@@ -1485,6 +1487,8 @@ public class ArmGenerator {
 
         if (v1.isIdent() && v2.isIdent()) {
             addOp(instr, dest);
+            reg.freeTmp(reg1);
+            reg.freeTmp(reg_d);
             return;
         }
         else if (v1.isIdent() && !v2.isIdent()) {
