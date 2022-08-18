@@ -1427,7 +1427,7 @@ public class ArmGenerator {
         } else if (isPowerOfTwo(num + 1)) {
             int mi = (int) (Math.log(num + 1) / Math.log(2));
             add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
-            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
+            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
 
         } else if (isPowerOfTwo(num - 2)) {
             int mi = (int) (Math.log(num - 2) / Math.log(2));
@@ -1438,8 +1438,8 @@ public class ArmGenerator {
         } else if (isPowerOfTwo(num + 2)) {
             int mi = (int) (Math.log(num + 2) / Math.log(2));
             add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
-            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
-            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
+            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
+            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
 
         } else if (isPowerOfTwo(num - 3)) {
             int mi = (int) (Math.log(num - 3) / Math.log(2));
@@ -1451,13 +1451,13 @@ public class ArmGenerator {
         } else if (isPowerOfTwo(num + 3)) {
             int mi = (int) (Math.log(num + 3) / Math.log(2));
             add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
-            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
-            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
-            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
+            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
+            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
+            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
 
         } else {
             String reg2 = reg.applyTmp();
-            add("mov " + reg2 + ", #" + num);
+            moveImm(reg2, num);
             add("mul " + reg_d + ", " + reg1 + ", " + reg2);
             reg.freeTmp(reg2);
         }
