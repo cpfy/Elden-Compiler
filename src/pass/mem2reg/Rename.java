@@ -285,6 +285,9 @@ public class Rename {
                 //似乎不应当有
                 case "ret":
                     RetTerm ins7 = (RetTerm) i;
+                    if (ins7.getV() == null) {
+                        break;
+                    }
                     if (valueList.containsKey(ins7.getV())) {
                         ins7.setV(valueList.get(ins7.getV()).get(block));
                     }
@@ -366,7 +369,6 @@ public class Rename {
     }
 
     public void renamePhi (Block block){
-        System.out.println(block.getLabel());
         havePhi.add(block);
         for(Phi i:block.getPhis()){
             HashSet<Block> needDeleted = new HashSet<>();
@@ -387,7 +389,6 @@ public class Rename {
         }
         for(Block j:block.getSucBlocks()){
             if(!havePhi.contains(j)){
-                //if(j.getLabel().equals("1")) System.out.println(block.getLabel());
                 renamePhi(j);
             }
         }

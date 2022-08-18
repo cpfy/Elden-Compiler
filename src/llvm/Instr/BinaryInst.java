@@ -115,9 +115,18 @@ public class BinaryInst extends Instr {
         }
     }
 
+    private float hex2Float(String hex) {
+        Long i = Long.parseLong(hex.substring(2), 16);
+        Float f = Float.intBitsToFloat(i.intValue());
+        return f;
+    }
+
+    private String float2Hex(float f) {
+        return "0x" + Integer.toHexString(Float.floatToIntBits(f));
+    }
+
     @Override
     public Value mergeConst() {
-        //todo 浮点数未处理
         if (v1.isIdent() || v2.isIdent()) {
             return null;
         }
@@ -127,25 +136,25 @@ public class BinaryInst extends Instr {
                 value = new Value(String.valueOf(v1.getVal() + v2.getVal()));
                 break;
             case "fadd":
-                value = null;
+                value = new Value(float2Hex(hex2Float(v1.getHexVal()) + hex2Float(v2.getHexVal())));
                 break;
             case "sub":
                 value = new Value(String.valueOf(v1.getVal() - v2.getVal()));
                 break;
             case "fsub":
-                value = null;
+                value = new Value(float2Hex(hex2Float(v1.getHexVal()) - hex2Float(v2.getHexVal())));
                 break;
             case "mul":
                 value = new Value(String.valueOf(v1.getVal() * v2.getVal()));
                 break;
             case "fmul":
-                value = null;
+                value = new Value(float2Hex(hex2Float(v1.getHexVal()) * hex2Float(v2.getHexVal())));
                 break;
             case "sdiv":
                 value = new Value(String.valueOf(v1.getVal() / v2.getVal()));
                 break;
             case "fdiv":
-                value = null;
+                value = new Value(float2Hex(hex2Float(v1.getHexVal()) / hex2Float(v2.getHexVal())));
                 break;
             case "srem":
                 value = new Value(String.valueOf(v1.getVal() % v2.getVal()));

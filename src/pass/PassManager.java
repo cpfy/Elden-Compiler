@@ -14,11 +14,15 @@ public class PassManager {
     public PassManager(ArrayList<Function> functions) {
         int i = 0;
         for (Function function: functions) {
+
             if (i == 0) {
                 i++;
                 continue;
             }
-
+//            i++;
+//            if (i == 2) {
+//                continue;
+//            }
             new CondSimplify(function);           //条件表达式简化
             new UselessBlockDel(function);        //空基本块删除
 

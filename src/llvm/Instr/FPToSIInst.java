@@ -18,6 +18,16 @@ public class FPToSIInst extends Instr {
         this.v = v;
     }
 
+    private float hex2Float(String hex) {
+        Long i = Long.parseLong(hex.substring(2), 16);
+        Float f = Float.intBitsToFloat(i.intValue());
+        return f;
+    }
+
+    private String float2Hex(float f) {
+        return "0x" + Integer.toHexString(Float.floatToIntBits(f));
+    }
+
     @Override
     public String toString() {
         return "fptosi " + t1.toString() + " " + v.toString() + " to " + t2.toString();
@@ -47,6 +57,9 @@ public class FPToSIInst extends Instr {
 
     @Override
     public Value mergeConst() {
+        if (!v.isIdent()) {
+            return new Value(String.valueOf((int) hex2Float(v.getHexVal())));
+        }
         return null;
     }
 

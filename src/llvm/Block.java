@@ -65,9 +65,6 @@ public class Block {
     }
 
     public Block getIDom() {
-        if (IDOM == null) {
-            System.err.println(this.getLabel());
-        }
         return IDOM;
     }
 
