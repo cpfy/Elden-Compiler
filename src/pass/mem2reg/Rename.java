@@ -32,6 +32,7 @@ public class Rename {
         start = function.getBlocklist().get(0);
         System.out.println("rename start");
         dfs(start);
+        System.out.println("renamephi starts with " + start.getLabel());
         renamePhi(start);
         deleteInstr();
     }
@@ -371,9 +372,9 @@ public class Rename {
         havePhi.add(block);
         for(Phi i:block.getPhis()){
             HashSet<Block> needDeleted = new HashSet<>();
-            System.out.println("in renamePhi:" + block.getLabel()+":"+i.toString());
+            System.out.println(function + "in renamePhi:" + block.getLabel()+":"+i.toString());
             for(Block j:i.getParams().keySet()){
-                System.out.println(i.getOriginValue());
+                System.out.println("processing:" + j.getLabel());
                 if(valueList.get(i.getOriginValue()).containsKey(j) && !alreadyDeleted.contains(valueList.get(i.getOriginValue()).get(j).getIdent())) {
                     i.reName(valueList.get(i.getOriginValue()).get(j), j);
                 }

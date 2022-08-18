@@ -3,6 +3,8 @@ package llvm.Instr;
 import java.util.ArrayList;
 import java.util.HashMap;
 import llvm.Block;
+import llvm.Type.FloatType;
+import llvm.Type.Type;
 import llvm.Value;
 
 public class Phi extends Instr{
@@ -11,16 +13,19 @@ public class Phi extends Instr{
     private Value originValue; //初始化后不可变。
     //<label,value>键值对,由于block决定value名，因此block的label为key。
     private HashMap<Block,Value> params = new HashMap();
-    public Phi (String instrname, Value value, ArrayList<Block> blocks){
+    private Type type;
+    public Phi (String instrname, Value value, ArrayList<Block> blocks, Type type){
         super(instrname);
         this.value = value;
         this.originValue = value;
         for (Block i : blocks){
             params.put(i,value);
         }
+        this.type = type;
     }
     public String toString(){
         ArrayList<String> choices = new ArrayList<>();
+        String type = (this.type instanceof FloatType)? "float" : "i32";
         for(Block i: params.keySet()){
             if (params.get(i) == null) {
                 continue;
@@ -28,7 +33,7 @@ public class Phi extends Instr{
             String choice = "["+ params.get(i).toString() + ",%l" + i.getLabel() +"]";
             choices.add(choice);
         }
-        StringBuffer ans = new StringBuffer(value.toString() + " = phi i32 ");
+        StringBuffer ans = new StringBuffer(value.toString() + " = phi " + type + " ");
         int size = choices.size()-1;
         for(int i = 0;i <= size;i++){
             ans.append(choices.get(i));
@@ -49,7 +54,7 @@ public class Phi extends Instr{
     public void reName(Value value){this.value = value;}
     public Value getOriginValue(){return originValue;}
     public void deleteBlock(Block block){params.remove(block);}
-
+    public Type getType(){return this.type;}
     public void setBlock(Block newBlock, Block oldBlock) {
         if (!params.containsKey(oldBlock)) {
             return;

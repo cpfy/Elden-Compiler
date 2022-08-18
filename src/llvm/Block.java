@@ -6,6 +6,7 @@ import llvm.Instr.CondBrTerm;
 import llvm.Instr.Instr;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Block {
     // 基本块
@@ -208,5 +209,19 @@ public class Block {
 
     public void addPhi(Phi phi) {
         phis.add(phi);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getLabel());
+    }
+
+    @Override
+    public boolean equals(Object obj){
+        if(!(obj instanceof Block)) return false;
+        else{
+            Block block = (Block) obj;
+            return this.getLabel().equals(block.getLabel());
+        }
     }
 }
