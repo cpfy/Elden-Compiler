@@ -5,6 +5,7 @@ import llvm.IRParser;
 import llvm.IRScanner;
 import llvm.Instr.Instr;
 import llvm.Token;
+import pass.PassManager;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -21,8 +22,9 @@ public class Compiler {
         boolean optimize = false;
         if (args.length == 5) {
             optimize = true;
+            return;
         }
-
+        optimize = true;
         frontend(testFile);
         midend(optimize);
         backend(outputFile);
@@ -41,7 +43,9 @@ public class Compiler {
             ArrayList<Token> i = irs.scanfile("llvmir.ll");
             IRParser ip = new IRParser(i);
             allb = ip.parseFunc(0);
-
+            if (optimize) {
+                new PassManager(ip.getAllfunctionlist());
+            }
             //增print函数，代替原来输入方法
             ip.printllvmOutputs();
 
