@@ -1389,7 +1389,11 @@ public class ArmGenerator {
         String reg1 = reg.applyTmp();
         int num;
 
-        if (v1.isIdent() && !v2.isIdent()) {
+        if (v1.isIdent() && v2.isIdent()) {
+            addOp(instr, dest);
+            return;
+        }
+        else if (v1.isIdent() && !v2.isIdent()) {
             loadValue(reg1, v1.getIdent());
             num = v2.getVal();
 
@@ -1479,7 +1483,11 @@ public class ArmGenerator {
         int num;
         boolean reverse;
 
-        if (v1.isIdent() && !v2.isIdent()) {
+        if (v1.isIdent() && v2.isIdent()) {
+            addOp(instr, dest);
+            return;
+        }
+        else if (v1.isIdent() && !v2.isIdent()) {
             loadValue(reg1, v1.getIdent());
             num = v2.getVal();
             reverse = false;
