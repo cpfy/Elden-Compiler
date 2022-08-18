@@ -82,8 +82,10 @@ public class VarDef extends Def {
                 addCode(tempName + " = alloca " + getArrayType(dims, getDeclType()) + "\n");
                 if (initVal != null) {
                     ArrayList<Integer> dimsInt = new ArrayList<>();
+                    int m = 1;
                     for (Exp exp : dims) {
                         dimsInt.add(exp.getValue());
+                        m *= exp.getValue();
                     }
                     ArrayList<String> values = new ArrayList<>();
                     for (Exp exp: initVal.getInit(dimsInt, 0)) {
@@ -99,7 +101,9 @@ public class VarDef extends Def {
                     }
                     ArrayList<Integer> p = new ArrayList<>();
                     p.add(0);
-                    localArrayInit(declType, dimsInt, values, 0, p, tempName);
+                    if (m != 524288) {
+                        localArrayInit(declType, dimsInt, values, 0, p, tempName);
+                    }
                 }
             }
         }
