@@ -31,7 +31,7 @@ public class PassManager {
             new ConstProp(function);              //常数折叠、局部公共子表达式删除、死代码删除
             new removePhi(function);
 //            new UselessBlockDel(function);        //空基本块删除
-
+            new removePhi(function);
 
         }
     }
