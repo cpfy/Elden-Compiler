@@ -78,7 +78,7 @@ public class InsertPhi {
                             type = new IntType(TypeC.I,32);
                         }
                         Phi phi = new Phi("phi", var, j.getPreBlocks(),type);
-                        System.out.println("insert new phi in block " + j.getLabel() + ":" + phi.toString());
+                        //System.out.println("insert new phi in block " + j.getLabel() + ":" + phi.toString());
                         j.addPhi(phi);
                     }
                     hasPhi.put(j,true);
@@ -136,21 +136,22 @@ public class InsertPhi {
 
         //processPhi();
         //前导基本块流入数据
-        System.out.println("label:" + block.getLabel());
+        //System.out.println("label:" + block.getLabel());
         if(!defined.containsKey(block)){
             HashSet<Value> hashmap = new HashSet<>();
             defined.put(block,hashmap);
         }
         if(pre!=null){
-            System.out.println("prelabel:"+pre.getLabel());
-            for(Value i: defined.get(pre)){
+            HashSet<Value> set = defined.get(pre);
+            //System.out.println("prelabel:"+pre.getLabel());
+            for(Value i: set){
                 defined.get(block).add(i);
             }
         }
         dist.push(block);
         haveworked.add(block);
         for(Instr ins:block.getInblocklist()){
-            System.out.println(ins);
+            //System.out.println(ins);
             /*
             if(ins instanceof StoreInstr){
                 //System.out.println("working:" + ins);

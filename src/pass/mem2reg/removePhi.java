@@ -16,8 +16,11 @@ import java.util.Stack;
 public class removePhi {
     Function function;
     HashSet<Block> haveworked = new HashSet<Block>();
-    public removePhi(Function function){
+    Boolean reservePhi = false;
+    int version = 0;
+    public removePhi(Function function,Boolean reservePhi){
         this.function = function;
+        this.reservePhi = reservePhi;
         execute();
     }
     public void execute (){
@@ -36,10 +39,19 @@ public class removePhi {
     }
     public void deletePhi(Block block){
         for(Phi phi:block.getPhis()){
+            Boolean isCopied = false;
             for(Block i:phi.getParams().keySet()){
                 if(!phi.getValue().equals(phi.getParams().get(i))) {
-                    addnewInstr(i, phi.getParams().get(i), phi.getValue(), phi.getType());
+                    isCopied = true;
+                    if(!reservePhi) addnewInstr(i, phi.getParams().get(i), phi.getValue(), phi.getType());
+                    else{
+                        addnewInstr(i, phi.getParams().get(i), new Value(new Ident("temp"+version)), phi.getType());
+                    }
                 }
+            }
+            if(reservePhi && isCopied) {
+                copyPhi(block,new Value(new Ident("temp"+version)),phi.getValue(),phi.getType());
+                version++;
             }
         }
         block.setPhis(new ArrayList<>());
@@ -49,5 +61,11 @@ public class removePhi {
         AssignInstr assignInstr = new AssignInstr("assign", newvalue.getIdent(), binaryInst);
         int size = block.getInblocklist().size();
         block.getInblocklist().add(size-1,assignInstr);
+    }
+    public void copyPhi(Block block, Value oldvalue, Value newvalue, Type type){
+        BinaryInst binaryInst = new BinaryInst("binary","add",type,new Value(0),oldvalue);
+        AssignInstr assignInstr = new AssignInstr("assign", newvalue.getIdent(), binaryInst);
+        int size = block.getInblocklist().size();
+        block.getInblocklist().add(0,assignInstr);
     }
 }
