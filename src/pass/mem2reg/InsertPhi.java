@@ -75,7 +75,7 @@ public class InsertPhi {
                             type = new FloatType(TypeC.F);
                         }
                         else{
-                            type = new IntType(TypeC.I,0);
+                            type = new IntType(TypeC.I,32);
                         }
                         Phi phi = new Phi("phi", var, j.getPreBlocks(),type);
                         System.out.println("insert new phi in block " + j.getLabel() + ":" + phi.toString());
