@@ -428,7 +428,8 @@ public class ArmGenerator {
                 addMultOptimize(instr, dest);
                 break;
             case "sdiv":
-                addSdivOptimize(instr, dest);
+//                addSdivOptimize(instr, dest);// 有bug，暂时关闭
+                addOp(instr, dest);
                 break;
             case "srem":    // 取模
                 addSrem(instr, dest);
