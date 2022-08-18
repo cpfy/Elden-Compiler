@@ -8,11 +8,14 @@ import llvm.Instr.AssignInstr;
 import llvm.Instr.Instr;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class GenerateTable {
 
     private Function function;
     private ArrayList<Instr> instrs = new ArrayList<>();
+    private HashSet<String> varNames = new HashSet<>();
 
     public GenerateTable(Function function) {
         this.function = function;
@@ -23,7 +26,11 @@ public class GenerateTable {
         initList();
         int n = 0;
         for (Ident ident: function.getFuncheader().getParas()) {
+            if (varNames.contains(ident.toString())) {
+                continue;
+            }
             n = 4;
+            varNames.add(ident.toString());
             function.addVar(ident.toString(), n);
         }
 
@@ -32,6 +39,10 @@ public class GenerateTable {
             if (instr instanceof AssignInstr) {
                 n += 4;
                 AssignInstr assignInstr = (AssignInstr) instr;
+                if (varNames.contains(assignInstr.getIdent().toString())) {
+                    continue;
+                }
+                varNames.add(assignInstr.getIdent().toString());
                 if (assignInstr.getValueinstr() instanceof AllocaInst) {
                     AllocaInst allocaInst = (AllocaInst) assignInstr.getValueinstr();
                     n += allocaInst.getType().getSpace();
