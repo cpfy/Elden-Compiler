@@ -11,6 +11,8 @@ import llvm.Instr.Instr;
 import llvm.Instr.StoreInstr;
 import llvm.Type.FloatType;
 import llvm.Type.IntType;
+import llvm.Type.Type;
+import llvm.Type.TypeC;
 import llvm.Value;
 
 import java.util.ArrayList;
@@ -24,6 +26,7 @@ public class InsertPhi {
     private HashMap<Block, HashSet<Value>> defined = new HashMap<>(); //每个基本块存在的所有定义的value
     private HashSet<Block> haveworked = new HashSet<>();
     private HashSet<Block> worked = new HashSet<>();
+    private HashSet<Value> isfloat = new HashSet<>();
     private Stack<Block> dist = new Stack<>();
     public InsertPhi(Function function){
         this.function = function;
@@ -66,7 +69,15 @@ public class InsertPhi {
                         if(hasDefined(var,block)) source++;
                     }
                     if(source>1) {
-                        Phi phi = new Phi("phi", var, j.getPreBlocks());
+
+                        Type type;
+                        if(isfloat.contains(var)){
+                            type = new FloatType(TypeC.F);
+                        }
+                        else{
+                            type = new IntType(TypeC.I,0);
+                        }
+                        Phi phi = new Phi("phi", var, j.getPreBlocks(),type);
                         System.out.println("insert new phi in block " + j.getLabel() + ":" + phi.toString());
                         j.addPhi(phi);
                     }
@@ -103,8 +114,12 @@ public class InsertPhi {
                     AssignInstr assign = (AssignInstr) j;
                     if(assign.getValueinstr() instanceof AllocaInst){
                         AllocaInst alloca = (AllocaInst) assign.getValueinstr();
-                        if(alloca.getType() instanceof IntType || alloca.getType() instanceof FloatType){
+                        if(alloca.getType() instanceof IntType ){
                             ans.add(new Value(new Ident(assign.getIdent().getName())));
+                        }
+                        else if(alloca.getType() instanceof FloatType){
+                            ans.add(new Value(new Ident(assign.getIdent().getName())));
+                            isfloat.add(new Value(new Ident(assign.getIdent().getName())));
                         }
                     }
                 }
