@@ -128,6 +128,7 @@ public class ArmGenerator {
                 //if (b.isDirty()) continue;
                 addBlockLabel(b);
                 for (Instr i : b.getInblocklist()) {
+                    out.println("\t" + i.toString());
                     add(new HeadArm("@ " + i.toString()));
                     addInstr(i);
                     add(new HeadArm(""));
