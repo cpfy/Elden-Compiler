@@ -46,7 +46,8 @@ public class ConstProp {
         for (Block block: function.getBlocklist()) {
             ArrayList<Instr> instrs = block.getInblocklist();
             Instr instr = instrs.get(instrs.size() - 1);
-            if (instr instanceof CondBrTerm condBrTerm) {
+            if (instr instanceof CondBrTerm) {
+                CondBrTerm condBrTerm = (CondBrTerm) instr;
                 if (!condBrTerm.getV().isIdent()) {
                     if (condBrTerm.getV().getVal() == 1) {
                         instrs.set(instrs.size() - 1, new BrTerm("br", condBrTerm.getI1()));
