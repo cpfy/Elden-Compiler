@@ -47,6 +47,9 @@ public class ZExtInst extends Instr {
 
     @Override
     public Value mergeConst() {
+        if (!v.isIdent()) {
+            return new Value(v.getVal());
+        }
         return null;
     }
 

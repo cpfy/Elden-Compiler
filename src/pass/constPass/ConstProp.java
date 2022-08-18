@@ -28,16 +28,36 @@ public class ConstProp {
         initList();     //获取函数中的指令
         constProp();    //常量折叠
 
+        condBrMerge();
+
         initList();
         deadCodeKill(); //死代码删除
 
+//        for (Block block: function.getBlocklist()) {
+//            new CSE(block); //公共子表达式删除.2963
+//
+//        }
+
+        initList();
+        deadCodeKill(); //死代码删除
+    }
+
+    private void condBrMerge() {
         for (Block block: function.getBlocklist()) {
-            new CSE(block); //公共子表达式删除.2963
-
+            ArrayList<Instr> instrs = block.getInblocklist();
+            Instr instr = instrs.get(instrs.size() - 1);
+            if (instr instanceof CondBrTerm) {
+                CondBrTerm condBrTerm = (CondBrTerm) instr;
+                if (!condBrTerm.getV().isIdent()) {
+                    if (condBrTerm.getV().getVal() == 1) {
+                        instrs.set(instrs.size() - 1, new BrTerm("br", condBrTerm.getI1()));
+                    }
+                    else if (condBrTerm.getV().getVal() == 0) {
+                        instrs.set(instrs.size() - 1, new BrTerm("br", condBrTerm.getI2()));
+                    }
+                }
+            }
         }
-
-        initList();
-        deadCodeKill(); //死代码删除
     }
 
     private void constProp() {

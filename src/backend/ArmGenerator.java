@@ -128,6 +128,7 @@ public class ArmGenerator {
                 //if (b.isDirty()) continue;
                 addBlockLabel(b);
                 for (Instr i : b.getInblocklist()) {
+                    out.println("\t" + i.toString());
                     add(new HeadArm("@ " + i.toString()));
                     addInstr(i);
                     add(new HeadArm(""));
@@ -427,7 +428,8 @@ public class ArmGenerator {
                 addMultOptimize(instr, dest);
                 break;
             case "sdiv":
-                addSdivOptimize(instr, dest);
+//                addSdivOptimize(instr, dest);// 有bug，暂时关闭
+                addOp(instr, dest);
                 break;
             case "srem":    // 取模
                 addSrem(instr, dest);
@@ -537,14 +539,14 @@ public class ArmGenerator {
         String reg1, reg2;
 
         // 操作数中一个是0
-        if (v1.isIdent() && !v2.isIdent() && v2.getVal() == 0) {
+        if (v1.isIdent() && !v2.isIdent() && v2.getVal() == 0 && (op.equals("add") || op.equals("sub"))) {
             reg1 = reg.applyTmp();
             loadValue(reg1, v1.getIdent());
             storeValue(reg1, dest);
             reg.freeTmp(reg1);
             return;
 
-        } else if (v2.isIdent() && !v1.isIdent() && v1.getVal() == 0) {
+        } else if (v2.isIdent() && !v1.isIdent() && v1.getVal() == 0 && op.equals("add")) {
             reg1 = reg.applyTmp();
             loadValue(reg1, v2.getIdent());
             storeValue(reg1, dest);
@@ -1388,7 +1390,13 @@ public class ArmGenerator {
         String reg1 = reg.applyTmp();
         int num;
 
-        if (v1.isIdent() && !v2.isIdent()) {
+        if (v1.isIdent() && v2.isIdent()) {
+            addOp(instr, dest);
+            reg.freeTmp(reg1);
+            reg.freeTmp(reg_d);
+            return;
+        }
+        else if (v1.isIdent() && !v2.isIdent()) {
             loadValue(reg1, v1.getIdent());
             num = v2.getVal();
 
@@ -1420,7 +1428,7 @@ public class ArmGenerator {
         } else if (isPowerOfTwo(num + 1)) {
             int mi = (int) (Math.log(num + 1) / Math.log(2));
             add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
-            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
+            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
 
         } else if (isPowerOfTwo(num - 2)) {
             int mi = (int) (Math.log(num - 2) / Math.log(2));
@@ -1431,8 +1439,8 @@ public class ArmGenerator {
         } else if (isPowerOfTwo(num + 2)) {
             int mi = (int) (Math.log(num + 2) / Math.log(2));
             add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
-            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
-            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
+            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
+            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
 
         } else if (isPowerOfTwo(num - 3)) {
             int mi = (int) (Math.log(num - 3) / Math.log(2));
@@ -1444,14 +1452,15 @@ public class ArmGenerator {
         } else if (isPowerOfTwo(num + 3)) {
             int mi = (int) (Math.log(num + 3) / Math.log(2));
             add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
-            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
-            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
-            add("sub $" + reg_d + ", " + reg_d + ", " + reg1);
+            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
+            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
+            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
 
         } else {
             String reg2 = reg.applyTmp();
-            add("mov " + reg2 + ", #" + num);
+            moveImm(reg2, num);
             add("mul " + reg_d + ", " + reg1 + ", " + reg2);
+            reg.freeTmp(reg2);
         }
 
         storeValue(reg_d, dest);
@@ -1478,7 +1487,13 @@ public class ArmGenerator {
         int num;
         boolean reverse;
 
-        if (v1.isIdent() && !v2.isIdent()) {
+        if (v1.isIdent() && v2.isIdent()) {
+            addOp(instr, dest);
+            reg.freeTmp(reg1);
+            reg.freeTmp(reg_d);
+            return;
+        }
+        else if (v1.isIdent() && !v2.isIdent()) {
             loadValue(reg1, v1.getIdent());
             num = v2.getVal();
             reverse = false;
@@ -1504,6 +1519,7 @@ public class ArmGenerator {
                 String reg2 = reg.applyTmp();
                 moveImm(reg2, num);
                 add("sdiv " + reg_d + ", " + reg2 + ", " + reg1);
+                reg.freeTmp(reg2);
             }
 
         } else {    //x÷d
