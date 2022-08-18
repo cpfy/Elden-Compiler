@@ -19,6 +19,11 @@ public class Value {
 
     private boolean hex;    // 10 or 16进制
     private int val;
+
+    public String getHexVal() {
+        return hexVal;
+    }
+
     private String hexVal;
 
     private boolean isIdent = false;  // 是否ident
