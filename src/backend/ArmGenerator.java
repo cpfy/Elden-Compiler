@@ -1459,6 +1459,7 @@ public class ArmGenerator {
             String reg2 = reg.applyTmp();
             add("mov " + reg2 + ", #" + num);
             add("mul " + reg_d + ", " + reg1 + ", " + reg2);
+            reg.freeTmp(reg2);
         }
 
         storeValue(reg_d, dest);
@@ -1517,6 +1518,7 @@ public class ArmGenerator {
                 String reg2 = reg.applyTmp();
                 moveImm(reg2, num);
                 add("sdiv " + reg_d + ", " + reg2 + ", " + reg1);
+                reg.freeTmp(reg2);
             }
 
         } else {    //x÷d
