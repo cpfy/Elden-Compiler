@@ -69,16 +69,16 @@ public class CSE {
         switch (op) {
             case "add":
             case "fadd":
-                return (l - r + 1) % MOD;
+                return (l + r + 233) % MOD;
             case "sub":
             case "fsub":
-                return (l - r - 1) % MOD;
+                return (l * 2 - r - 10086) % MOD;
             case "mul":
             case "fmul":
-                return (int) (((long)l * r + 1) % MOD);
+                return (int) (((long)l * r) % MOD);
             case "sdiv":
             case "fdiv":
-                return (l / r - 1) % MOD;
+                return (l / r) % MOD;
             case "srem":
                 return (l % r) % MOD;
             default:

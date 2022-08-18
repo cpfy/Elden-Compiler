@@ -33,10 +33,10 @@ public class ConstProp {
         initList();
         deadCodeKill(); //死代码删除
 
-//        for (Block block: function.getBlocklist()) {
-//            new CSE(block); //公共子表达式删除.2963
-//
-//        }
+        for (Block block: function.getBlocklist()) {
+            new CSE(block); //公共子表达式删除.2963
+
+        }
 
         initList();
         deadCodeKill(); //死代码删除
