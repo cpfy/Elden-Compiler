@@ -538,14 +538,14 @@ public class ArmGenerator {
         String reg1, reg2;
 
         // 操作数中一个是0
-        if (v1.isIdent() && !v2.isIdent() && v2.getVal() == 0) {
+        if (v1.isIdent() && !v2.isIdent() && v2.getVal() == 0 && (op.equals("add") || op.equals("sub"))) {
             reg1 = reg.applyTmp();
             loadValue(reg1, v1.getIdent());
             storeValue(reg1, dest);
             reg.freeTmp(reg1);
             return;
 
-        } else if (v2.isIdent() && !v1.isIdent() && v1.getVal() == 0) {
+        } else if (v2.isIdent() && !v1.isIdent() && v1.getVal() == 0 && op.equals("add")) {
             reg1 = reg.applyTmp();
             loadValue(reg1, v2.getIdent());
             storeValue(reg1, dest);
