@@ -1,6 +1,7 @@
 package backend;
 
 import backend.Arm.Arm;
+import backend.Arm.FourArm;
 import backend.Arm.HeadArm;
 import backend.Arm.LabelArm;
 import backend.Arm.OneArm;
@@ -1526,26 +1527,29 @@ public class ArmGenerator {
                 add("asr " + reg_d + ", " + reg_d + ", #" + mi);
 
             } else if (m < Math.pow(2, 31)) {  // q = SRA(MULSH(m, n), shpost) − XSIGN(n)
+                String regt = reg.applyTmp();
 
                 moveImm(reg2, (int) m);
-                add(new ThreeArm("mul", reg_d, reg1, reg2));
+                add(new FourArm("smull", regt, reg_d, reg1, reg2));    // !!这里应为mfhi
                 add("asr " + reg_d + ", " + reg_d + ", #" + sh_post);
 
+                // add("slti $v1, $" + reg1 + ", 0");    //若x<0, v1 = 1
                 add("mov " + reg2 + ", #0");
                 add("cmp " + reg1 + ", " + reg2);
                 add("movlt " + reg2 + ", #1");
-//                add("slti $v1, $" + reg1 + ", 0");    //若x<0, v1 = 1
                 add("add " + reg_d + ", " + reg_d + ", " + reg2);
+
+                reg.freeTmp(regt);
 
             } else {    //q = SRA(n + MULSH(m − 2^N, n), shpost) − XSIGN(n)
                 String regt = reg.applyTmp();
 
-                moveImm(reg2, (int) (m - Math.pow(2, 32)));
-                add("smull " + regt + ", " + reg_d + ", " + reg1 + ", " + reg2);
-
-//                add("mov "+regt+", " + (int) (m - Math.pow(2, 32)));
+//                add("mov " + regt + ", " + (int) (m - Math.pow(2, 32)));
 //                add("mult $" + reg1 + ", $v1");
 //                add("mfhi $" + reg_d);
+
+                moveImm(reg2, (int) (m - Math.pow(2, 32)));
+                add("smull " + regt + ", " + reg_d + ", " + reg1 + ", " + reg2);
                 add("add " + reg_d + ", " + reg_d + ", " + reg1);
                 add("asr " + reg_d + ", " + reg_d + ", #" + sh_post);
 
