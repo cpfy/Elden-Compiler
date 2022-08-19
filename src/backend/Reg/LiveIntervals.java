@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 public class LiveIntervals {
 
-    private HashMap<Register, LiveInterval> LImap;
+    private HashMap<String, LiveInterval> LImap;
 
     // 每个变量活跃区间的类
     // LIS corresponds to the Liveness Analysis pass
@@ -20,24 +20,54 @@ public class LiveIntervals {
 
     // 初始扫描一遍intervals
     public void scanIntervals(ArrayList<Function> functions) {
-        int i = 0;
+        int cnt = 0;
         for (Function function : functions) {
 
-            if (i == 0) {   // Jump First Function
-                i++;
+            if (cnt == 0) {   // Jump First "GlobalContainer" Function
+                cnt++;
                 continue;
             }
 
-            // 初始化编号
+            // 初始化编号，这里的No.每个函数重置
             function.initInstrNo();
+
+            // 函数参数也有def
+            //todo 不确定para是否要处理
+            ArrayList<String> paras = function.getParas();
+//            for (String s : paras) {
+//                insertLIMap(s, -231453255);
+//            }
+
             for (Block b : function.getBlocklist()) {
-                for (Instr inst : b.getInblocklist()) {
-                    System.out.println(inst.getInstrNo() + ": " + inst.toString());
+                for (Instr i : b.getInblocklist()) {
+                    System.out.println(i.getInstrNo() + ": " + i.toString());
+//                    System.out.println("Uses:" + i.getUses());
+//                    System.out.println("Define:" + i.getDef());
+
+                    int no = i.getInstrNo();
+                    for (String s : i.getUses()) {
+                        // 目前paras均不分配
+                        if (!paras.contains(s)) {
+                            insertLIMap(i.getDef(), no);
+                        }
+                        insertLIMap(s, no);
+                    }
+                    if (i.getDef() != null) {
+                        // 目前paras均不分配
+                        if (!paras.contains(i.getDef())) {
+                            insertLIMap(i.getDef(), no);
+                        }
+                    }
                 }
             }
 
 
         }
+
+        for (LiveInterval LI : LImap.values()) {
+            System.out.println(LI.toString());
+        }
+
     }
 
     public LiveInterval getInterval(Register Reg) {
@@ -48,8 +78,19 @@ public class LiveIntervals {
         LImap.remove(Reg);
     }
 
+    // 每个function结束清理
     public void clear() {
         LImap.clear();
+    }
+
+    // 向LImap加入一个变量+位置
+    private void insertLIMap(String s, int pos) {
+        if (!LImap.containsKey(s)) {
+            LImap.put(s, new LiveInterval(s));
+
+        } else {
+            LImap.get(s).addUsePos(pos);
+        }
     }
 
 }

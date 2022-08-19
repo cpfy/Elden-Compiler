@@ -22,6 +22,7 @@ public class RegAllocBase {
         this.VRM = vrm;
         this.LIS = lis;
         this.Matrix = mat;
+
 //        MRI->freezeReservedRegs(vrm.getMachineFunction());
 //        RegClassInfo.runOnMachineFunction(vrm.getMachineFunction());
     }

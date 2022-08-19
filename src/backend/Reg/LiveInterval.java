@@ -3,10 +3,11 @@ package backend.Reg;
 // 在开始执行线性扫描算法前，要先获得 live interval，算法分配寄存器都是给 live interval 分配的
 public class LiveInterval {
 
-//    private int start;
-//    private int end;
+    private int start;
+    private int end;
+    private boolean active = false; // 是否已激活、有start
 
-    private LiveRange LR;   // 表明活跃区间为[start, end)
+    //    private LiveRange LR;   // 表明活跃区间为[start, end)
     private String vname;   // 该LI对应的变量名
 
 
@@ -14,6 +15,12 @@ public class LiveInterval {
 
     public LiveInterval(String vname) {
         this.vname = vname;
+    }
+
+    // 输出测试用
+    @Override
+    public String toString() {
+        return "<" + vname + "> active interval: [" + start + ", " + end + ")";
     }
 
     public Register getReg() {
@@ -34,6 +41,18 @@ public class LiveInterval {
     }
 
     public void clear() {
+    }
+
+    // 增加使用位置
+    public void addUsePos(int pos) {
+        if (!active) {
+            active = true;
+            start = end = pos;
+
+        } else {
+            assert (start < pos) : "[LiveInterval] new pos must > start interval!";
+            end = pos;
+        }
     }
 
 
