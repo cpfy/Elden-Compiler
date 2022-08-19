@@ -1,7 +1,7 @@
 package backend.Reg;
 
 // 在开始执行线性扫描算法前，要先获得 live interval，算法分配寄存器都是给 live interval 分配的
-public class LiveInterval {
+public class LiveInterval implements Comparable<LiveInterval> {
 
     private int start;
     private int end;
@@ -22,6 +22,19 @@ public class LiveInterval {
     public String toString() {
         return "<" + vname + "> active interval: [" + start + ", " + end + ")";
     }
+
+    @Override
+    public int compareTo(LiveInterval other) {
+        return Integer.compare(start, other.start);
+    }
+//
+//    public int getStart() {
+//        return start;
+//    }
+//
+//    public int getEnd() {
+//        return end;
+//    }
 
     public Register getReg() {
         return reg;
@@ -50,8 +63,16 @@ public class LiveInterval {
             start = end = pos;
 
         } else {
-            assert (start < pos) : "[LiveInterval] new pos must > start interval!";
-            end = pos;
+            // 无语子，得开-ea设置，默认不生效的
+//            assert (start < pos) : "[LiveInterval] new pos must > start interval!";
+
+            // 有可能先扫编号大的
+            if (pos < start) {
+                start = pos;
+
+            } else {
+                end = pos;
+            }
         }
     }
 

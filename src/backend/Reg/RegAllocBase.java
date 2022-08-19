@@ -11,7 +11,7 @@ public class RegAllocBase {
     private LiveIntervals LIS;
     private LiveRegMatrix Matrix;
 
-    private PriorityQueue<LiveInterval> pQueue = new PriorityQueue<>();
+    private PriorityQueue<LiveInterval> pQueue = new PriorityQueue<>(); // 需要在LI类里实现compare to
 
 
     // 管理RegAlloc的总类
@@ -63,7 +63,6 @@ public class RegAllocBase {
             //todo
 
         }
-
     }
 
     // 入队
@@ -116,10 +115,10 @@ public class RegAllocBase {
     public MCRegister selectOrSplit(LiveInterval VirtReg, Vector<Register> SplitVRegs) {
         // Populate a list of physical register spill candidates.
 //        Vector(MCRegister, 8) PhysRegSpillCands;
-return null;//todo
+        return null;//todo
     }
 
-    public void aboutToRemoveInterval(LiveInterval LI){
+    public void aboutToRemoveInterval(LiveInterval LI) {
 
     }
 

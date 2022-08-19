@@ -22,10 +22,16 @@ public class VirtRegMap {
     // 参见：https://github.com/llvm/llvm-project/blob/main/llvm/lib/CodeGen/VirtRegMap.cpp
     public VirtRegMap() {
 
-        this.Virt2PhysMap.clear();
-        this.Virt2StackSlotMap.clear();
-        this.Virt2SplitMap.clear();
-        this.Virt2ShapeMap.clear();
+        this.Virt2PhysMap = new HashMap<>();
+        this.Virt2StackSlotMap = new HashMap<>();
+        this.Virt2SplitMap = new HashMap<>();
+        this.Virt2ShapeMap = new HashMap<>();
+
+
+//        this.Virt2PhysMap.clear();
+//        this.Virt2StackSlotMap.clear();
+//        this.Virt2SplitMap.clear();
+//        this.Virt2ShapeMap.clear();
 
     }
 
@@ -79,7 +85,7 @@ public class VirtRegMap {
         return 0;//todo
     }
 
-    public boolean hasPhys(Register reg) {
+    public boolean hasPhys(Register physReg) {
         return true;    //todo
     }
 

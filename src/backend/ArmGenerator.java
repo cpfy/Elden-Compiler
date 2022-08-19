@@ -2,8 +2,10 @@ package backend;
 
 import backend.Arm.*;
 import backend.Reg.LiveIntervals;
+import backend.Reg.LiveRegMatrix;
 import backend.Reg.RegAllocBase;
 import backend.Reg.RegisterOld;
+import backend.Reg.VirtRegMap;
 import llvm.Block;
 import llvm.Function;
 import llvm.Ident;
@@ -42,6 +44,8 @@ public class ArmGenerator {
     /*** !!! ***/
     private RegAllocBase RA;    // 寄存器分配
     private LiveIntervals LIS;
+    private VirtRegMap VRM;
+    private LiveRegMatrix Matrix;
 
     // LPIC计数器
     private int lpiccount = 1;
@@ -51,6 +55,7 @@ public class ArmGenerator {
     private int lpicusecount = 0;
     private ArrayList<String> lpicUseList;
     private boolean interpolating = false;  // 是否正在插入，不触发500
+
 
     public ArmGenerator(ArrayList<Function> allfunclist, String outputfile) {
         for (Function function : allfunclist) {
@@ -66,7 +71,10 @@ public class ArmGenerator {
 
         // 寄存器等初始化
         this.LIS = new LiveIntervals();
-        LIS.scanIntervals(allfunclist);
+        this.VRM = new VirtRegMap();
+        this.Matrix = new LiveRegMatrix();
+        this.RA = new RegAllocBase(this.VRM, this.LIS, this.Matrix);
+
     }
 
     public void convertarm() {
@@ -82,6 +90,8 @@ public class ArmGenerator {
         for (int j = aflist.size() - 1; j >= 0; j--) {
             Function f = aflist.get(j);
             curFunc = f;
+
+            LIS.scanIntervals(f);
 
             // GlobalDef特判
             if (f.getFuncheader().getFname().equals("GlobalContainer")) {

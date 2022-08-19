@@ -19,49 +19,43 @@ public class LiveIntervals {
     }
 
     // 初始扫描一遍intervals
-    public void scanIntervals(ArrayList<Function> functions) {
+    public void scanIntervals(Function function) {
+
+        if (function.getFuncheader().getFname().equals("GlobalContainer")) {
+            return;
+        }
         int cnt = 0;
-        for (Function function : functions) {
 
-            if (cnt == 0) {   // Jump First "GlobalContainer" Function
-                cnt++;
-                continue;
-            }
+        // 初始化编号，这里的No.每个函数重置
+        function.initInstrNo();
 
-            // 初始化编号，这里的No.每个函数重置
-            function.initInstrNo();
-
-            // 函数参数也有def
-            //todo 不确定para是否要处理
-            ArrayList<String> paras = function.getParas();
+        // 函数参数也有def
+        //todo 不确定para是否要处理
+        ArrayList<String> paras = function.getParas();
 //            for (String s : paras) {
 //                insertLIMap(s, -231453255);
 //            }
 
-            for (Block b : function.getBlocklist()) {
-                for (Instr i : b.getInblocklist()) {
-                    System.out.println(i.getInstrNo() + ": " + i.toString());
+        for (Block b : function.getBlocklist()) {
+            for (Instr i : b.getInblocklist()) {
+                System.out.println(i.getInstrNo() + ": " + i.toString());
 //                    System.out.println("Uses:" + i.getUses());
 //                    System.out.println("Define:" + i.getDef());
 
-                    int no = i.getInstrNo();
-                    for (String s : i.getUses()) {
-                        // 目前paras均不分配
-                        if (!paras.contains(s)) {
-                            insertLIMap(i.getDef(), no);
-                        }
+                int no = i.getInstrNo();
+                for (String s : i.getUses()) {
+                    // 目前paras均不分配
+                    if (!paras.contains(s)) {
                         insertLIMap(s, no);
                     }
-                    if (i.getDef() != null) {
-                        // 目前paras均不分配
-                        if (!paras.contains(i.getDef())) {
-                            insertLIMap(i.getDef(), no);
-                        }
+                }
+                if (i.getDef() != null) {
+                    // 目前paras均不分配
+                    if (!paras.contains(i.getDef())) {
+                        insertLIMap(i.getDef(), no);
                     }
                 }
             }
-
-
         }
 
         for (LiveInterval LI : LImap.values()) {
@@ -87,10 +81,8 @@ public class LiveIntervals {
     private void insertLIMap(String s, int pos) {
         if (!LImap.containsKey(s)) {
             LImap.put(s, new LiveInterval(s));
-
-        } else {
-            LImap.get(s).addUsePos(pos);
         }
+        LImap.get(s).addUsePos(pos);
     }
 
 }
