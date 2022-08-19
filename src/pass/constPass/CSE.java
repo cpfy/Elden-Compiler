@@ -31,14 +31,14 @@ public class CSE {
                 if (value2Number.containsKey(binaryInst.getV1().toString())) {
                     l = value2Number.get(binaryInst.getV1().toString());
                 } else {
-                    l = binaryInst.getV1().toString().hashCode();
+                    l = (int) (((long) binaryInst.getV1().toString().hashCode() * binaryInst.getV1().toString().hashCode()) % MOD);
                     value2Number.put(binaryInst.getV1().toString(), l);
                 }
 
                 if (value2Number.containsKey(binaryInst.getV2().toString())) {
                     r = value2Number.get(binaryInst.getV2().toString());
                 } else {
-                    r = binaryInst.getV2().toString().hashCode();
+                    r = (int) (((long) binaryInst.getV2().toString().hashCode() * binaryInst.getV2().toString().hashCode()) % MOD);
                     value2Number.put(binaryInst.getV2().toString(), r);
                 }
 
