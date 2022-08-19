@@ -33,14 +33,14 @@ public abstract class Instr {
     /**
      * add by sujunzhe start
      **/
-    private int instrNum;       //按照dfs给指令编号，用于寄存器分配
+    private int instrNo;       //按照dfs给指令编号，用于寄存器分配
 
-    public int getInstrNum() {
-        return instrNum;
+    public int getInstrNo() {
+        return instrNo;
     }
 
-    public void setInstrNum(int instrNum) {
-        this.instrNum = instrNum;
+    public void setInstrNo(int instrNum) {
+        this.instrNo = instrNum;
     }
 
     private boolean canDelete = false;  //优化中使用，如果该指令待删除，则该变量为true

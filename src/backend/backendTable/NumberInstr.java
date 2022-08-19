@@ -10,6 +10,8 @@ import llvm.Instr.Instr;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+
+//用于给指令编号
 public class NumberInstr {
     private Function function;
     private HashSet<Block> walked = new HashSet<>();
@@ -28,7 +30,7 @@ public class NumberInstr {
     private void postOrderWalk(Block block) {
         walked.add(block);
         for (Instr instr: block.getInblocklist()) {
-            instr.setInstrNum(num);
+            instr.setInstrNo(num);
             num += 4;
         }
         for (Block suc : block.getSucBlocks()) {

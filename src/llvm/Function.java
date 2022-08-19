@@ -24,7 +24,7 @@ public class Function {
 
     /*** add start by sujunzhe ***/
 
-    public void initInstrNum() {
+    public void initInstrNo() {        //初始化指令编号
         new NumberInstr(this);
     }
 
