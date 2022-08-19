@@ -1652,9 +1652,8 @@ public class ArmGenerator {
 //                add("mflo $v1");
 //                add("sub $" + reg_d + ", " + reg1 + ", $v1");
 
-                moveImm(reg2, num);
-                addMulOperation(reg_d, reg1, num);
-                add(new ThreeArm("sub", reg_d, reg1, reg2));
+                addMulOperation(reg_d, reg_d, num);
+                add(new ThreeArm("sub", reg_d, reg1, reg_d));
             }
         }
 
