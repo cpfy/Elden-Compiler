@@ -428,11 +428,11 @@ public class ArmGenerator {
                 addMultOptimize(instr, dest);
                 break;
             case "sdiv":
-//                addSdivOptimize(instr, dest);// 有bug，暂时关闭
-                addOp(instr, dest);
+                addSdivOptimize(instr, dest);   // 有bug，暂时关闭
+                //addOp(instr, dest);
                 break;
             case "srem":    // 取模
-                addSrem(instr, dest);
+                addSremOptimize(instr, dest);
                 break;
 
             //todo
@@ -491,16 +491,36 @@ public class ArmGenerator {
 
     // 取模函数
     // a % b = a - (a/b)*b
-    private void addSrem(Instr instr, Ident dest) {
+    private void addSremOptimize(Instr instr, Ident dest) {
         String op = ((BinaryInst) instr).getOp();   // must "srem"
         Type t = ((BinaryInst) instr).getT();
         Value v1 = ((BinaryInst) instr).getV1();
         Value v2 = ((BinaryInst) instr).getV2();
 
-        String reg1, reg2;
+        String reg1 = reg.applyTmp();
+        String reg_d = reg.applyTmp();
+
+        if (v1.isIdent() && !v2.isIdent()) {
+            loadValue(reg1, v1.getIdent());
+            addSremOperation(reg_d, reg1, v2.getVal(), false);
+            storeValue(reg_d, dest);
+            reg.freeTmp(reg1);
+            reg.freeTmp(reg_d);
+            return;
+
+        } else if (!v1.isIdent() && v2.isIdent()) {
+            loadValue(reg1, v2.getIdent());
+            addSremOperation(reg_d, reg1, v1.getVal(), true);
+            storeValue(reg_d, dest);
+            reg.freeTmp(reg1);
+            reg.freeTmp(reg_d);
+            return;
+        }
+
+        String reg2 = reg.applyTmp();
 
         //v1
-        reg1 = reg.applyTmp();
+        //todo: can more optimize
         if (v1.isIdent()) {
             loadValue(reg1, v1.getIdent());
 
@@ -509,15 +529,12 @@ public class ArmGenerator {
         }
 
         //v2
-        reg2 = reg.applyTmp();
         if (v2.isIdent()) {
             loadValue(reg2, v2.getIdent());
 
         } else {
             moveImm(reg2, v2.getVal());
         }
-
-        String reg_d = reg.applyTmp();
 
         add(new ThreeArm("sdiv", reg_d, reg1, reg2));
         add(new ThreeArm("mul", reg_d, reg_d, reg2));
@@ -1380,6 +1397,7 @@ public class ArmGenerator {
 
 
     /************** 之后部分为乘除优化 ****************/
+    // 乘法优化（含instr）
     private void addMultOptimize(Instr instr, Ident dest) {
         String op = ((BinaryInst) instr).getOp();   // 必为mul
         Type t = ((BinaryInst) instr).getT();
@@ -1388,30 +1406,38 @@ public class ArmGenerator {
 
         String reg_d = reg.applyTmp();
         String reg1 = reg.applyTmp();
-        int num;
 
         if (v1.isIdent() && v2.isIdent()) {
-            addOp(instr, dest);
+            addOp(instr, dest);     // todo: 最好不这么用
             reg.freeTmp(reg1);
             reg.freeTmp(reg_d);
             return;
-        }
-        else if (v1.isIdent() && !v2.isIdent()) {
+
+        } else if (v1.isIdent() && !v2.isIdent()) {
             loadValue(reg1, v1.getIdent());
-            num = v2.getVal();
+            addMulOperation(reg_d, reg1, v2.getVal());
 
         } else if (!v1.isIdent() && v2.isIdent()) {
             loadValue(reg1, v2.getIdent());
-            num = v1.getVal();
+            addMulOperation(reg_d, reg1, v1.getVal());
 
         } else {
-//            exit(0);
-            num = 287368785;
             error();
         }
 
+        storeValue(reg_d, dest);
+
+        reg.freeTmp(reg1);
+        reg.freeTmp(reg_d);
+
+    }
+
+    private void addMulOperation(String reg_d, String reg1, int num) {
+        // 统一申请公用
+        String reg2 = reg.applyTmp();
+
         if (num == 0) {
-            add("mov " + reg_d + ", 0");
+            add("mov " + reg_d + ", #0");
 
         } else if (num == 1) {
             add("mov " + reg_d + ", " + reg1);
@@ -1457,17 +1483,11 @@ public class ArmGenerator {
             add("sub " + reg_d + ", " + reg_d + ", " + reg1);
 
         } else {
-            String reg2 = reg.applyTmp();
             moveImm(reg2, num);
             add("mul " + reg_d + ", " + reg1 + ", " + reg2);
-            reg.freeTmp(reg2);
         }
 
-        storeValue(reg_d, dest);
-
-        reg.freeTmp(reg1);
-        reg.freeTmp(reg_d);
-
+        reg.freeTmp(reg2);
     }
 
     //判断是否2的幂次
@@ -1475,51 +1495,19 @@ public class ArmGenerator {
         return n > 0 && (n & (n - 1)) == 0;
     }
 
-    //除法优化
-    private void addSdivOptimize(Instr instr, Ident dest) {
-        String op = ((BinaryInst) instr).getOp();   // 必为sdiv
-        Type t = ((BinaryInst) instr).getT();
-        Value v1 = ((BinaryInst) instr).getV1();
-        Value v2 = ((BinaryInst) instr).getV2();
-
-        String reg_d = reg.applyTmp();
-        String reg1 = reg.applyTmp();
-        int num;
-        boolean reverse;
-
-        if (v1.isIdent() && v2.isIdent()) {
-            addOp(instr, dest);
-            reg.freeTmp(reg1);
-            reg.freeTmp(reg_d);
-            return;
-        }
-        else if (v1.isIdent() && !v2.isIdent()) {
-            loadValue(reg1, v1.getIdent());
-            num = v2.getVal();
-            reverse = false;
-
-        } else if (!v1.isIdent() && v2.isIdent()) {
-            loadValue(reg1, v2.getIdent());
-            num = v1.getVal();
-            reverse = true;
-
-        } else {
-//            exit(0);
-            num = 287368785;
-            reverse = false;
-            error();
-        }
+    // 除法优化，仅寄存器
+    private void addSdivOperation(String reg_d, String reg1, int num, boolean reverse) {
+        // 专门给大家当临时寄存器
+        String reg2 = reg.applyTmp();
 
         //除法？狗都不用？
-        if (reverse) {  //d÷x
+        if (reverse) {  // d÷x
             if (num == 0) {
                 add("mov " + reg_d + ", #0");
 
             } else {
-                String reg2 = reg.applyTmp();
                 moveImm(reg2, num);
                 add("sdiv " + reg_d + ", " + reg2 + ", " + reg1);
-                reg.freeTmp(reg2);
             }
 
         } else {    //x÷d
@@ -1539,7 +1527,6 @@ public class ArmGenerator {
 
             } else if (m < Math.pow(2, 31)) {  // q = SRA(MULSH(m, n), shpost) − XSIGN(n)
 
-                String reg2 = reg.applyTmp();
                 moveImm(reg2, (int) m);
                 add(new ThreeArm("mul", reg_d, reg1, reg2));
                 add("asr " + reg_d + ", " + reg_d + ", #" + sh_post);
@@ -1549,11 +1536,9 @@ public class ArmGenerator {
                 add("movlt " + reg2 + ", #1");
 //                add("slti $v1, $" + reg1 + ", 0");    //若x<0, v1 = 1
                 add("add " + reg_d + ", " + reg_d + ", " + reg2);
-                reg.freeTmp(reg2);
 
             } else {    //q = SRA(n + MULSH(m − 2^N, n), shpost) − XSIGN(n)
                 String regt = reg.applyTmp();
-                String reg2 = reg.applyTmp();
 
                 moveImm(reg2, (int) (m - Math.pow(2, 32)));
                 add("smull " + regt + ", " + reg_d + ", " + reg1 + ", " + reg2);
@@ -1564,30 +1549,57 @@ public class ArmGenerator {
                 add("add " + reg_d + ", " + reg_d + ", " + reg1);
                 add("asr " + reg_d + ", " + reg_d + ", #" + sh_post);
 
-//                String reg2 = reg.applyTmp();
                 add("mov " + reg2 + ", #0");
                 add("cmp " + reg1 + ", " + reg2);
                 add("movlt " + reg2 + ", #1");
 //                add("slti $v1, $" + reg1 + ", 0");    //若x<0, v1 = 1
                 add("add " + reg_d + ", " + reg_d + ", " + reg2);
 
-                reg.freeTmp(reg2);
                 reg.freeTmp(regt);
             }
 
             if (num < 0) {
-
-                String reg2 = reg.applyTmp();
                 add("mov " + reg2 + ", #0");
                 add("sub " + reg_d + ", " + reg2 + ", " + reg_d);
-                reg.freeTmp(reg2);
             }
-
-            storeValue(reg_d, dest);
-
-            reg.freeTmp(reg_d);
-            reg.freeTmp(reg1);
         }
+
+        reg.freeTmp(reg2);
+
+    }
+
+    // 除法优化（含instr）
+    private void addSdivOptimize(Instr instr, Ident dest) {
+        String op = ((BinaryInst) instr).getOp();   // 必为sdiv
+        Type t = ((BinaryInst) instr).getT();
+        Value v1 = ((BinaryInst) instr).getV1();
+        Value v2 = ((BinaryInst) instr).getV2();
+
+        String reg_d = reg.applyTmp();
+        String reg1 = reg.applyTmp();
+
+        if (v1.isIdent() && v2.isIdent()) {
+            addOp(instr, dest);     // todo 最好不用；另外记得store
+            reg.freeTmp(reg1);
+            reg.freeTmp(reg_d);
+            return;
+
+        } else if (v1.isIdent() && !v2.isIdent()) {
+            loadValue(reg1, v1.getIdent());
+            addSdivOperation(reg_d, reg1, v2.getVal(), false);
+
+        } else if (!v1.isIdent() && v2.isIdent()) {
+            loadValue(reg1, v2.getIdent());
+            addSdivOperation(reg_d, reg1, v1.getVal(), true);
+
+        } else {
+            error();
+        }
+
+        storeValue(reg_d, dest);
+
+        reg.freeTmp(reg_d);
+        reg.freeTmp(reg1);
     }
 
     private DivMShL ChooseMultiplier(int d, int prec /*=31*/) {
@@ -1607,31 +1619,41 @@ public class ArmGenerator {
     }
 
     //取余数优化: a % b 翻译为 a - a / b * b
-    private void ModOptimize(String dreg, String op1reg, int d, boolean reverse) {
+    private void addSremOperation(String reg_d, String reg1, int num, boolean reverse) {
+        // 统一申请公用
+        String reg2 = reg.applyTmp();
+
         if (reverse) {
-            if (d == 0) {
-                add("mov " + dreg + ", 0");
+            if (num == 0) {
+                add("mov " + reg_d + ", #0");
 
             } else {
-                add("mov v1, " + d);
-                add("div $v1, $" + op1reg);
-                add("mfhi $" + dreg);
+//                add("mov v1, " + num);
+//                add("div $v1, $" + reg1);
+//                add("mfhi $" + reg_d);
+
+                moveImm(reg2, num);
+                add(new ThreeArm("sdiv", reg_d, reg2, reg1));
             }
 
         } else {
-            if (d == 1) {
-                add("mov " + dreg + ", 0");
+            if (num == 1) {
+                add("mov " + reg_d + ", #0");
 
             } else {
-//                addSdivOptimize(dreg, op1reg, d, reverse);    // 不能用"v1"当dreg！
-//todo
+                addSdivOperation(reg_d, reg1, num, reverse);    // 不能用"v1"当dreg！
 
-                add("mov v1, " + d);
-                add("mult $" + dreg + ", $v1");
-                add("mflo $v1");
-                add("sub $" + dreg + ", " + op1reg + ", $v1");
+//                add("mov v1, " + num);
+//                add("mult $" + reg_d + ", $v1");
+//                add("mflo $v1");
+//                add("sub $" + reg_d + ", " + reg1 + ", $v1");
 
+                moveImm(reg2, num);
+                addMulOperation(reg_d, reg1, num);
+                add(new ThreeArm("sub", reg_d, reg1, reg2));
             }
         }
+
+        reg.freeTmp(reg2);
     }
 }
