@@ -1,6 +1,7 @@
 package llvm;
 
 import backend.backendTable.GenerateTable;
+import backend.backendTable.NumberInstr;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +23,10 @@ public class Function {
     }
 
     /*** add start by sujunzhe ***/
+
+    public void initInstrNum() {
+        new NumberInstr(this);
+    }
 
 
     private int funcSize = 0;       //函数需要分配的大小
