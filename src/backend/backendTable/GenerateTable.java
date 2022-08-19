@@ -25,7 +25,7 @@ public class GenerateTable {
     private void execute() {
         initList();
         int n = 0;
-        for (Ident ident: function.getFuncheader().getParas()) {
+        for (Ident ident : function.getFuncheader().getParas()) {
             if (varNames.contains(ident.toString())) {
                 continue;
             }
@@ -34,7 +34,7 @@ public class GenerateTable {
             function.addVar(ident.toString(), n);
         }
 
-        for (Instr instr: instrs) {
+        for (Instr instr : instrs) {
             n = 0;
             if (instr instanceof AssignInstr) {
                 n += 4;
@@ -54,7 +54,7 @@ public class GenerateTable {
     }
 
     private void initList() {
-        for (Block block: function.getBlocklist()) {
+        for (Block block : function.getBlocklist()) {
             instrs.addAll(block.getPhis());
             instrs.addAll(block.getInblocklist());
         }

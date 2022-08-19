@@ -1,37 +1,12 @@
 package backend;
 
-import backend.Arm.Arm;
-import backend.Arm.FourArm;
-import backend.Arm.HeadArm;
-import backend.Arm.LabelArm;
-import backend.Arm.OneArm;
-import backend.Arm.ThreeArm;
-import backend.Arm.TmpArm;
-import backend.Arm.TwoArm;
+import backend.Arm.*;
+import backend.Reg.Register;
 import llvm.Block;
 import llvm.Function;
 import llvm.Ident;
-import llvm.Instr.AllocaInst;
-import llvm.Instr.AssignInstr;
-import llvm.Instr.BinaryInst;
-import llvm.Instr.BrTerm;
-import llvm.Instr.CallInst;
-import llvm.Instr.CondBrTerm;
-import llvm.Instr.FCmpInst;
-import llvm.Instr.FPToSIInst;
-import llvm.Instr.GetElementPtrInst;
-import llvm.Instr.GlobalDefInst;
-import llvm.Instr.IcmpInst;
-import llvm.Instr.Instr;
-import llvm.Instr.LoadInst;
-import llvm.Instr.RetTerm;
-import llvm.Instr.SIToFPInst;
-import llvm.Instr.StoreInstr;
-import llvm.Instr.ZExtInst;
-import llvm.Type.ArrayType;
-import llvm.Type.IntType;
-import llvm.Type.Type;
-import llvm.Type.TypeC;
+import llvm.Instr.*;
+import llvm.Type.*;
 import llvm.TypeValue;
 import llvm.Value;
 
@@ -39,7 +14,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import static java.lang.Math.max;
 import static java.lang.System.*;
@@ -47,18 +21,16 @@ import static java.lang.System.*;
 public class ArmGenerator {
     private ArrayList<Function> aflist;
     private ArrayList<Arm> armlist;
-    private Register reg;
-    private HashMap<IRCode, String> printstrMap;
-    private static String OUTPUT_DIR;
     private ArrayList<Instr> gbdeflist;
+    private Register reg;           // 管理寄存器分配
+//    private RegisterTable table;    // 管理寄存器分配表
+    private static String OUTPUT_DIR;
 
     private String allRegs = "{r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}";
     private String allFloatRegs1 = "{s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15}";
     private String allFloatRegs2 = "{s16,s17,s18,s19,s20,s21,s22,s23,s24,s25,s26,s27,s28,s29,s30,s31}";
 
     private int tabcount = 0;
-    private int printcount = 0;
-    private final String tab = "\t";
 
     private boolean outMain = false;        // 倒着读取，已经离开main函数
     private boolean intoGlobalDef = false;  // 标记此时在函数体内
@@ -80,7 +52,6 @@ public class ArmGenerator {
         }
         this.aflist = allfunclist;
         this.armlist = new ArrayList<>();
-        this.printstrMap = new HashMap<>();
         this.reg = new Register();
         this.gbdeflist = new ArrayList<>();
         OUTPUT_DIR = outputfile;
