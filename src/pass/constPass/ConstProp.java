@@ -43,7 +43,7 @@ public class ConstProp {
     }
 
     private void condBrMerge() {
-        for (Block block: function.getBlocklist()) {
+        for (Block block : function.getBlocklist()) {
             ArrayList<Instr> instrs = block.getInblocklist();
             Instr instr = instrs.get(instrs.size() - 1);
             if (instr instanceof CondBrTerm) {
@@ -51,8 +51,7 @@ public class ConstProp {
                 if (!condBrTerm.getV().isIdent()) {
                     if (condBrTerm.getV().getVal() == 1) {
                         instrs.set(instrs.size() - 1, new BrTerm("br", condBrTerm.getI1()));
-                    }
-                    else if (condBrTerm.getV().getVal() == 0) {
+                    } else if (condBrTerm.getV().getVal() == 0) {
                         instrs.set(instrs.size() - 1, new BrTerm("br", condBrTerm.getI2()));
                     }
                 }
@@ -65,7 +64,7 @@ public class ConstProp {
         while (changed) {
             changed = false;
 
-            for (Instr instr: instrs) {
+            for (Instr instr : instrs) {
                 if (instr.isCanDelete()) {
                     continue;
                 }
@@ -85,11 +84,11 @@ public class ConstProp {
     }
 
     private void deadCodeKill() {
-        for (Ident ident: function.getFuncheader().getParas()) {
+        for (Ident ident : function.getFuncheader().getParas()) {
             InstrUses instrUses = new InstrUses(null);
             varName2InstrUses.put(ident.toString(), instrUses);
         }
-        for (Instr instr: instrs) {
+        for (Instr instr : instrs) {
             if (!(instr instanceof StoreInstr || instr instanceof BrTerm
                     || instr instanceof CondBrTerm || instr instanceof CallInst
                     || instr instanceof RetTerm)) {
@@ -104,7 +103,7 @@ public class ConstProp {
         }
 
 
-        for (Instr instr: instrs) {
+        for (Instr instr : instrs) {
             if (!(instr instanceof StoreInstr || instr instanceof BrTerm
                     || instr instanceof CondBrTerm || instr instanceof CallInst
                     || instr instanceof RetTerm)) {
@@ -114,7 +113,7 @@ public class ConstProp {
             String def = instr.getDef();
             ArrayList<String> uses = instr.getUses();
             ArrayList<InstrUses> instrUsesArrayList = new ArrayList<>();
-            for (String s: uses) {
+            for (String s : uses) {
                 if (s.charAt(0) != '%') {
                     continue;
                 }
@@ -129,14 +128,14 @@ public class ConstProp {
                 instrUses.addUses(instrUsesArrayList);
             }
 
-            for (String s: instr.getRoots()) {
+            for (String s : instr.getRoots()) {
                 if (s.charAt(0) != '%') {
                     continue;
                 }
                 roots.put(s, varName2InstrUses.get(s));
             }
         }
-        for (InstrUses instrUses: roots.values()) {
+        for (InstrUses instrUses : roots.values()) {
             instrUses.dfs();
         }
 
@@ -144,7 +143,7 @@ public class ConstProp {
     }
 
     private void rename(Value newValue, Value oldValue) {
-        for (Instr instr: instrs) {
+        for (Instr instr : instrs) {
             if (instr.isCanDelete()) {
                 continue;
             }
@@ -153,7 +152,7 @@ public class ConstProp {
     }
 
     private void initList() {
-        for (Block block: function.getBlocklist()) {
+        for (Block block : function.getBlocklist()) {
             instrs.addAll(block.getPhis());
             instrs.addAll(block.getInblocklist());
         }

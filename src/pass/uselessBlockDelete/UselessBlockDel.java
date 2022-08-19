@@ -32,7 +32,7 @@ public class UselessBlockDel {
     }
 
     private void execute() {
-        for (Block block: function.getBlocklist()) {
+        for (Block block : function.getBlocklist()) {
             block.setDead(false);
             Instr instr = block.getInblocklist().get(block.getInblocklist().size() - 1);
             if (instr instanceof CondBrTerm || instr instanceof BrTerm) {
@@ -41,7 +41,7 @@ public class UselessBlockDel {
             }
         }
 
-        for (Instr instr: brList) {
+        for (Instr instr : brList) {
             Block block = instrBlockHashMap.get(instr);
             if (block.getInblocklist().size() == 1 && block.getPhis().size() == 0 && instr instanceof BrTerm) {
                 changed = true;
@@ -51,7 +51,7 @@ public class UselessBlockDel {
             }
         }
 
-        for (Block block: function.getBlocklist()) {
+        for (Block block : function.getBlocklist()) {
             Instr instr = block.getInblocklist().get(block.getInblocklist().size() - 1);
             if (instr instanceof CondBrTerm) {
                 CondBrTerm condBrTerm = (CondBrTerm) instr;
@@ -66,14 +66,14 @@ public class UselessBlockDel {
 
     private void rename(Value newValue, Value oldValue) {
         System.out.println("tttt " + newValue);
-        for (Instr instr: brList) {
+        for (Instr instr : brList) {
             instr.renameUses(newValue, oldValue);
         }
     }
 
     private void deleteDeadBlock() {
         ArrayList<Block> newBlocks = new ArrayList<>();
-        for (Block block: function.getBlocklist()) {
+        for (Block block : function.getBlocklist()) {
             if (!block.isDead()) {
                 newBlocks.add(block);
             }

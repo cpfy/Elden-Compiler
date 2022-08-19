@@ -31,10 +31,10 @@ public class SinglePhiDel {
 
 
     private void phiSimplify() {
-        for (Phi phi: phis) {
+        for (Phi phi : phis) {
             if (phi.getParams().size() == 1) {
                 phi.setCanDelete(true);
-                for (Value value: phi.getParams().values()) {
+                for (Value value : phi.getParams().values()) {
                     rename(value, phi.getValue());
                 }
             }
@@ -43,9 +43,9 @@ public class SinglePhiDel {
 
 
     private void phiDelete() {
-        for (Block block: function.getBlocklist()) {
+        for (Block block : function.getBlocklist()) {
             ArrayList<Phi> newPhis = new ArrayList<>();
-            for (Phi phi: block.getPhis()) {
+            for (Phi phi : block.getPhis()) {
                 if (!phi.isCanDelete()) {
                     newPhis.add(phi);
                 }
@@ -55,7 +55,7 @@ public class SinglePhiDel {
     }
 
     private void rename(Value newValue, Value oldValue) {
-        for (Instr instr: instrs) {
+        for (Instr instr : instrs) {
             if (instr.isCanDelete()) {
                 continue;
             }
@@ -64,14 +64,14 @@ public class SinglePhiDel {
     }
 
     private void initList() {
-        for (Block block: function.getBlocklist()) {
+        for (Block block : function.getBlocklist()) {
             instrs.addAll(block.getPhis());
             instrs.addAll(block.getInblocklist());
         }
     }
 
     private void initPhiList() {
-        for (Block block: function.getBlocklist()) {
+        for (Block block : function.getBlocklist()) {
             phis.addAll(block.getPhis());
         }
     }

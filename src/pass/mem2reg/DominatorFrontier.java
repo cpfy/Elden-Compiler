@@ -12,9 +12,9 @@ public class DominatorFrontier {
     }
 
     private void execute() {
-        for (Block n: function.getBlocklist()) {
+        for (Block n : function.getBlocklist()) {
             if (n.getPreBlocks().size() > 1) {
-                for (Block p: n.getPreBlocks()) {
+                for (Block p : n.getPreBlocks()) {
                     Block runner = p;
                     while (runner != n.getIDom()) {
                         runner.addDominatorFrontier(n);

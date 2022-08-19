@@ -23,7 +23,7 @@ public class InstrUses {
         }
         instr.setCanDelete(false);
         traversed = true;
-        for (InstrUses instrUses: usesArrayList) {
+        for (InstrUses instrUses : usesArrayList) {
             instrUses.dfs();
         }
     }

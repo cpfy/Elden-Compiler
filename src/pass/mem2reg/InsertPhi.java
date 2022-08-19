@@ -28,62 +28,64 @@ public class InsertPhi {
     private HashSet<Block> worked = new HashSet<>();
     private HashSet<Value> isfloat = new HashSet<>();
     private Stack<Block> dist = new Stack<>();
-    public InsertPhi(Function function){
+
+    public InsertPhi(Function function) {
         this.function = function;
         System.out.println("insertphi start");
         execute();
     }
-    public void execute(){
+
+    public void execute() {
         ArrayList<Value> vars = new ArrayList<>();
         vars = getVariables(function); //遍历这个函数内的所有变量
         caldef(); //计算哪些alloca变量曾被store赋过值。
         System.out.println("caldefined start");
         calDefined(function.getBlocklist().get(0)); //计算到达-定义链;
-        for(Value i : vars){
+        for (Value i : vars) {
             process(i);
         }
     }
-    public void process(Value var){
-        HashMap<Block,Boolean> hasPhi = new HashMap<>();
-        HashMap<Block,Boolean> processed = new HashMap<>();
+
+    public void process(Value var) {
+        HashMap<Block, Boolean> hasPhi = new HashMap<>();
+        HashMap<Block, Boolean> processed = new HashMap<>();
         Stack<Block> workList = new Stack<>();
-        for(Block i:function.getBlocklist()){
-            hasPhi.put(i,false);
-            processed.put(i,false);
+        for (Block i : function.getBlocklist()) {
+            hasPhi.put(i, false);
+            processed.put(i, false);
         }
-        for(Block i:function.getBlocklist()){
+        for (Block i : function.getBlocklist()) {
             Boolean cond1 = true;
             cond1 = def.get(i).contains(var); //判断这个基本块是否给这个变量赋过值。
-            if(cond1){
-                processed.put(i,true);
+            if (cond1) {
+                processed.put(i, true);
                 workList.push(i);
             }
         }
-        while(!workList.isEmpty()){
+        while (!workList.isEmpty()) {
             Block i = workList.pop();
-            for(Block j:i.getDominatorFrontiers()){
-                if(!hasPhi.get(j)){
+            for (Block j : i.getDominatorFrontiers()) {
+                if (!hasPhi.get(j)) {
                     int source = 0;
-                    for(Block block:j.getPreBlocks()){
+                    for (Block block : j.getPreBlocks()) {
                         worked = new HashSet<>();
-                        if(hasDefined(var,block)) source++;
+                        if (hasDefined(var, block)) source++;
                     }
-                    if(source>1) {
+                    if (source > 1) {
 
                         Type type;
-                        if(isfloat.contains(var)){
+                        if (isfloat.contains(var)) {
                             type = new FloatType(TypeC.F);
+                        } else {
+                            type = new IntType(TypeC.I, 32);
                         }
-                        else{
-                            type = new IntType(TypeC.I,32);
-                        }
-                        Phi phi = new Phi("phi", var, j.getPreBlocks(),type);
+                        Phi phi = new Phi("phi", var, j.getPreBlocks(), type);
                         //System.out.println("insert new phi in block " + j.getLabel() + ":" + phi.toString());
                         j.addPhi(phi);
                     }
-                    hasPhi.put(j,true);
-                    if(!processed.get(j)){
-                        processed.put(j,true);
+                    hasPhi.put(j, true);
+                    if (!processed.get(j)) {
+                        processed.put(j, true);
                         workList.push(j);
                     }
                 }
@@ -91,33 +93,33 @@ public class InsertPhi {
         }
     }
 
-    public boolean hasAssigned(Block i,Value var){
+    public boolean hasAssigned(Block i, Value var) {
         return def.get(i).contains(var);
     }
 
-    public void caldef(){
-        for(Block i:function.getBlocklist()){
-            def.put(i,new HashSet<>());
-            for(Instr j:i.getInblocklist()){
-                if(j instanceof StoreInstr){
+    public void caldef() {
+        for (Block i : function.getBlocklist()) {
+            def.put(i, new HashSet<>());
+            for (Instr j : i.getInblocklist()) {
+                if (j instanceof StoreInstr) {
                     StoreInstr store = (StoreInstr) j;
                     def.get(i).add(store.getV2());
                 }
             }
         }
     }
-    public ArrayList<Value> getVariables(Function f){
+
+    public ArrayList<Value> getVariables(Function f) {
         ArrayList<Value> ans = new ArrayList<>();
-        for(Block i:f.getBlocklist()){
-            for(Instr j:i.getInblocklist()){
-                if(j instanceof AssignInstr){
+        for (Block i : f.getBlocklist()) {
+            for (Instr j : i.getInblocklist()) {
+                if (j instanceof AssignInstr) {
                     AssignInstr assign = (AssignInstr) j;
-                    if(assign.getValueinstr() instanceof AllocaInst){
+                    if (assign.getValueinstr() instanceof AllocaInst) {
                         AllocaInst alloca = (AllocaInst) assign.getValueinstr();
-                        if(alloca.getType() instanceof IntType ){
+                        if (alloca.getType() instanceof IntType) {
                             ans.add(new Value(new Ident(assign.getIdent().getName())));
-                        }
-                        else if(alloca.getType() instanceof FloatType){
+                        } else if (alloca.getType() instanceof FloatType) {
                             ans.add(new Value(new Ident(assign.getIdent().getName())));
                             isfloat.add(new Value(new Ident(assign.getIdent().getName())));
                         }
@@ -128,29 +130,29 @@ public class InsertPhi {
         return ans;
     }
 
-    public void calDefined(Block block){
+    public void calDefined(Block block) {
         Block pre = null;
-        if(!dist.isEmpty()){
+        if (!dist.isEmpty()) {
             pre = dist.peek();
         }
 
         //processPhi();
         //前导基本块流入数据
         //System.out.println("label:" + block.getLabel());
-        if(!defined.containsKey(block)){
+        if (!defined.containsKey(block)) {
             HashSet<Value> hashmap = new HashSet<>();
-            defined.put(block,hashmap);
+            defined.put(block, hashmap);
         }
-        if(pre!=null){
+        if (pre != null) {
             HashSet<Value> set = defined.get(pre);
             //System.out.println("prelabel:"+pre.getLabel());
-            for(Value i: set){
+            for (Value i : set) {
                 defined.get(block).add(i);
             }
         }
         dist.push(block);
         haveworked.add(block);
-        for(Instr ins:block.getInblocklist()){
+        for (Instr ins : block.getInblocklist()) {
             //System.out.println(ins);
             /*
             if(ins instanceof StoreInstr){
@@ -160,9 +162,9 @@ public class InsertPhi {
                 def.get(block).add(store.getV2());
             }
             */
-            if(ins instanceof AssignInstr){
+            if (ins instanceof AssignInstr) {
                 AssignInstr assignInstr = (AssignInstr) ins;
-                if(assignInstr.getValueinstr() instanceof AllocaInst) {
+                if (assignInstr.getValueinstr() instanceof AllocaInst) {
                     AllocaInst alloca = (AllocaInst) assignInstr.getValueinstr();
                     if (alloca.getType() instanceof IntType || alloca.getType() instanceof FloatType) {
                         //System.out.println("add " + assignInstr.getIdent() + " in " + block.getLabel());
@@ -172,19 +174,18 @@ public class InsertPhi {
             }
 
         }
-        for(Block i:block.getSucBlocks()){
-            if(!haveworked.contains(i)){
+        for (Block i : block.getSucBlocks()) {
+            if (!haveworked.contains(i)) {
                 calDefined(i);
             }
         }
         dist.pop();
     }
 
-    public Boolean hasDefined(Value value,Block block){
-        if(defined.get(block).contains(value)){
+    public Boolean hasDefined(Value value, Block block) {
+        if (defined.get(block).contains(value)) {
             //System.out.println("find " + value + " in " + block.getLabel());
-        }
-        else{
+        } else {
             //System.out.println("cannot find " + value + " in " + block.getLabel());
 
         }

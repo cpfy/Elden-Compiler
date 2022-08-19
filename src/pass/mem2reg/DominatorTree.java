@@ -25,7 +25,6 @@ public class DominatorTree {
         postOrderWalk(root);
 
 
-
         doms.put(root, root);
 
         boolean changed = true;
@@ -55,7 +54,7 @@ public class DominatorTree {
         }
         System.out.println("pp = " + pp);
 
-        for (Block block: doms.keySet()) {
+        for (Block block : doms.keySet()) {
             block.addIDom(doms.get(block));
         }
     }
@@ -76,7 +75,7 @@ public class DominatorTree {
 
     private void postOrderWalk(Block block) {
         walked.add(block);
-        for (Block suc: block.getSucBlocks()) {
+        for (Block suc : block.getSucBlocks()) {
             if (!walked.contains(suc)) {
                 postOrderWalk(suc);
             }
