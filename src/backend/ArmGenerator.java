@@ -1433,6 +1433,7 @@ public class ArmGenerator {
 
     }
 
+    // 注意!须保证regd与reg1不可为同一个
     private void addMulOperation(String reg_d, String reg1, int num) {
         // 统一申请公用
         String reg2 = reg.applyTmp();
@@ -1645,14 +1646,14 @@ public class ArmGenerator {
                 add("mov " + reg_d + ", #0");
 
             } else {
-                addSdivOperation(reg_d, reg1, num, reverse);    // 不能用"v1"当dreg！
+                addSdivOperation(reg2, reg1, num, reverse);    // 不能用"v1"当dreg！
 
 //                add("mov v1, " + num);
 //                add("mult $" + reg_d + ", $v1");
 //                add("mflo $v1");
 //                add("sub $" + reg_d + ", " + reg1 + ", $v1");
 
-                addMulOperation(reg_d, reg_d, num);
+                addMulOperation(reg_d, reg2, num);     // 注意!须保证regd与reg1不可为同一个
                 add(new ThreeArm("sub", reg_d, reg1, reg_d));
             }
         }
