@@ -200,6 +200,13 @@ public class Block {
                 newInblocklist.add(instr);
             }
         }
+        ArrayList<Phi> phis1 = new ArrayList<>();
+        for (Phi phi: phis) {
+            if (!phi.isCanDelete()) {
+                phis1.add(phi);
+            }
+        }
+        phis = phis1;
         inblocklist = newInblocklist;
     }
 

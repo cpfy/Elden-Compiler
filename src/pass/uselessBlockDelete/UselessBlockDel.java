@@ -65,7 +65,7 @@ public class UselessBlockDel {
     }
 
     private void rename(Value newValue, Value oldValue) {
-        System.out.println("tttt " + newValue);
+//        System.out.println("tttt " + newValue);
         for (Instr instr : brList) {
             instr.renameUses(newValue, oldValue);
         }

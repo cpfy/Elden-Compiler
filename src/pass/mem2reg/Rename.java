@@ -30,9 +30,9 @@ public class Rename {
         }
         label = 1;
         start = function.getBlocklist().get(0);
-        System.out.println("rename start");
+        //System.out.println("rename start");
         dfs(start);
-        System.out.println("renamephi starts with " + start.getLabel());
+        //System.out.println("renamephi starts with " + start.getLabel());
         renamePhi(start);
         deleteInstr();
     }
@@ -66,9 +66,9 @@ public class Rename {
         }
         //processPhi();
         //前导基本块流入数据
-        System.out.println("label:" + block.getLabel());
+        //System.out.println("label:" + block.getLabel());
         if (pre != null) {
-            System.out.println("prelabel:" + pre.getLabel());
+            //System.out.println("prelabel:" + pre.getLabel());
             for (Value i : valueList.keySet()) {
                 if (valueList.get(i).containsKey(pre)) {
                     valueList.get(i).put(block, valueList.get(i).get(pre));
@@ -78,9 +78,9 @@ public class Rename {
         dist.push(block);
         haveworked.add(block);
         for (Phi phi : block.getPhis()) {
-            System.out.println(phi.toString());
-            //System.out.println("________"+phi.getValue());
-            System.out.println(phi.getValue());
+            //System.out.println(phi.toString());
+            ////System.out.println("________"+phi.getValue());
+            //System.out.println(phi.getValue());
             if (valueList.containsKey(phi.getValue())) {
                 valueList.get(phi.getValue()).put(block, new Value(new Ident("p" + version)));
             } else {
@@ -92,21 +92,21 @@ public class Rename {
             version++;
         }
         for (Instr i : block.getInblocklist()) {
-            System.out.println("working:" + i.toString() + ",its name:" + i.getInstrname());
+            //System.out.println("working:" + i.toString() + ",its name:" + i.getInstrname());
             switch (i.getInstrname()) {
                 case "assign":
                     AssignInstr ins2 = (AssignInstr) i;
                     Instr j = ins2.getValueinstr();
                     Boolean renameNewIdent = true;
-                    //System.out.println("an assign instr:"+j.getInstrname());
+                    ////System.out.println("an assign instr:"+j.getInstrname());
                     switch (j.getInstrname()) {
                         case "binary":
                             BinaryInst ins = (BinaryInst) j;
                             Value v1 = ins.getV1();
                             Value v2 = ins.getV2();
-                            //System.out.println("a binary instr");
+                            ////System.out.println("a binary instr");
                             if (valueList.containsKey(v1)) {
-                                System.out.println("change in binary1:" + valueList.get(v1).get(block).toString());
+                                //System.out.println("change in binary1:" + valueList.get(v1).get(block).toString());
                                 ins.setV1(valueList.get(v1).get(block));
                             }
                             if (valueList.containsKey(v2)) {
@@ -144,12 +144,12 @@ public class Rename {
                             break;
                         case "load":
                             LoadInst ins3 = (LoadInst) j;
-                            System.out.println("in load:" + ins3.getV().getIdent());
+                            //System.out.println("in load:" + ins3.getV().getIdent());
                             if (ins3.getT1() instanceof FloatType || ins3.getT1() instanceof IntType) {
                                 if (!ins3.getV().getIdent().isGlobal() && !isPointer.contains(ins3.getV().getIdent()))
                                     i.setCanDelete(true);
                                 else {
-                                    System.out.println("cannot delete");
+                                    //System.out.println("cannot delete");
                                 }
                             }
                             Value dest = new Value(new Ident(ins2.getIdent().getName()));
@@ -159,7 +159,7 @@ public class Rename {
                                     HashMap<Block, Value> hashmap = new HashMap<>();
                                     //判断value是否为pointer，如果是则不作操作。
                                     if (!isPointer.contains(ins3.getV().getIdent())) {
-                                        //System.out.println("yes,it's:"+valueList.get(ins3.getV()).get(block));
+                                        ////System.out.println("yes,it's:"+valueList.get(ins3.getV()).get(block));
                                         hashmap.put(block, valueList.get(ins3.getV()).get(block));
                                     } else {
                                         ins3.setV(valueList.get(ins3.getV()).get(block));
@@ -215,7 +215,7 @@ public class Rename {
                             break;
                         case "getelementptr":
                             GetElementPtrInst ins6 = (GetElementPtrInst) j;
-                            //System.out.println("in getele:" + ins2.getIdent());
+                            ////System.out.println("in getele:" + ins2.getIdent());
                             isPointer.add(new Ident(ins2.getIdent().getName()));
                             if (valueList.containsKey(ins6.getV())) {
                                 ins6.setValue(valueList.get(ins6.getV()).get(block));
@@ -228,15 +228,15 @@ public class Rename {
                             }
                             break;
                     }
-                    //System.out.println(ins2.getIdent());
-                    //System.out.println(ins2.getIdent());
+                    ////System.out.println(ins2.getIdent());
+                    ////System.out.println(ins2.getIdent());
                     String name = ins2.getIdent().getName();
                     Value oldvalue = new Value(new Ident(name));
                     ins2.getIdent().setName("x" + version);
                     version++;
-                    //System.out.println("........................................."+name);
+                    ////System.out.println("........................................."+name);
                     if (!valueList.containsKey(oldvalue) && !j.getInstrname().equals("load")) {
-                        System.out.println("assign don't have " + oldvalue);
+                        //System.out.println("assign don't have " + oldvalue);
                         HashMap<Block, Value> newHash = new HashMap<>();
                         newHash.put(block, new Value(ins2.getIdent()));
                         valueList.put(oldvalue, newHash);
@@ -332,7 +332,7 @@ public class Rename {
                     }
                     break;
             }
-            System.out.println("worked:" + i.toString());
+            //System.out.println("worked:" + i.toString());
         }
         for (Block i : block.getSucBlocks()) {
             if (!haveworked.contains(i)) {
@@ -362,7 +362,7 @@ public class Rename {
         for (Block i : function.getBlocklist()) {
             if (i.getLabel().equals(name)) {
                 i.setLabel(newname);
-                //System.out.println("succeed in renamelabel");
+                ////System.out.println("succeed in renamelabel");
             }
         }
     }
@@ -371,9 +371,9 @@ public class Rename {
         havePhi.add(block);
         for (Phi i : block.getPhis()) {
             HashSet<Block> needDeleted = new HashSet<>();
-            System.out.println(function + "in renamePhi:" + block.getLabel() + ":" + i.toString());
+            //System.out.println(function + "in renamePhi:" + block.getLabel() + ":" + i.toString());
             for (Block j : i.getParams().keySet()) {
-                System.out.println("processing:" + j.getLabel());
+                //System.out.println("processing:" + j.getLabel());
                 if (valueList.get(i.getOriginValue()).containsKey(j) && !alreadyDeleted.contains(valueList.get(i.getOriginValue()).get(j).getIdent())) {
                     i.reName(valueList.get(i.getOriginValue()).get(j), j);
                 } else {
@@ -383,7 +383,7 @@ public class Rename {
             for (Block j : needDeleted) {
                 i.deleteBlock(j);
             }
-            System.out.println("renamed:" + i.toString());
+            //System.out.println("renamed:" + i.toString());
         }
         for (Block j : block.getSucBlocks()) {
             if (!havePhi.contains(j)) {

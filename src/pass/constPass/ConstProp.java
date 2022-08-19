@@ -120,6 +120,9 @@ public class ConstProp {
                 if (varName2InstrUses.get(s) == null) {
                     System.err.println("\t" + s);
                 }
+                if (def != null) {
+//                    System.out.println(def + "\tuses\t" + s);
+                }
                 instrUsesArrayList.add(varName2InstrUses.get(s));
             }
 
@@ -132,6 +135,7 @@ public class ConstProp {
                 if (s.charAt(0) != '%') {
                     continue;
                 }
+//                System.out.println("root " + s);
                 roots.put(s, varName2InstrUses.get(s));
             }
         }

@@ -129,7 +129,7 @@ public class VarDef extends Def {
         ArrayList<Integer> dimsInt = new ArrayList<>();
         for (Exp exp : dims) {
             dimsInt.add(exp.getValue());
-            System.out.println(exp.getValue());
+//            System.out.println(exp.getValue());
         }
         if (getDeclType().equals("i32")) {
             table.addInteger(new IntegerItem(id.getRawWord().getName(), false, dimsInt, null, tempName));

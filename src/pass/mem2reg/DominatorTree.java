@@ -45,14 +45,14 @@ public class DominatorTree {
                     changed = true;
                 }
             }
-            for (int i = postorder.size() - 1; i >= 0; i--) {
-                Block b = postorder.get(i);
-                System.out.println(function.getBlocklist().indexOf(b));
-            }
-            System.out.println();
-            pp++;
+//            for (int i = postorder.size() - 1; i >= 0; i--) {
+//                Block b = postorder.get(i);
+//                System.out.println(function.getBlocklist().indexOf(b));
+//            }
+//            System.out.println();
+//            pp++;
         }
-        System.out.println("pp = " + pp);
+//        System.out.println("pp = " + pp);
 
         for (Block block : doms.keySet()) {
             block.addIDom(doms.get(block));
