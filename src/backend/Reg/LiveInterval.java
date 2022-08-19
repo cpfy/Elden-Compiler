@@ -70,7 +70,7 @@ public class LiveInterval implements Comparable<LiveInterval> {
             if (pos < start) {
                 start = pos;
 
-            } else {
+            } else if (pos > end) {
                 end = pos;
             }
         }
