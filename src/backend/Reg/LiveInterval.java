@@ -2,10 +2,15 @@ package backend.Reg;
 
 public class LiveInterval {
 
+    private Register reg;
+
     public LiveInterval() {
 
     }
 
+    public Register getReg() {
+        return reg;
+    }
 
     // overlaps - Return true if the live range overlaps an interval specified
     // by [Start, End).

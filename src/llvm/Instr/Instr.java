@@ -30,7 +30,9 @@ public abstract class Instr {
 
     public boolean global;   //是否全局
 
-    /** add by sujunzhe start**/
+    /**
+     * add by sujunzhe start
+     **/
     private boolean canDelete = false;  //优化中使用，如果该指令待删除，则该变量为true
 
     public boolean isCanDelete() {
@@ -50,24 +52,21 @@ public abstract class Instr {
     public abstract String getDef();                            //死代码删除使用
 
     public abstract ArrayList<String> getRoots();               //死代码删除使用
-    /** add by sujunzhe end**/
 
+    /**
+     * add by sujunzhe end
+     **/
 
-    private String rawstr;  //输出的ircode字符串格式
-    private String IRstring;
-
-
+    // 应该也无用
     private String name;
     private int num;
 
+//    private String rawstr;  //输出的ircode字符串格式
+//    private String IRstring;
+//    public boolean init = false;    //int,array是否有初始化值
+//    private ArrayList<Integer> initList = new ArrayList<>(); //数组的初始化值List
 
-    public boolean init = false;    //int,array是否有初始化值
-    private ArrayList<Integer> initList = new ArrayList<>(); //数组的初始化值List
-
-//    private String operator;
-//    private Variable dest;      //二元运算或一元运算中的目标变量
-//    private Variable oper1;     //二元运算中的第1个操作数，或一元运算的右操作数
-//    private Variable oper2;     //二元运算第2个操作数
+    public static boolean isTesting;
 
     public Instr(String instrname) {
         this.instrname = instrname;
@@ -76,65 +75,6 @@ public abstract class Instr {
     public String getInstrname() {
         return instrname;
     }
-
-    // 获取localident
-//    public abstract Ident getLi();
-
-
-//    private Type type;      // 默认type1
-//    private Value value1;
-//    private Value value2;
-//    private Type type2;
-//    private boolean isassign = false;   // 是否赋值语句
-//    private Ident left;     // 赋值语句assign的左边
-//    private Instr right;    // 右边的Instr
-
-
-    // to arm 指令
-//    public abstract ArrayList<String> toArm();
-
-
-    //    private String str;     //大部分string类型串
-//    private boolean addroffset = false;     //是否需要地址offset处理
-//    private int offset;
-//    private String prestr;
-//    private String aftstr;
-//
-//    public boolean pushoffset = false;
-//    public boolean activeRegoffset = false;
-//
-//    public boolean hasRetReg = false;       //有欠着的寄存器需要还掉
-//    private int freeRegNumber;              //寄存器标号int no
-
-//
-//    Instr(String prestr, int offset, String aftstr, String type) {  //push 或 actreg 两种状态
-//        this.prestr = prestr;
-//        this.offset = offset;
-//        this.aftstr = aftstr;
-//
-//        this.addroffset = true;
-//
-//        if (type.equals("push")) {
-//            this.pushoffset = true;
-//        } else if (type.equals("actreg")) {
-//            this.activeRegoffset = true;
-//        }
-//    }
-
-//    public int getFreeRegNumber() {
-//        return freeRegNumber;
-//    }
-//
-//    public boolean isAddroffset() {
-//        return addroffset;
-//    }
-//
-//    public void setFreeRegNumber(int freeRegNumber) {
-//        this.freeRegNumber = freeRegNumber;
-//    }
-
-
-    public static boolean isTesting;
 
     public boolean isGlobal() {
         return global;

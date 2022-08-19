@@ -7,5 +7,9 @@ public class LiveRegMatrix {
 
     }
 
+    public void invalidateVirtRegs(){
+
+    }
+
 
 }

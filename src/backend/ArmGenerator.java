@@ -1,7 +1,7 @@
 package backend;
 
 import backend.Arm.*;
-import backend.Reg.Register;
+import backend.Reg.RegisterOld;
 import llvm.Block;
 import llvm.Function;
 import llvm.Ident;
@@ -22,7 +22,7 @@ public class ArmGenerator {
     private ArrayList<Function> aflist;
     private ArrayList<Arm> armlist;
     private ArrayList<Instr> gbdeflist;
-    private Register reg;           // 管理寄存器分配
+    private RegisterOld reg;           // 管理寄存器分配
 //    private RegisterTable table;    // 管理寄存器分配表
     private static String OUTPUT_DIR;
 
@@ -52,7 +52,7 @@ public class ArmGenerator {
         }
         this.aflist = allfunclist;
         this.armlist = new ArrayList<>();
-        this.reg = new Register();
+        this.reg = new RegisterOld();
         this.gbdeflist = new ArrayList<>();
         OUTPUT_DIR = outputfile;
 
