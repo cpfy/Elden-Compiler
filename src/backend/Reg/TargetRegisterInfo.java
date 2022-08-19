@@ -6,4 +6,8 @@ public class TargetRegisterInfo {
     public TargetRegisterInfo(){
 
     }
+
+    static Register index2VirtReg(int i){
+        return null;//todo
+    }
 }

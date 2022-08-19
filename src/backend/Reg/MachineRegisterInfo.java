@@ -16,7 +16,7 @@ public class MachineRegisterInfo {
 
     //
     public boolean reg_nodbg_empty(Register reg) {
-
+        return true;//todo
     }
 
 }

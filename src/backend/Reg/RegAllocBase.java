@@ -1,6 +1,7 @@
 package backend.Reg;
 
 import java.util.PriorityQueue;
+import java.util.Vector;
 
 public class RegAllocBase {
 
@@ -45,7 +46,7 @@ public class RegAllocBase {
     public void allocatePhysRegs() {
         seedLiveRegs();
 
-        while (LiveInterval VirtReg = dequeue()){
+        while (!pQueue.isEmpty()) {
             LiveInterval VirtReg = dequeue();
             assert (!VRM.hasPhys(VirtReg.getReg())) : "Register already assigned";
 
@@ -74,7 +75,51 @@ public class RegAllocBase {
         }
 
         pQueue.add(LI);
-//        enqueue(LI) ?????
+    }
+
+    // 出队
+    public LiveInterval dequeue() {
+        if (pQueue.isEmpty()) {
+            return null;
+        }
+        LiveInterval LI = pQueue.peek();
+        pQueue.poll();
+        return LI;
+    }
+
+    public boolean LRE_CanEraseVirtReg(Register VirtReg) {
+        LiveInterval LI = LIS.getInterval(VirtReg);
+        if (VRM.hasPhys(VirtReg)) {
+            Matrix.unassign(LI);
+            aboutToRemoveInterval(LI);
+            return true;
+        }
+        // Unassigned virtreg is probably in the priority queue.
+        // RegAllocBase will erase it after dequeueing.
+        // Nonetheless, clear the live-range so that the debug
+        // dump will show the right state for that VirtReg.
+        LI.clear();
+        return false;
+    }
+
+    public void LRE_WillShrinkVirtReg(Register VirtReg) {
+        if (!VRM.hasPhys(VirtReg))
+            return;
+
+        // Register is assigned, put it back on the queue for reassignment.
+        LiveInterval LI = LIS.getInterval(VirtReg);
+        Matrix.unassign(LI);
+        enqueue(LI);
+    }
+
+    public MCRegister selectOrSplit(LiveInterval VirtReg, Vector<Register> SplitVRegs) {
+        // Populate a list of physical register spill candidates.
+//        Vector(MCRegister, 8) PhysRegSpillCands;
+return null;//todo
+    }
+
+    public void aboutToRemoveInterval(LiveInterval LI){
+
     }
 
 }

@@ -28,7 +28,8 @@ public abstract class Instr {
 
     */
 
-    public boolean global;   //是否全局
+    public boolean global;  // 是否全局
+    public int no;          // 指令编号（reg alloc用）
 
     /**
      * add by sujunzhe start

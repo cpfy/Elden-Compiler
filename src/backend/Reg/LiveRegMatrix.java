@@ -11,5 +11,9 @@ public class LiveRegMatrix {
 
     }
 
+    public void unassign(LiveInterval LI){
+
+    }
+
 
 }

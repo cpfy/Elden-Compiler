@@ -1,6 +1,8 @@
 package backend;
 
 import backend.Arm.*;
+import backend.Reg.LiveIntervals;
+import backend.Reg.RegAllocBase;
 import backend.Reg.RegisterOld;
 import llvm.Block;
 import llvm.Function;
@@ -23,7 +25,7 @@ public class ArmGenerator {
     private ArrayList<Arm> armlist;
     private ArrayList<Instr> gbdeflist;
     private RegisterOld reg;           // 管理寄存器分配
-//    private RegisterTable table;    // 管理寄存器分配表
+    //    private RegisterTable table;    // 管理寄存器分配表
     private static String OUTPUT_DIR;
 
     private String allRegs = "{r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}";
@@ -36,6 +38,10 @@ public class ArmGenerator {
     private boolean intoGlobalDef = false;  // 标记此时在函数体内
 
     private Function curFunc;       // 当前函数，读取offset时用
+
+    /*** !!! ***/
+    private RegAllocBase RA;    // 寄存器分配
+    private LiveIntervals LIS;
 
     // LPIC计数器
     private int lpiccount = 1;
@@ -52,11 +58,15 @@ public class ArmGenerator {
         }
         this.aflist = allfunclist;
         this.armlist = new ArrayList<>();
-        this.reg = new RegisterOld();
         this.gbdeflist = new ArrayList<>();
+        this.reg = new RegisterOld();
         OUTPUT_DIR = outputfile;
 
         this.lpicUseList = new ArrayList<>();
+
+        // 寄存器等初始化
+        this.LIS = new LiveIntervals();
+        LIS.scanIntervals(allfunclist);
     }
 
     public void convertarm() {
@@ -66,12 +76,8 @@ public class ArmGenerator {
         add(new HeadArm(".fpu vfpv3-d16"));
         add(new HeadArm(".section .text"));
 
-//        add(".cpu cortex-a15");
-//        add(".align 4");
         add(new HeadArm(""));
         add(new HeadArm(".global main"));
-
-//        collectPrintStr();
 
         for (int j = aflist.size() - 1; j >= 0; j--) {
             Function f = aflist.get(j);
