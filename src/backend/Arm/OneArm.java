@@ -4,7 +4,8 @@ public class OneArm extends Arm {
 
     private String onestr;
 
-    // 例如push {...}, beq ...
+    // 包含7种：
+    // push {...}, pop, b, beq, bne, bl, bx
     public OneArm(String instrname, String onestr) {
         super(instrname);
         this.onestr = onestr;

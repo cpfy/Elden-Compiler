@@ -7,7 +7,7 @@ public class FourArm extends Arm {
     private String op3;
     private String op4;
 
-    // 仅smull等极端样例
+    // 目前仅smull一个极端样例
     public FourArm(String instrname, String op1, String op2, String op3, String op4) {
         super(instrname);
         this.op1 = op1;

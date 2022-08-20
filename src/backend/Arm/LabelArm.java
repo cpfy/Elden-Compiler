@@ -4,7 +4,7 @@ public class LabelArm extends Arm {
 
     private String label;
 
-    // 默认
+    // 一个标签名 + <冒号>
     public LabelArm(String label) {
         super("label");
         this.label = label;
