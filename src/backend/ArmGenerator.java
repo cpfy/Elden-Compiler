@@ -2,10 +2,7 @@ package backend;
 
 import backend.Arm.*;
 import backend.Reg.LiveIntervals;
-import backend.Reg.LiveRegMatrix;
-import backend.Reg.RegAllocBase;
 import backend.Reg.RegisterOld;
-import backend.Reg.VirtRegMap;
 import llvm.Block;
 import llvm.Function;
 import llvm.Ident;
@@ -166,21 +163,19 @@ public class ArmGenerator {
         Type t2 = ((ZExtInst) instr).getT2();
         Value v = ((ZExtInst) instr).getV();
 
-        String regd = reg.applyTmp();
+        String regd = reg.T0;   // 代替原写法：String regd = reg.applyTmp();
 
         if (v.isIdent()) {
-            String regt = reg.applyTmp();
+            String regt = reg.T1;
             loadValue(regt, v.getIdent());
 //            add("mov " + regd + ", " + regt);
             add(new TwoArm("mov", regd, regt));
-            reg.freeTmp(regt);
 
         } else {
             //todo 不可能是digit
         }
 
         storeValue(regd, dest);
-        reg.freeTmp(regd);
     }
 
     private void addAssign(Instr instr) {
@@ -233,15 +228,13 @@ public class ArmGenerator {
         Value v1 = ((FCmpInst) instr).getV1();
         Value v2 = ((FCmpInst) instr).getV2();
 
-        String reg_d = reg.applyTmp();  // 0 or 1
+        String reg_d = reg.T0;  // 0 or 1
 
         String reg1 = reg.applyFTmp();
         if (v1.isIdent()) {
             loadValue(reg1, v1.getIdent());
 
         } else {
-//            moveImm(reg1, v1.getVal());
-//            add("vm ov " + reg1 + ", #" + v1.hexToFloat());
             vmoveFloat(reg1, v1);
         }
 
@@ -250,8 +243,6 @@ public class ArmGenerator {
             loadValue(reg2, v2.getIdent());
 
         } else {
-//            moveImm(reg2, v2.getVal());
-//            add("vm ov " + reg2 + ", #" + v2.hexToFloat());
             vmoveFloat(reg2, v2);
 
         }
@@ -275,7 +266,7 @@ public class ArmGenerator {
         reg.freeFTmp(reg2);
 
         storeValue(reg_d, dest);
-        reg.freeTmp(reg_d);
+//        reg.freeTmp(re g_d);
 
     }
 
@@ -285,7 +276,7 @@ public class ArmGenerator {
         Type t2 = ((FPToSIInst) instr).getT2();  // must i32
         Value v = ((FPToSIInst) instr).getV();
 
-        String reg_d = reg.applyTmp();     // 整数+目的寄存器
+        String reg_d = reg.T0;     // 整数+目的寄存器
         String regtf = reg.applyFTmp();
 
         if (v.isIdent()) {
@@ -305,7 +296,7 @@ public class ArmGenerator {
         reg.freeFTmp(regtf);
 
         storeValue(reg_d, dest);
-        reg.freeTmp(reg_d);
+//        reg.freeTmp(r eg_d);
     }
 
     // e.g. %31 = sitofp i32 2 to float
@@ -346,7 +337,7 @@ public class ArmGenerator {
         int val3 = v3.getVal(), val4;
 
 //        String regd = register.applyRegister(dest);
-        String reg_d = reg.applyTmp();
+        String reg_d = reg.T0;
 
         int off1 = t1.getOffset();
         int off2 = t2.getOffset();
@@ -403,7 +394,7 @@ public class ArmGenerator {
         reg.freeTmp(regt);
 
         storeValue(reg_d, dest);
-        reg.freeTmp(reg_d);
+//        reg.freeTmp(re g_d);
     }
 
 
@@ -488,27 +479,27 @@ public class ArmGenerator {
         Value v1 = ((BinaryInst) instr).getV1();
         Value v2 = ((BinaryInst) instr).getV2();
 
-        String reg1 = reg.applyTmp();
-        String reg_d = reg.applyTmp();
+        String reg1 = reg.T1;
+        String reg_d = reg.T0;
 
         if (v1.isIdent() && !v2.isIdent()) {
             loadValue(reg1, v1.getIdent());
             addSremOperation(reg_d, reg1, v2.getVal(), false);
             storeValue(reg_d, dest);
-            reg.freeTmp(reg1);
-            reg.freeTmp(reg_d);
+//            reg.freeTmp(reg1);
+//            reg.freeTmp(re  g_d);
             return;
 
         } else if (!v1.isIdent() && v2.isIdent()) {
             loadValue(reg1, v2.getIdent());
             addSremOperation(reg_d, reg1, v1.getVal(), true);
             storeValue(reg_d, dest);
-            reg.freeTmp(reg1);
-            reg.freeTmp(reg_d);
+//            reg.freeTmp(reg1);
+//            reg.freeTmp(re  g_d);
             return;
         }
 
-        String reg2 = reg.applyTmp();
+        String reg2 = reg.T2;
 
         //v1
         //todo: can more optimize
@@ -532,9 +523,9 @@ public class ArmGenerator {
         add(new ThreeArm("sub", reg_d, reg1, reg_d));
         storeValue(reg_d, dest);
 
-        reg.freeTmp(reg1);
-        reg.freeTmp(reg2);
-        reg.freeTmp(reg_d);
+//        reg.freeTmp(reg1);
+//        reg.freeTmp(reg2);
+//        reg.freeTmp(re  g_d);
 
     }
 
@@ -548,22 +539,20 @@ public class ArmGenerator {
 
         // 操作数中一个是0
         if (v1.isIdent() && !v2.isIdent() && v2.getVal() == 0 && (op.equals("add") || op.equals("sub"))) {
-            reg1 = reg.applyTmp();
+            reg1 = reg.T1;
             loadValue(reg1, v1.getIdent());
             storeValue(reg1, dest);
-            reg.freeTmp(reg1);
             return;
 
         } else if (v2.isIdent() && !v1.isIdent() && v1.getVal() == 0 && op.equals("add")) {
-            reg1 = reg.applyTmp();
+            reg1 = reg.T1;
             loadValue(reg1, v2.getIdent());
             storeValue(reg1, dest);
-            reg.freeTmp(reg1);
             return;
         }
 
         //v1
-        reg1 = reg.applyTmp();
+        reg1 = reg.T1;
         if (v1.isIdent()) {
             loadValue(reg1, v1.getIdent());
 
@@ -572,7 +561,7 @@ public class ArmGenerator {
         }
 
         //v2
-        reg2 = reg.applyTmp();
+        reg2 = reg.T2;
         if (v2.isIdent()) {
             loadValue(reg2, v2.getIdent());
 
@@ -580,15 +569,15 @@ public class ArmGenerator {
             moveImm(reg2, v2.getVal());
         }
 
-        String reg_d = reg.applyTmp();
+        String reg_d = reg.T0;
 
 //        add(op + " " + reg_d + ", " + reg1 + ", " + reg2);
         add(new ThreeArm(op, reg_d, reg1, reg2));
         storeValue(reg_d, dest);
 
-        reg.freeTmp(reg1);
-        reg.freeTmp(reg2);
-        reg.freeTmp(reg_d);
+//        reg.freeTmp(reg1);
+//        reg.freeTmp(reg2);
+//        reg.freeTmp(r  eg_d);
     }
 
     // store i32 5, i32* %1（%1永远表示要存值的地址）
@@ -805,9 +794,9 @@ public class ArmGenerator {
         Value v2 = ((IcmpInst) instr).getV2();
 
 //        String destreg = register.applyRegister(dest);
-        String reg_d = reg.applyTmp();
+        String reg_d = reg.T0;
 
-        String reg1 = reg.applyTmp();
+        String reg1 = reg.T1;
         if (v1.isIdent()) {
             loadValue(reg1, v1.getIdent());
 
@@ -815,7 +804,7 @@ public class ArmGenerator {
             moveImm(reg1, v1.getVal());
         }
 
-        String reg2 = reg.applyTmp();
+        String reg2 = reg.T2;
         if (v2.isIdent()) {
             loadValue(reg2, v2.getIdent());
 
@@ -833,11 +822,11 @@ public class ArmGenerator {
         add(new TwoArm("mov" + movestr, reg_d, "#1"));
         add(new TwoArm("mov" + oppomovestr, reg_d, "#0"));
 
-        reg.freeTmp(reg1);
-        reg.freeTmp(reg2);
+//        reg.freeTmp(reg1);
+//        reg.freeTmp(reg2);
 
         storeValue(reg_d, dest);
-        reg.freeTmp(reg_d);
+//        reg.freeTmp(re  g_d);
 
         //见：https://stackoverflow.com/questions/54237061/when-comparing-numbers-in-arm-assembly-is-there-a-correct-way-to-store-the-value
         //参考2：http://cration.rcstech.org/embedded/2014/03/02/arm-conditional-execution/
@@ -1107,35 +1096,34 @@ public class ArmGenerator {
     }
 
     /**********Reg 处理**********/
-    // 右值，必定有结果（废弃）
-    private String searchRegName(Ident i) {
-        String regname;
-        int no = reg.searchIdentRegNo(i);
-        if (no == -1) {
-            // global则加载进来
-            if (i.isGlobal()) {
-                regname = reg.applyRegister(i);
-//                add("ldr " + regname + ", addr_of_" + i.getName());
-                add(new TmpArm("ldr " + regname + ", =" + i.getName()));
-//                add("ldr " + regname + ", [" + regname + "]");
-                return regname;
-
-            } else {
-                String regt = reg.applyTmp();
-                loadValue(regt, i);
-                return regt;
-            }
-
-//            System.err.println("Error! Not assign Reg No.(" + i.toString() + ")");
-//            exit(0);
-//            return null;
-
-        } else {
-            regname = reg.getRegnameFromNo(no);
-            return regname;
-        }
-    }
-
+//    // 右值，必定有结果（废弃）
+//    private String searchRegName(Ident i) {
+//        String regname;
+//        int no = reg.searchIdentRegNo(i);
+//        if (no == -1) {
+//            // global则加载进来
+//            if (i.isGlobal()) {
+//                regname = reg.applyRegister(i);
+////                add("ldr " + regname + ", addr_of_" + i.getName());
+//                add(new TmpArm("ldr " + regname + ", =" + i.getName()));
+////                add("ldr " + regname + ", [" + regname + "]");
+//                return regname;
+//
+//            } else {
+//                String regt = reg.applyTmp();
+//                loadValue(regt, i);
+//                return regt;
+//            }
+//
+////            System.err.println("Error! Not assign Reg No.(" + i.toString() + ")");
+////            exit(0);
+////            return null;
+//
+//        } else {
+//            regname = reg.getRegnameFromNo(no);
+//            return regname;
+//        }
+//    }
     private boolean checkReg(Ident i) {
         String name;
         if (i.isGlobal()) {
@@ -1148,81 +1136,129 @@ public class ArmGenerator {
     }
 
     // 当vop=true时操作浮点，指令变为vldr, vstr
-    private void loadValue(String regName, Ident destIdent/*, boolean... vop*/) {
-        boolean isfreg = regName.charAt(0) == 's';
+    private void loadValue(String regname, Ident destIdent) {
+        boolean isfreg = (regname.charAt(0) == 's') && (!regname.equals("sp"));
 
-        // global则加载进来
-        if (destIdent.isGlobal()) {
-            if (isfreg) {
-                interpolating = true;
-                add(new TmpArm("vldr.f32 " + regName + ", .L" + lcount + "+" + lpicusecount * 4));
-                addLpic(regName, destIdent.getName());
-                interpolating = false;
+        // 溢出用传统的ldr
+        if (reg.isSpill(destIdent.toString())) {
+            // global则加载进来
+            if (destIdent.isGlobal()) {
+                if (isfreg) {
+                    interpolating = true;
+                    add(new TmpArm("vldr.f32 " + regname + ", .L" + lcount + "+" + lpicusecount * 4));
+                    addLpic(regname, destIdent.getName());
+                    interpolating = false;
+
+                } else {
+                    // 测试新写法
+                    interpolating = true;
+//              add("ldr " + regName + ", =" + destIdent.getName());
+                    add(new TmpArm("ldr " + regname + ", .L" + lcount + "+" + lpicusecount * 4));
+                    addLpic(regname, destIdent.getName());
+                    interpolating = false;
+                }
 
             } else {
-                // 测试新写法
-                interpolating = true;
-//              add("ldr " + regName + ", =" + destIdent.getName());
-                add(new TmpArm("ldr " + regName + ", .L" + lcount + "+" + lpicusecount * 4));
-                addLpic(regName, destIdent.getName());
-                interpolating = false;
+                int off = curFunc.getOffsetByName(destIdent.toString());
+
+                if (isfreg) {
+                    addInstrRegSpOffset("vldr.f32", regname, "r7", off);
+
+                } else {
+                    // 封装 add("ldr " + regName + ", [sp,  #" + off + "]");
+                    addInstrRegSpOffset("ldr", regname, "r7", off);
+                }
             }
 
-        } else {
-            int off = curFunc.getOffsetByName(destIdent.toString());
+        }
+        // 听说村里发寄存器了？！
+        else {
+            String physReg = reg.searchPhysReg(destIdent.toString());
+
+            // 全局一律不分
+            // if (destIdent.isGlobal()) {}
 
             if (isfreg) {
-                addInstrRegSpOffset("vldr.f32", regName, "r7", off);
+//                addInstrRegSpOffset("vldr.f32", physReg, "r7", off);
+                error();    // todo 直接手动报错
 
             } else {
-                // 封装 add("ldr " + regName + ", [sp,  #" + off + "]");
-                addInstrRegSpOffset("ldr", regName, "r7", off);
+                // 应该必保证reg里有值
+                add("mov " + regname + ", " + physReg);
+
             }
         }
     }
 
     // 当regName的首位为s时操作浮点，指令变为vldr, vstr
-    private void storeValue(String regname, Ident destIdent/*, boolean... vop*/) {
-        boolean isfreg = regname.charAt(0) == 's';
+    private void storeValue(String regname, Ident destIdent) {
+        boolean isfreg = (regname.charAt(0) == 's') && (!regname.equals("sp"));
 
-        // global则存储回去
-        if (destIdent.isGlobal()) {
+        // 溢出用传统的ldr
+        if (reg.isSpill(destIdent.toString())) {
 
-            // 测试新写法
-            if (isfreg) {
-                String regt = reg.applyTmp();
+            // global则存储回去
+            if (destIdent.isGlobal()) {
 
-                interpolating = true;
+                // 测试新写法
+                if (isfreg) {
+                    String regt = reg.applyTmp();
+
+                    interpolating = true;
 //                add("ldr " + regt + ", =" + destIdent.getName());
-                add(new TmpArm("ldr " + regt + ", .L" + lcount + "+" + lpicusecount * 4));
-                addLpic(regt, destIdent.getName());
-                interpolating = false;
+                    add(new TmpArm("ldr " + regt + ", .L" + lcount + "+" + lpicusecount * 4));
+                    addLpic(regt, destIdent.getName());
+                    interpolating = false;
 
-                add(new TmpArm("vstr.f32 " + regname + ", [" + regt + "]"));
-                reg.freeTmp(regt);
+                    add(new TmpArm("vstr.f32 " + regname + ", [" + regt + "]"));
+                    reg.freeTmp(regt);
+
+                } else {
+                    String regt = reg.applyTmp();
+
+                    interpolating = true;
+//                add("ldr " + regt + ", =" + destIdent.getName());
+                    add(new TmpArm("ldr " + regt + ", .L" + lcount + "+" + lpicusecount * 4));
+                    addLpic(regt, destIdent.getName());
+                    interpolating = false;
+
+                    add(new TmpArm("str " + regname + ", [" + regt + "]"));
+                    reg.freeTmp(regt);
+                }
 
             } else {
-                String regt = reg.applyTmp();
+                int off = curFunc.getOffsetByName(destIdent.toString());
 
-                interpolating = true;
-//                add("ldr " + regt + ", =" + destIdent.getName());
-                add(new TmpArm("ldr " + regt + ", .L" + lcount + "+" + lpicusecount * 4));
-                addLpic(regt, destIdent.getName());
-                interpolating = false;
+                if (isfreg) {
+                    addInstrRegSpOffset("vstr.f32", regname, "r7", off);
 
-                add(new TmpArm("str " + regname + ", [" + regt + "]"));
-                reg.freeTmp(regt);
+                } else {
+                    // 封装 add("str " + regName + ", [sp, #" + off + "]");
+                    addInstrRegSpOffset("str", regname, "r7", off);
+                }
             }
 
-        } else {
-            int off = curFunc.getOffsetByName(destIdent.toString());
+        }
+        // 听说村里发寄存器了？！
+        else {
+            String physReg = reg.searchPhysReg(destIdent.toString());
+
+            // 全局一律不分（也应当保证不会出现此情况）
+            // if (destIdent.isGlobal()) {}
 
             if (isfreg) {
-                addInstrRegSpOffset("vstr.f32", regname, "r7", off);
+//                int off = curFunc.getOffsetByName(destIdent.toString());
+//                addInstrRegSpOffset("vstr.f32", regname, "r7", off);
+                error();    // todo 直接手动报错
 
             } else {
+                // int off = curFunc.getOffsetByName(destIdent.toString());
                 // 封装 add("str " + regName + ", [sp, #" + off + "]");
-                addInstrRegSpOffset("str", regname, "r7", off);
+//                addInstrRegSpOffset("str", regname, "r7", off);
+
+                // physReg里可为空
+                add("mov " + physReg + ", " + regname);
+
             }
         }
     }
@@ -1230,8 +1266,8 @@ public class ArmGenerator {
     // 添加LPIC
     private void addLpic(String reg, String name) {
         tabcount -= 1;
-//        add(".LPIC" + lpiccount + ":");
-        add(new LabelArm(".LPIC" + lpiccount));
+
+        add(new LabelArm(".LPIC" + lpiccount));     // add(".LPIC" + lpiccount + ":");
         tabcount += 1;
 
 //        add("add " + reg + ", " + reg + ", pc");
@@ -1395,13 +1431,13 @@ public class ArmGenerator {
         Value v1 = ((BinaryInst) instr).getV1();
         Value v2 = ((BinaryInst) instr).getV2();
 
-        String reg_d = reg.applyTmp();
-        String reg1 = reg.applyTmp();
+        String reg_d = reg.T0;
+        String reg1 = reg.T1;
 
         if (v1.isIdent() && v2.isIdent()) {
             addOp(instr, dest);     // todo: 最好不这么用
-            reg.freeTmp(reg1);
-            reg.freeTmp(reg_d);
+//            reg.freeTmp(reg1);
+//            reg.freeTmp(re  g_d);
             return;
 
         } else if (v1.isIdent() && !v2.isIdent()) {
@@ -1418,15 +1454,15 @@ public class ArmGenerator {
 
         storeValue(reg_d, dest);
 
-        reg.freeTmp(reg1);
-        reg.freeTmp(reg_d);
+//        reg.freeTmp(reg1);
+//        reg.freeTmp(r eg_d);
 
     }
 
     // 注意!须保证regd与reg1不可为同一个
     private void addMulOperation(String reg_d, String reg1, int num) {
         // 统一申请公用
-        String reg2 = reg.applyTmp();
+        String reg2 = reg.T2;
 
         if (num == 0) {
             add("mov " + reg_d + ", #0");
@@ -1490,7 +1526,7 @@ public class ArmGenerator {
     // 除法优化，仅寄存器
     private void addSdivOperation(String reg_d, String reg1, int num, boolean reverse) {
         // 专门给大家当临时寄存器
-        String reg2 = reg.applyTmp();
+        String reg2 = reg.T2;
 
         //除法？狗都不用？
         if (reverse) {  // d÷x
@@ -1570,13 +1606,13 @@ public class ArmGenerator {
         Value v1 = ((BinaryInst) instr).getV1();
         Value v2 = ((BinaryInst) instr).getV2();
 
-        String reg_d = reg.applyTmp();
-        String reg1 = reg.applyTmp();
+        String reg_d = reg.T0;
+        String reg1 = reg.T1;
 
         if (v1.isIdent() && v2.isIdent()) {
             addOp(instr, dest);     // todo 最好不用；另外记得store
-            reg.freeTmp(reg1);
-            reg.freeTmp(reg_d);
+//            reg.freeTmp(reg1);
+//            reg.freeTmp(re  g_d);
             return;
 
         } else if (v1.isIdent() && !v2.isIdent()) {
@@ -1593,8 +1629,8 @@ public class ArmGenerator {
 
         storeValue(reg_d, dest);
 
-        reg.freeTmp(reg_d);
-        reg.freeTmp(reg1);
+//        reg.freeTmp(r  eg_d);
+//        reg.freeTmp(reg1);
     }
 
     private DivMShL ChooseMultiplier(int d, int prec /*=31*/) {
@@ -1616,7 +1652,7 @@ public class ArmGenerator {
     //取余数优化: a % b 翻译为 a - a / b * b
     private void addSremOperation(String reg_d, String reg1, int num, boolean reverse) {
         // 统一申请公用
-        String reg2 = reg.applyTmp();
+        String reg2 = reg.T2;
 
         if (reverse) {
             if (num == 0) {

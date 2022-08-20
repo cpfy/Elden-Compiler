@@ -32,7 +32,10 @@ public class RegisterOld {
     private PriorityQueue<String> regpool;              // 可用寄存器池
 
 
-    private final int REG_MAX = 10;     // 预留r0，r1；r7不使用；分r2-r12共10个
+    private final int REG_MAX = 9;     // 预留r0-r2；r7不使用；分r3-r12共9个
+    public final static String T0 = "r0";  // 标准临时寄存器用
+    public final static String T1 = "r1";
+    public final static String T2 = "r2";
 
 
     public RegisterOld() {
@@ -57,7 +60,7 @@ public class RegisterOld {
         this.allocmap = new HashMap<>();
         this.spillSet = new HashSet<>();
         this.regpool = new PriorityQueue<>();
-        for (int i = 2; i <= 12; ++i) {
+        for (int i = 3; i <= 12; ++i) {
             if (i != 7) {
                 regpool.add("r" + i);
             }
@@ -303,7 +306,7 @@ public class RegisterOld {
         this.spillSet.clear();
 
         this.regpool.clear();
-        for (int i = 2; i <= 12; ++i) {
+        for (int i = 3; i <= 12; ++i) {
             if (i != 7) {
                 this.regpool.add("r" + i);
             }
@@ -339,7 +342,6 @@ public class RegisterOld {
     // 参考算法：https://www.zhihu.com/question/29355187/answer/99413526
     // Reg Alloc专用：释放old区间
     private void expireOldIntervals(LiveInterval LI) {
-//        PriorityQueue<LiveInterval> tmp = new PriorityQueue<>();
         while (!activeList.isEmpty()) {
             LiveInterval j = activeList.poll();
             if (j.getEnd() >= LI.getStart()) {
@@ -370,6 +372,17 @@ public class RegisterOld {
             spillSet.add((LI.getVname()));
         }
     }
+
+    // 外部查询
+    public boolean isSpill(String name) {
+        return spillSet.contains(name);
+    }
+
+    public String searchPhysReg(String name) {
+        assert (allocmap.containsKey(name));
+        return allocmap.get(name);
+    }
+
 
     private void printtest() {
         // 按start升序输出

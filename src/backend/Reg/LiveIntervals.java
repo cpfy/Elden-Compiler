@@ -33,9 +33,7 @@ public class LiveIntervals {
         // 函数参数也有def
         //todo 不确定para是否要处理
         ArrayList<String> paras = function.getParas();
-//            for (String s : paras) {
-//                insertLIMap(s, -231453255);
-//            }
+
 
         for (Block b : function.getBlocklist()) {
             for (Instr i : b.getInblocklist()) {

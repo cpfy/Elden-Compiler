@@ -16,9 +16,8 @@ public class Ident {
     // 初始化为0
     private boolean zeroinit = false;
 
-    // Reg用，分配寄存器编号
-    // 没用，不是同一个对象。在register static里面记
-//    private int no = -1;
+    // 是否已经加载到寄存器，第一次后变为true
+    private boolean load = false;
 
     public Ident(int id) {
         this.isIdent = false;
@@ -44,9 +43,13 @@ public class Ident {
         return "%" + String.valueOf(id);
     }
 
-    public void setPointer(Boolean isPointer){this.isPointer = isPointer;}
+    public void setPointer(Boolean isPointer) {
+        this.isPointer = isPointer;
+    }
 
-    public Boolean getIsPointer(){return isPointer;}
+    public Boolean getIsPointer() {
+        return isPointer;
+    }
 
     public String getName() {
         return name;
@@ -66,6 +69,10 @@ public class Ident {
 
     public boolean isGlobal() {
         return global;
+    }
+
+    public boolean isLoad() {
+        return load;
     }
 
     //frequently
@@ -89,6 +96,10 @@ public class Ident {
         this.zeroinit = zeroinit;
     }
 
+    public void setLoad(boolean load) {
+        this.load = load;
+    }
+
     @Override
     public boolean equals(Object obj) {
         return this.toString().equals(obj.toString());
@@ -98,6 +109,7 @@ public class Ident {
     public int hashCode() {
         return Objects.hash(this.toString());
     }
+
     // Reg分配时的key
     public String getMapname() {
         if (this.global) {
