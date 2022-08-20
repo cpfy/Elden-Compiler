@@ -23,6 +23,9 @@ public class LiveIntervals {
     // 初始扫描一遍intervals
     public void scanIntervals(Function function) {
 
+        // 清理重置！！！
+        clear();
+
         if (function.getFuncheader().getFname().equals("GlobalContainer")) {
             return;
         }
@@ -67,8 +70,7 @@ public class LiveIntervals {
                         if (!e.getValue()) {
 //                            System.err.println("i32 " + s);
                             insertLIMap(s, no);
-                        }
-                        else {
+                        } else {
 //                            System.err.println("float " + s);
                             insertFLIMap(s, no);
                         }
@@ -83,8 +85,7 @@ public class LiveIntervals {
                             if (!e.getValue()) {
 //                                System.err.println("i32 " + s);
                                 insertLIMap(s, no);
-                            }
-                            else {
+                            } else {
 //                                System.err.println("float " + s);
                                 insertFLIMap(s, no);
                             }

@@ -12,6 +12,7 @@ public class AssignInstr extends Instr {
     private Ident localident;
     private Instr valueinstr;
     private boolean isPointer = false;
+
     // LocalIdent "=" ValueInstruction
     public AssignInstr(String instrname, Ident localident, Instr valueinstr) {
         super(instrname);
