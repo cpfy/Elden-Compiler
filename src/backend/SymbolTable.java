@@ -124,7 +124,7 @@ public class SymbolTable {
     public static void insertTable(Symbol symbol) {
         headerScope.symbolTable.add(symbol);
         symbol.setScope(headerScope);
-        //System.out.println("insert & setH: " + symbol.getName());
+        //OutputControl.printMessage("insert & setH: " + symbol.getName());
     }
 
     //无type版本(仅服务于GrammarScanner分支版本)

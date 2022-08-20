@@ -2,6 +2,7 @@ package AST;
 
 import symbolTable.items.FloatItem;
 import symbolTable.items.IntegerItem;
+import tool.OutputControl;
 
 import java.util.ArrayList;
 
@@ -46,7 +47,7 @@ public class FuncFParam extends Def {
             table.addParam(new FloatItem(id.getRawWord().getName(), false, dimsInt, null, null, detailType));
         }
         else {
-            System.out.println("\nERROR in FuncF!!!\n");
+            OutputControl.printMessage("\nERROR in FuncF!!!\n");
         }
     }
 
@@ -71,7 +72,7 @@ public class FuncFParam extends Def {
             table.addFloat(new FloatItem(id.getRawWord().getName(), false, dimsInt, null, tempName));
         }
         else {
-            System.out.println("\nERROR in FuncF!!!\n");
+            OutputControl.printMessage("\nERROR in FuncF!!!\n");
         }
     }
 }

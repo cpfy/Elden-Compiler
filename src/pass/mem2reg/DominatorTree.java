@@ -47,12 +47,12 @@ public class DominatorTree {
             }
 //            for (int i = postorder.size() - 1; i >= 0; i--) {
 //                Block b = postorder.get(i);
-//                System.out.println(function.getBlocklist().indexOf(b));
+//                OutputControl.printMessage(function.getBlocklist().indexOf(b));
 //            }
-//            System.out.println();
+//            OutputControl.printMessage();
 //            pp++;
         }
-//        System.out.println("pp = " + pp);
+//        OutputControl.printMessage("pp = " + pp);
 
         for (Block block : doms.keySet()) {
             block.addIDom(doms.get(block));

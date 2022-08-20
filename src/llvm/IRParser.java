@@ -25,6 +25,7 @@ import llvm.Type.PointerType;
 import llvm.Type.Type;
 import llvm.Type.TypeC;
 import llvm.Type.VoidType;
+import tool.OutputControl;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -110,7 +111,7 @@ public class IRParser {
         FileWriter writer = new FileWriter(file);
         for (Token t : tokenList) {
             writer.write(t.tostring() + "\n");
-//            System.out.println(t.tostring());
+//            OutputControl.printMessage(t.tostring());
         }
         writer.flush();
         writer.close();
@@ -1190,7 +1191,7 @@ public class IRParser {
             index += 1;
             sym = tokenList.get(index);
         } else {
-            //todo System.out.println("Token List to End.");
+            //todo OutputControl.printMessage("Token List to End.");
         }
     }
 
@@ -1206,17 +1207,17 @@ public class IRParser {
 //            index += 1;
 //            sym = tokenList.get(index);
 //        } else {
-//            //todo System.out.println("Token List to End.");
+//            //todo OutputControl.printMessage("Token List to End.");
 //        }
 //    }
 
     private void error() {
         System.err.println("Error!");
-        System.out.println("目前输出：");
+        OutputControl.printMessage("目前输出：");
         for (String s : grammarList) {
-            System.out.println(s);
+            OutputControl.printMessage(s);
         }
-        System.out.println("Error at :" + sym.tostring());
+        OutputControl.printMessage("Error at :" + sym.tostring());
         System.exit(0);
     }
 
@@ -1379,7 +1380,7 @@ public class IRParser {
 
     /* ########################## */
     public void printllvmOutputs() throws FileNotFoundException {
-//        System.out.println("【LLVM Print Start.】");
+//        OutputControl.printMessage("【LLVM Print Start.】");
         PrintStream printStream = new PrintStream("llvmir_opt.ll");
         for (Function function : allfunctionlist) {
 
@@ -1416,7 +1417,7 @@ public class IRParser {
         printStream.println("declare dso_local void @putfloat(float)\n");
         printStream.println("declare dso_local void @putarray(i32, i32*)\n");
         printStream.println("declare dso_local void @putfarray(i32, float*)\n");
-//        System.out.println("【LLVM Print End.】");
+//        OutputControl.printMessage("【LLVM Print End.】");
     }
 
 }

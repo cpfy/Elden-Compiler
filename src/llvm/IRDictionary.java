@@ -145,7 +145,7 @@ public class IRDictionary {
     }
 
     public boolean queryIfKeyword(String word) {
-        //System.out.println("word = " + word);
+        //OutputControl.printMessage("word = " + word);
         return KEYWORDS_DICT.containsKey(word);
     }
 

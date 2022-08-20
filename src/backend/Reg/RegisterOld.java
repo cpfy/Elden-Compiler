@@ -1,6 +1,7 @@
 package backend.Reg;
 
 import llvm.Ident;
+import tool.OutputControl;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -62,7 +63,7 @@ public class RegisterOld {
             }
         }
 //        while (!regpool.isEmpty()) {
-//            System.out.println(regpool.poll());
+//            OutputControl.printMessage(regpool.poll());
 //        }
 
         initRegMap();
@@ -149,7 +150,7 @@ public class RegisterOld {
             identAllocMap.put(mapname, no);
             freeRegList.remove(0);
 
-//            System.out.println("Set " + i.toString() + "(" + i.getMapname() + ")" + " regno " + no);
+//            OutputControl.printMessage("Set " + i.toString() + "(" + i.getMapname() + ")" + " regno " + no);
 //            addActiveListNoRep(no);     //无重复加入activeregList 活跃变量表
 
         } else {    //todo 无空寄存器
@@ -157,7 +158,7 @@ public class RegisterOld {
             no = 0;
         }
 
-//        System.out.println("Info: Alloc Reg $" + regMap.get(no) + " to Ident " + i.toString());
+//        OutputControl.printMessage("Info: Alloc Reg $" + regMap.get(no) + " to Ident " + i.toString());
 
         return regMap.get(no);
     }
@@ -175,7 +176,7 @@ public class RegisterOld {
             regno = 0;
         }
 
-//        System.out.println("Alloc Reg $" + regMap.get(regno) + " to Tmp");
+//        OutputControl.printMessage("Alloc Reg $" + regMap.get(regno) + " to Tmp");
         return this.regMap.get(regno);
     }
 
@@ -187,7 +188,7 @@ public class RegisterOld {
         } else if (!freeRegList.contains(no)) {
 //            removeActiveRegList(no);     //删除变量in activeregList 活跃变量表
             freeRegList.add(no);
-//            System.out.println("Free Reg $" + regMap.get(no) + " from Tmp");
+//            OutputControl.printMessage("Free Reg $" + regMap.get(no) + " from Tmp");
         }
         //todo 其它的free寄存器都得检查是否重复！
     }
@@ -207,7 +208,7 @@ public class RegisterOld {
             regno = 32;
         }
 
-//        System.out.println("Alloc Float Reg $" + fregMap.get(regno) + " to Tmp");
+//        OutputControl.printMessage("Alloc Float Reg $" + fregMap.get(regno) + " to Tmp");
         return this.fregMap.get(regno);
     }
 
@@ -219,7 +220,7 @@ public class RegisterOld {
         if (!freeFloatRegList.contains(no)) {
 //            removeActiveRegList(no);     //删除变量in activeregList 活跃变量表
             freeFloatRegList.add(no);
-            System.out.println("Free Float Reg $" + fregMap.get(no) + " from Tmp");
+            OutputControl.printMessage("Free Float Reg $" + fregMap.get(no) + " from Tmp");
         }
         //todo 其它的free寄存器都得检查是否重复
     }
@@ -372,9 +373,9 @@ public class RegisterOld {
 
     private void printtest() {
         // 按start升序输出
-//        System.out.println("【Print RegAlloc】");
+//        OutputControl.printMessage("【Print RegAlloc】");
 //        while(!unhandledList.isEmpty()){
-//            System.out.println(unhandledList.poll().toString());
+//            OutputControl.printMessage(unhandledList.poll().toString());
 //        }
 
 
@@ -383,17 +384,17 @@ public class RegisterOld {
 //            activeList.add(unhandledList.poll());
 //        }
 //        while(!activeList.isEmpty()){
-//            System.out.println(activeList.poll().toString());
+//            OutputControl.printMessage(activeList.poll().toString());
 //        }
 
-        System.out.println("【寄存器分配映射】");
+        OutputControl.printMessage("【寄存器分配映射】");
         for (Map.Entry e : allocmap.entrySet()) {
-            System.out.println(e.getKey() + " ----> " + e.getValue());
+            OutputControl.printMessage(e.getKey() + " ----> " + e.getValue());
         }
         for (String spill : spillSet) {
-            System.out.println(spill + " ----> " + "spill");
+            OutputControl.printMessage(spill + " ----> " + "spill");
         }
-        System.out.println("【本Function分配完毕】");
+        OutputControl.printMessage("【本Function分配完毕】");
     }
 
 }

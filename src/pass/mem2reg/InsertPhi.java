@@ -14,6 +14,7 @@ import llvm.Type.IntType;
 import llvm.Type.Type;
 import llvm.Type.TypeC;
 import llvm.Value;
+import tool.OutputControl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +32,7 @@ public class InsertPhi {
 
     public InsertPhi(Function function) {
         this.function = function;
-        System.out.println("insertphi start");
+        OutputControl.printMessage("insertphi start");
         execute();
     }
 
@@ -39,7 +40,7 @@ public class InsertPhi {
         ArrayList<Value> vars = new ArrayList<>();
         vars = getVariables(function); //遍历这个函数内的所有变量
         caldef(); //计算哪些alloca变量曾被store赋过值。
-        System.out.println("caldefined start");
+        OutputControl.printMessage("caldefined start");
         calDefined(function.getBlocklist().get(0)); //计算到达-定义链;
         for (Value i : vars) {
             process(i);
@@ -80,7 +81,7 @@ public class InsertPhi {
                             type = new IntType(TypeC.I, 32);
                         }
                         Phi phi = new Phi("phi", var, j.getPreBlocks(), type);
-                        //System.out.println("insert new phi in block " + j.getLabel() + ":" + phi.toString());
+                        //OutputControl.printMessage("insert new phi in block " + j.getLabel() + ":" + phi.toString());
                         j.addPhi(phi);
                     }
                     hasPhi.put(j, true);
@@ -138,14 +139,14 @@ public class InsertPhi {
 
         //processPhi();
         //前导基本块流入数据
-        //System.out.println("label:" + block.getLabel());
+        //OutputControl.printMessage("label:" + block.getLabel());
         if (!defined.containsKey(block)) {
             HashSet<Value> hashmap = new HashSet<>();
             defined.put(block, hashmap);
         }
         if (pre != null) {
             HashSet<Value> set = defined.get(pre);
-            //System.out.println("prelabel:"+pre.getLabel());
+            //OutputControl.printMessage("prelabel:"+pre.getLabel());
             for (Value i : set) {
                 defined.get(block).add(i);
             }
@@ -153,12 +154,12 @@ public class InsertPhi {
         dist.push(block);
         haveworked.add(block);
         for (Instr ins : block.getInblocklist()) {
-            //System.out.println(ins);
+            //OutputControl.printMessage(ins);
             /*
             if(ins instanceof StoreInstr){
-                //System.out.println("working:" + ins);
+                //OutputControl.printMessage("working:" + ins);
                 StoreInstr store = (StoreInstr) ins;
-                //System.out.println("add " + store.getV2() + " in " + block.getLabel());
+                //OutputControl.printMessage("add " + store.getV2() + " in " + block.getLabel());
                 def.get(block).add(store.getV2());
             }
             */
@@ -167,7 +168,7 @@ public class InsertPhi {
                 if (assignInstr.getValueinstr() instanceof AllocaInst) {
                     AllocaInst alloca = (AllocaInst) assignInstr.getValueinstr();
                     if (alloca.getType() instanceof IntType || alloca.getType() instanceof FloatType) {
-                        //System.out.println("add " + assignInstr.getIdent() + " in " + block.getLabel());
+                        //OutputControl.printMessage("add " + assignInstr.getIdent() + " in " + block.getLabel());
                         defined.get(block).add(new Value(new Ident(assignInstr.getIdent().getName())));
                     }
                 }
@@ -184,23 +185,23 @@ public class InsertPhi {
 
     public Boolean hasDefined(Value value, Block block) {
         if (defined.get(block).contains(value)) {
-            //System.out.println("find " + value + " in " + block.getLabel());
+            //OutputControl.printMessage("find " + value + " in " + block.getLabel());
         } else {
-            //System.out.println("cannot find " + value + " in " + block.getLabel());
+            //OutputControl.printMessage("cannot find " + value + " in " + block.getLabel());
 
         }
         return defined.get(block).contains(value);
         /*
         worked.add(block);
         if(hasAssigned(block,value)){
-            System.out.println(block.getLabel() +"has" + value);
+            OutputControl.printMessage(block.getLabel() +"has" + value);
             return true;
         }
         else {
             Boolean hasDefined = false;
             for (Block i : block.getPreBlocks()) {
                 if (!worked.contains(i)) {
-                    System.out.println("calling from " + block.getLabel() + " to " + i.getLabel());
+                    OutputControl.printMessage("calling from " + block.getLabel() + " to " + i.getLabel());
                     hasDefined |= hasDefined(value, i);
                 }
             }

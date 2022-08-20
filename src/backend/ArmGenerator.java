@@ -13,6 +13,7 @@ import llvm.Instr.*;
 import llvm.Type.*;
 import llvm.TypeValue;
 import llvm.Value;
+import tool.OutputControl;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -118,7 +119,7 @@ public class ArmGenerator {
                 //if (b.isDirty()) continue;
                 addBlockLabel(b);
                 for (Instr i : b.getInblocklist()) {
-                    out.println("\t" + i.toString());
+                    OutputControl.printMessage("\t" + i.toString());
                     add(new HeadArm("@ " + i.toString()));
                     addInstr(i);
                     add(new HeadArm(""));
@@ -652,7 +653,7 @@ public class ArmGenerator {
                 tabcount += 1;
                 int usedSpace = 0;
 
-//                System.out.println(t.toString());
+//                OutputControl.printMessage(t.toString());
 
                 for (Value v : value.getTCValuePackage()) {
 
@@ -1032,7 +1033,7 @@ public class ArmGenerator {
         FileWriter writer = new FileWriter(file);
         for (Arm a : armlist) {
             writer.write(a.toString() + "\n");
-//            System.out.println(a);
+//            OutputControl.printMessage(a);
         }
         writer.flush();
         writer.close();
@@ -1049,7 +1050,7 @@ public class ArmGenerator {
         }
         armlist.add(arm);
 
-//        System.out.println(armstr);
+//        OutputControl.printMessage(armstr);
 
         // 大于lpic截断时插入.L
         if (lines > lpicConst && !interpolating) {
@@ -1092,11 +1093,11 @@ public class ArmGenerator {
 
     private void error() {
         System.err.println("Error!");
-        System.out.println("目前输出：");
+        OutputControl.printMessage("目前输出：");
         for (Arm a : armlist) {
-            System.out.println(a.toString());
+            OutputControl.printMessage(a.toString());
         }
-//        System.out.println("Error at next!");
+//        OutputControl.printMessage("Error at next!");
         exit(0);
     }
 

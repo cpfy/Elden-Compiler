@@ -43,7 +43,7 @@ public class Function {
     }
 
     public int getOffsetByName(String s) {  //通过变量名获取地址
-//        System.out.println("name:\t" + s + "\toffset:\t" + offsetTable.get(s));
+//        OutputControl.printMessage("name:\t" + s + "\toffset:\t" + offsetTable.get(s));
         return offsetTable.get(s);
     }
 

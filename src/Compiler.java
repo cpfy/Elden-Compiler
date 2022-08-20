@@ -6,6 +6,7 @@ import llvm.IRScanner;
 import llvm.Instr.Instr;
 import llvm.Token;
 import pass.PassManager;
+import tool.OutputControl;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -58,13 +59,13 @@ public class Compiler {
         //todo 添加相关后端相关处理
 
         if (allb.size() == 0) {
-            System.out.println("Err null allb.");
+            OutputControl.printMessage("Err null allb.");
 
         } else {
             ArmGenerator ag = new ArmGenerator(allb, outputFile);
             ag.convertarm();
         }
 
-        System.out.println("Complete compile.");
+        OutputControl.printMessage("Complete compile.");
     }
 }

@@ -47,7 +47,7 @@ public class GenerateTable {
                     AllocaInst allocaInst = (AllocaInst) assignInstr.getValueinstr();
                     n += allocaInst.getType().getSpace();
                 }
-//                System.out.println("name: " + assignInstr.getIdent().toString() + " " + n);
+//                OutputControl.printMessage("name: " + assignInstr.getIdent().toString() + " " + n);
                 function.addVar(assignInstr.getIdent().toString(), n);
             }
         }

@@ -1,5 +1,6 @@
 package AST;
 
+import tool.OutputControl;
 import word.WordType;
 
 import java.util.ArrayList;
@@ -58,7 +59,7 @@ public class ExpOp extends Exp {
                 opString = "fadd";
             }
             else {
-                System.out.println("\nError in ExpOP!!!\n");
+                OutputControl.printMessage("\nError in ExpOP!!!\n");
             }
             addCode(this.temp + " = " + opString + " " + getType() + " " + l + ", " + r + "\n");
         }
@@ -70,7 +71,7 @@ public class ExpOp extends Exp {
                 opString = "fsub";
             }
             else {
-                System.out.println("\nError in ExpOP!!!\n");
+                OutputControl.printMessage("\nError in ExpOP!!!\n");
             }
             addCode(this.temp + " = " + opString + " " + getType() + " " + l + ", " + r + "\n");
         }
@@ -82,7 +83,7 @@ public class ExpOp extends Exp {
                 opString = "fmul";
             }
             else {
-                System.out.println("\nError in ExpOP!!!\n");
+                OutputControl.printMessage("\nError in ExpOP!!!\n");
             }
             addCode(this.temp + " = " + opString + " " + getType() + " " + l + ", " + r + "\n");
         }
@@ -94,7 +95,7 @@ public class ExpOp extends Exp {
                 opString = "fdiv";
             }
             else {
-                System.out.println("\nError in ExpOP!!!\n");
+                OutputControl.printMessage("\nError in ExpOP!!!\n");
             }
             addCode(this.temp + " = " + opString + " " + getType() + " " + l + ", " + r + "\n");
         }
@@ -103,10 +104,10 @@ public class ExpOp extends Exp {
                 opString = "srem";
             }
             else if (getType().equals("float")) {
-                System.out.println("\nError in ExpOP!!! MODING FLOAT AND FLOAT\n");
+                OutputControl.printMessage("\nError in ExpOP!!! MODING FLOAT AND FLOAT\n");
             }
             else {
-                System.out.println("\nError in ExpOP!!!\n");
+                OutputControl.printMessage("\nError in ExpOP!!!\n");
             }
             addCode(this.temp + " = " + opString + " " + getType() + " " + l + ", " + r + "\n");
         }
@@ -121,7 +122,7 @@ public class ExpOp extends Exp {
                 addCode(this.temp + " = " + opString + " " + "float" + " " + l + ", " + r + "\n");
             }
             else {
-                System.out.println("\nError in ExpOP!!!\n");
+                OutputControl.printMessage("\nError in ExpOP!!!\n");
             }
 
             String t = this.temp;
@@ -138,7 +139,7 @@ public class ExpOp extends Exp {
                 addCode(this.temp + " = " + opString + " " + "float" + " " + l + ", " + r + "\n");
             }
             else {
-                System.out.println("\nError in ExpOP!!!\n");
+                OutputControl.printMessage("\nError in ExpOP!!!\n");
             }
             String t = this.temp;
             this.temp = newTemp();
@@ -154,7 +155,7 @@ public class ExpOp extends Exp {
                 addCode(this.temp + " = " + opString + " " + "float" + " " + l + ", " + r + "\n");
             }
             else {
-                System.out.println("\nError in ExpOP!!!\n");
+                OutputControl.printMessage("\nError in ExpOP!!!\n");
             }
             String t = this.temp;
             this.temp = newTemp();
@@ -170,7 +171,7 @@ public class ExpOp extends Exp {
                 addCode(this.temp + " = " + opString + " " + "float" + " " + l + ", " + r + "\n");
             }
             else {
-                System.out.println("\nError in ExpOP!!!\n");
+                OutputControl.printMessage("\nError in ExpOP!!!\n");
             }
             String t = this.temp;
             this.temp = newTemp();
@@ -186,7 +187,7 @@ public class ExpOp extends Exp {
                 addCode(this.temp + " = " + opString + " " + "float" + " " + l + ", " + r + "\n");
             }
             else {
-                System.out.println("\nError in ExpOP!!!\n");
+                OutputControl.printMessage("\nError in ExpOP!!!\n");
             }
             String t = this.temp;
             this.temp = newTemp();
@@ -202,14 +203,14 @@ public class ExpOp extends Exp {
                 addCode(this.temp + " = " + opString + " " + "float" + " " + l + ", " + r + "\n");
             }
             else {
-                System.out.println("\nError in ExpOP!!!\n");
+                OutputControl.printMessage("\nError in ExpOP!!!\n");
             }
             String t = this.temp;
             this.temp = newTemp();
             addCode(this.temp + " = zext i1 " + t + " to i32\n");
         }
         else {
-            System.out.println("Error at EXPOP");
+            OutputControl.printMessage("Error at EXPOP");
         }
         return getCodes();
     }
@@ -287,7 +288,7 @@ public class ExpOp extends Exp {
                     value = 0;
                 }
             } else {
-                System.out.println("Error at EXPOP");
+                OutputControl.printMessage("Error at EXPOP");
             }
             valueF = value;
         }
@@ -350,7 +351,7 @@ public class ExpOp extends Exp {
                 }
                 valueF = value;
             } else {
-                System.out.println("Error at EXPOP");
+                OutputControl.printMessage("Error at EXPOP");
             }
         }
     }

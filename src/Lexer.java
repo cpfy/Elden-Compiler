@@ -1,3 +1,4 @@
+import tool.OutputControl;
 import word.RawWord;
 import word.WordType;
 
@@ -66,7 +67,7 @@ public class Lexer {
     }
 
     private void error() {
-        System.out.println("error at line: " + line);
+        OutputControl.printMessage("error at line: " + line);
     }
 
     private void initReservedWords() {
@@ -366,7 +367,7 @@ public class Lexer {
         }
 
         headPoint++;
-        System.out.println(line);
+        OutputControl.printMessage(line);
         errors.add("error at: " + line);
     }
 

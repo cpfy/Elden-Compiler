@@ -272,7 +272,7 @@ public class IRCode {
             default:
                 break;
         }
-        //System.out.println(rawstr);
+        //OutputControl.printMessage(rawstr);
     }
 
     //todo 数组初始化.word时用

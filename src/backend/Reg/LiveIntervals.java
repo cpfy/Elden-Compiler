@@ -3,6 +3,7 @@ package backend.Reg;
 import llvm.Block;
 import llvm.Function;
 import llvm.Instr.Instr;
+import tool.OutputControl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,9 +39,9 @@ public class LiveIntervals {
 
         for (Block b : function.getBlocklist()) {
             for (Instr i : b.getInblocklist()) {
-                System.out.println(i.getInstrNo() + ": " + i.toString());
-//                    System.out.println("Uses:" + i.getUses());
-//                    System.out.println("Define:" + i.getDef());
+                OutputControl.printMessage(i.getInstrNo() + ": " + i.toString());
+//                    OutputControl.printMessage("Uses:" + i.getUses());
+//                    OutputControl.printMessage("Define:" + i.getDef());
 
                 int no = i.getInstrNo();
                 for (String s : i.getUses()) {
@@ -59,7 +60,7 @@ public class LiveIntervals {
         }
 
         for (LiveInterval LI : LImap.values()) {
-            System.out.println(LI.toString());
+            OutputControl.printMessage(LI.toString());
         }
 
     }

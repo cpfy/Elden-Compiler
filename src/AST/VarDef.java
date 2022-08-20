@@ -2,6 +2,7 @@ package AST;
 
 import symbolTable.items.FloatItem;
 import symbolTable.items.IntegerItem;
+import tool.OutputControl;
 
 import java.util.ArrayList;
 
@@ -129,7 +130,7 @@ public class VarDef extends Def {
         ArrayList<Integer> dimsInt = new ArrayList<>();
         for (Exp exp : dims) {
             dimsInt.add(exp.getValue());
-//            System.out.println(exp.getValue());
+//            OutputControl.printMessage(exp.getValue());
         }
         if (getDeclType().equals("i32")) {
             table.addInteger(new IntegerItem(id.getRawWord().getName(), false, dimsInt, null, tempName));
@@ -138,7 +139,7 @@ public class VarDef extends Def {
             table.addFloat(new FloatItem(id.getRawWord().getName(), false, dimsInt, null, tempName));
         }
         else {
-            System.out.println("\nERROR in VarDef!!!\n");
+            OutputControl.printMessage("\nERROR in VarDef!!!\n");
         }
     }
 }

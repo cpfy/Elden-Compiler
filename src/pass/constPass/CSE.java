@@ -6,6 +6,7 @@ import llvm.Instr.AssignInstr;
 import llvm.Instr.BinaryInst;
 import llvm.Instr.Instr;
 import llvm.Value;
+import tool.OutputControl;
 
 import java.util.HashMap;
 import java.util.Objects;
@@ -43,7 +44,7 @@ public class CSE {
                 }
 
                 sum = computeHash(l, r, binaryInst.getOp());
-                System.out.println(sum);
+                OutputControl.printMessage(sum);
                 String s = null;
                 for (String temp : value2Number.keySet()) {
                     if (value2Number.get(temp) == sum) {
@@ -55,7 +56,7 @@ public class CSE {
                 } else {
                     for (Instr nt : block.getInblocklist()) {
                         nt.renameUses(new Value(new Ident(s.substring(1))), new Value(new Ident(assignInstr.getIdent().getName())));
-                        System.out.println(assignInstr.getIdent().toString() + " " + s);
+                        OutputControl.printMessage(assignInstr.getIdent().toString() + " " + s);
                     }
                 }
             }

@@ -1,4 +1,5 @@
 import AST.*;
+import tool.OutputControl;
 import word.RawWord;
 import word.WordType;
 
@@ -38,7 +39,7 @@ public class Parser {
 
 
     private void error() {
-        System.out.println("error at line: " + rawWords.get(point - 1).getLine());
+        OutputControl.printMessage("error at line: " + rawWords.get(point - 1).getLine());
     }
 
 //    private void funcNewName(RawWord rawWord) {
@@ -65,7 +66,7 @@ public class Parser {
 
     private RawWord getNextWord() {
         RawWord rawWord = rawWords.get(point);
-        //System.out.println(rawWord.getName());
+        //OutputControl.printMessage(rawWord.getName());
         outputs.add(rawWord.getType().name() + " " + rawWord.getName());
         point++;
         return rawWord;
