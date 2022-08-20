@@ -97,25 +97,25 @@ public class LiveIntervals {
         function.initInstrNo();     // 初始化编号，这里的No.每个函数重置
         function.initLiveInAndOut();    // 初始化计算In/Out信息
 
-//        for (Block block: function.getBlocklist()) {
-//            System.out.println();
-//            System.out.println("l" + block.getLabel() + ":");
-//            System.out.println();
-//
-//            for (String s: block.getLiveIn().keySet()) {
-//                System.out.println("livein: " + s);
-//            }
-//
-//            for (String s: block.getLiveOut().keySet()) {
-//                System.out.println("liveout: " + s);
-//            }
-//
-//
-//            System.out.println();
-//            for (Instr instr: block.getInblocklist()) {
-//                System.out.println(instr.getInstrNo() + ": " + instr);
-//            }
-//        }
+        for (Block block: function.getBlocklist()) {
+            System.out.println();
+            System.out.println("l" + block.getLabel() + ":");
+            System.out.println();
+
+            for (String s: block.getLiveIn().keySet()) {
+                System.out.println("livein: " + s);
+            }
+
+            for (String s: block.getLiveOut().keySet()) {
+                System.out.println("liveout: " + s);
+            }
+
+
+            System.out.println();
+            for (Instr instr: block.getInblocklist()) {
+                System.out.println(instr.getInstrNo() + ": " + instr);
+            }
+        }
 
 
         // para由于内存传参，一律不分配Reg
@@ -204,7 +204,9 @@ public class LiveIntervals {
     // Def变量在Range处截断
     private void truncateLIMapPos(String s, int pos/*, boolean f*/) {
         assert (LImap.containsKey(s));
-        LImap.get(s).truncate(pos);
+        if (LImap.get(s) != null) {
+            LImap.get(s).truncate(pos);
+        }
     }
 
     private void printtest() {
