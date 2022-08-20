@@ -28,7 +28,7 @@ public class ArmGenerator {
     //    private RegisterTable table;    // 管理寄存器分配表
     private static String OUTPUT_DIR;
 
-    private String allRegs = "{r0,r1,r2,r3,r4,r5,r6,r8,r9,r10,r11,r12,lr}";
+    private String allRegs = "{r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,lr}";
     private String allFloatRegs1 = "{s0,s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11,s12,s13,s14,s15}";
     private String allFloatRegs2 = "{s16,s17,s18,s19,s20,s21,s22,s23,s24,s25,s26,s27,s28,s29,s30,s31}";
 
@@ -847,7 +847,6 @@ public class ArmGenerator {
         // 准备传参数r0-r3为前四个参数，[sp]开始为第5个及之后参数
         int pushargsnum = max(argsnum * 4 - 16, 0);
 //        add("sub sp, sp,  #" + (pushregs + pushargsnum));
-        add(new OneArm("push", "{r7}"));
         selfSubImm("sp", getFuncSize(callfuncname));
 
 //        if (argsnum <= 4) {
@@ -907,11 +906,11 @@ public class ArmGenerator {
 
         selfAddImm("sp", getFuncSize(callfuncname));
 //        add("pop {r7}");
-        add(new OneArm("pop", "{r7}"));
+        popRegs();
         if (dest.length > 0) {
             storeValue("r0", dest[0]);
         }
-        popRegs();
+
     }
 
     // 标准printf, scanf等函数
@@ -925,7 +924,6 @@ public class ArmGenerator {
         // 准备传参数r0-r3为前四个参数，[sp]开始为第5个及之后参数
         int pushargsnum = max(argsnum * 4 - 16, 0);
 //        add("sub sp, sp,  #" + (pushregs + pushargsnum));
-        add(new OneArm("push", "{r7}"));
 
 
 //        if (argsnum <= 4) {
@@ -955,10 +953,10 @@ public class ArmGenerator {
 
         //todo
         add(new OneArm("bl", callfuncname));
-        add(new OneArm("pop", "{r7}"));
 
 //        add("add sp, sp,  #" + (pushregs + pushargsnum));
 
+        popRegs();
         // 若有dest，保存返回结果
         if (dest.length > 0) {
             if (callfuncname.equals("getfloat")) {
@@ -967,7 +965,6 @@ public class ArmGenerator {
                 storeValue("r0", dest[0]);
             }
         }
-        popRegs();
     }
 
     private void addReturn(Instr instr) {
