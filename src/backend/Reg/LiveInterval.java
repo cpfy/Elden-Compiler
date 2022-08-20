@@ -7,11 +7,12 @@ public class LiveInterval implements Comparable<LiveInterval> {
     private int end;
     private boolean active = false; // 是否已激活、有start
 
-    //    private LiveRange LR;   // 表明活跃区间为[start, end)
+    //    private LiveRange LR;   // 表明活跃区间为[start, end)（废弃）
+
     private String vname;   // 该LI对应的变量名
-
-
     private String reg;   // 被分配的phys寄存器
+
+    private boolean varf = false;    // 是否是一个float变量
 
     public LiveInterval(String vname) {
         this.vname = vname;
@@ -44,10 +45,13 @@ public class LiveInterval implements Comparable<LiveInterval> {
         return vname.charAt(0) == '@';
     }
 
-//
-//    public Register getReg() {
-//        return new Register(reg);
-//    }
+    public boolean isVarf() {
+        return varf;
+    }
+
+    public void setVarf(boolean varf) {
+        this.varf = varf;
+    }
 
     // 增加使用位置
     public void addUsePos(int pos) {

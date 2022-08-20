@@ -27,11 +27,19 @@ public class RegisterOld {
 
     // 寄存器分配相关
     private LiveIntervals LIS;
-    private PriorityQueue<LiveInterval> unhandledList;  // 未被分配寄存器的活跃区间，按照开始位置递增的方式进行排序
-    private PriorityQueue<LiveInterval> activeList;     // 已经分配寄存器的活跃区间，按照结束位置递增的方式进行排序
     private HashMap<String, String> allocmap;           // 从ident_name到寄存器名的映射map
     private HashSet<String> spillSet;                   // 溢出的set集合
+
+    private PriorityQueue<LiveInterval> unhandledList;  // 未被分配寄存器的活跃区间，按照开始位置递增的方式进行排序
+    private PriorityQueue<LiveInterval> activeList;     // 已经分配寄存器的活跃区间，按照结束位置递增的方式进行排序
     private PriorityQueue<String> regpool;              // 可用寄存器池
+
+    // 浮点Reg Alloc
+    private PriorityQueue<LiveInterval> FunhandledList;  // 未被分配寄存器的活跃区间，按照开始位置递增的方式进行排序
+    private PriorityQueue<LiveInterval> FactiveList;     // 已经分配寄存器的活跃区间，按照结束位置递增的方式进行排序
+    private PriorityQueue<String> Fregpool;              // 可用寄存器池
+    //    private HashMap<String, String> Fallocmap;           // 从ident_name到寄存器名的映射map
+//    private HashSet<String> FspillSet;                   // 溢出的set集合（这两个共用了）
 
 
     private final int REG_MAX = 8;     // 预留r0-r2,r3；r7不使用；分r4-r12共8个
@@ -39,6 +47,11 @@ public class RegisterOld {
     public final static String T1 = "r1";
     public final static String T2 = "r2";
     public final static String SB = "r3";   // 迫不得已加一个临时寄存器
+
+    private final int FREG_MAX = 29;     // 预留s0-s2；分s3-s31共29个
+    public final static String F0 = "s0";  // 标准临时寄存器用
+    public final static String F1 = "s1";
+    public final static String F2 = "s2";
 
     public RegisterOld() {
         this.regMap = new HashMap<>();
@@ -52,21 +65,29 @@ public class RegisterOld {
 //        this.activeRegList = new ArrayList<>();
 
         // About Reg Alloc
+        this.allocmap = new HashMap<>();
+        this.spillSet = new HashSet<>();
+
         this.unhandledList = new PriorityQueue<>();
-        this.activeList = new PriorityQueue<LiveInterval>(new Comparator<LiveInterval>() {  // 按end递减少排序
+        this.activeList = new PriorityQueue<LiveInterval>(new Comparator<LiveInterval>() {  // 按end递减排序
             @Override
             public int compare(LiveInterval o1, LiveInterval o2) {
                 return o2.getEnd() - o1.getEnd();
             }
         });
-        this.allocmap = new HashMap<>();
-        this.spillSet = new HashSet<>();
-        this.regpool = new PriorityQueue<>();
-        initRegPool();
+        this.FunhandledList = new PriorityQueue<>();
+        this.FactiveList = new PriorityQueue<LiveInterval>(new Comparator<LiveInterval>() {  // 按end递减排序
+            @Override
+            public int compare(LiveInterval o1, LiveInterval o2) {
+                return o2.getEnd() - o1.getEnd();
+            }
+        });
 
-//        while (!regpool.isEmpty()) {
-//            OutputControl.printMessage(regpool.poll());
-//        }
+        this.regpool = new PriorityQueue<>();
+        this.Fregpool = new PriorityQueue<>();
+        initRegPool();
+        initFRegPool();
+
 
         initRegMap();
         initRegnameMap();
@@ -140,31 +161,6 @@ public class RegisterOld {
         return regNameMap.get(name);
     }
 
-    //临时变量-申请寄存器
-    public String applyRegister(Ident i) {
-        int no;
-
-        if (!freeRegList.isEmpty()) {
-            no = freeRegList.get(0);
-
-            // 映射名称
-            String mapname = i.getMapname();
-            identAllocMap.put(mapname, no);
-            freeRegList.remove(0);
-
-//            OutputControl.printMessage("Set " + i.toString() + "(" + i.getMapname() + ")" + " regno " + no);
-//            addActiveListNoRep(no);     //无重复加入activeregList 活跃变量表
-
-        } else {    //todo 无空寄存器
-            System.err.println("No free Reg! Alloc $r0.");
-            no = 0;
-        }
-
-//        OutputControl.printMessage("Info: Alloc Reg $" + regMap.get(no) + " to Ident " + i.toString());
-
-        return regMap.get(no);
-    }
-
     // apply tmp reg.（禁用此写法！）
 //    public String applyTmp() {
 //        int regno;
@@ -194,49 +190,49 @@ public class RegisterOld {
 //        }
 //        //todo 其它的free寄存器都得检查是否重复！
 //    }
-
-    // apply tmp float reg.
-    public String applyFTmp() {
-        int regno;
-        if (!freeFloatRegList.isEmpty()) {
-            regno = freeFloatRegList.get(0);
-            freeFloatRegList.remove(0);
-
-            // 此时还没用到active
-//            addActiveListNoRep(regno);     //无重复加入activeregList 活跃变量表
-
-        } else {    //todo 无空寄存器
-            System.err.println("No free float Reg! Alloc $s0.");
-            regno = 32;
-        }
-
-//        OutputControl.printMessage("Alloc Float Reg $" + fregMap.get(regno) + " to Tmp");
-        return this.fregMap.get(regno);
-    }
-
-    // free float tmp reg.
-    public void freeFTmp(String reg) {
-        int no = this.fregNameMap.get(reg);
-        assert no >= 32 && no < 64;
-
-        if (!freeFloatRegList.contains(no)) {
-//            removeActiveRegList(no);     //删除变量in activeregList 活跃变量表
-            freeFloatRegList.add(no);
-            OutputControl.printMessage("Free Float Reg $" + fregMap.get(no) + " from Tmp");
-        }
-        //todo 其它的free寄存器都得检查是否重复
-    }
-
-    // free任意float或int寄存器
-    public void free(String reg) {
-        if (reg.charAt(0) == 's') {    // 必不可能是sp
-            freeFTmp(reg);
-        } else {
-//            freeTmp(reg);
-            System.err.println("禁止释放Int寄存器！");
-            exit(1);
-        }
-    }
+//
+//    // apply tmp float reg.
+//    public String applyFTmp() {
+//        int regno;
+//        if (!freeFloatRegList.isEmpty()) {
+//            regno = freeFloatRegList.get(0);
+//            freeFloatRegList.remove(0);
+//
+//            // 此时还没用到active
+////            addActiveListNoRep(regno);     //无重复加入activeregList 活跃变量表
+//
+//        } else {    //todo 无空寄存器
+//            System.err.println("No free float Reg! Alloc $s0.");
+//            regno = 32;
+//        }
+//
+////        OutputControl.printMessage("Alloc Float Reg $" + fregMap.get(regno) + " to Tmp");
+//        return this.fregMap.get(regno);
+//    }
+//
+//    // free float tmp reg.
+//    public void freeFTmp(String reg) {
+//        int no = this.fregNameMap.get(reg);
+//        assert no >= 32 && no < 64;
+//
+//        if (!freeFloatRegList.contains(no)) {
+////            removeActiveRegList(no);     //删除变量in activeregList 活跃变量表
+//            freeFloatRegList.add(no);
+//            OutputControl.printMessage("Free Float Reg $" + fregMap.get(no) + " from Tmp");
+//        }
+//        //todo 其它的free寄存器都得检查是否重复
+//    }
+//
+//    // free任意float或int寄存器
+//    public void free(String reg) {
+//        if (reg.charAt(0) == 's') {    // 必不可能是sp
+//            freeFTmp(reg);
+//        } else {
+////            freeTmp(reg);
+//            System.err.println("禁止释放Int寄存器！");
+//            exit(1);
+//        }
+//    }
 
 
     //reset全部寄存器状态
@@ -259,35 +255,6 @@ public class RegisterOld {
         // 表示error
     }
 
-
-    /***** 以下暂未用到 *****/
-    //查询是否有空闲寄存器
-    public boolean hasSpareRegister() {
-        return !freeRegList.isEmpty();
-    }
-
-//    //查询是否需保存现场，active内有内容？
-//    public ArrayList<Integer> getActiveRegList() {
-//        return activeRegList;
-//    }
-//
-//    private void addActiveListNoRep(int no) {
-//        if (!activeRegList.contains(no)) {
-//            activeRegList.add(no);
-//        }
-//    }
-//
-//    //删除变量in activeregList 活跃变量表
-//    private void removeActiveRegList(int no) {
-//        activeRegList.removeIf(i -> i == no);
-//    }
-
-    // name是否已经分配reg
-    public boolean allocated(String name) {
-        return identAllocMap.containsKey(name);
-    }
-
-
     //
     //
 
@@ -301,13 +268,18 @@ public class RegisterOld {
     }
 
     private void clear() {
-        this.unhandledList.clear();
-        this.activeList.clear();
         this.allocmap.clear();
         this.spillSet.clear();
 
+        this.unhandledList.clear();
+        this.activeList.clear();
         this.regpool.clear();
         initRegPool();
+
+        this.FunhandledList.clear();
+        this.FactiveList.clear();
+        this.Fregpool.clear();
+        initFRegPool();
     }
 
     // 初始化寄存器池
@@ -319,6 +291,13 @@ public class RegisterOld {
         }
     }
 
+    // 初始化F寄存器池
+    private void initFRegPool() {
+        for (int i = 4; i < 32; ++i) {
+            Fregpool.add("s" + i);
+        }
+    }
+
     // 启动线性扫描
     public void RegAllocScan() {
         clear();
@@ -326,10 +305,16 @@ public class RegisterOld {
         // 应为已经scan后的状态
         for (LiveInterval LI : LIS.getLImap().values()) {
             if (LI.isGlobal()) {
-                spillSet.add(LI.getVname());    // 可以不加，不用这个判断了
+//                spillSet.add(LI.getVname());    // 可不加spillSet，不用这个判断了
                 continue;
             }
-            unhandledList.add(LI);
+
+            if (LI.isVarf()) {
+//                System.out.println("NB! "+LI.toString());
+                FunhandledList.add(LI);
+            } else {
+                unhandledList.add(LI);
+            }
         }
 
         while (!unhandledList.isEmpty()) {
@@ -343,6 +328,21 @@ public class RegisterOld {
                 LI.setReg(physReg);
                 allocmap.put(LI.getVname(), physReg);
                 activeList.add(LI);
+            }
+        }
+
+        // Float Reg
+        while (!FunhandledList.isEmpty()) {
+            LiveInterval FLI = FunhandledList.poll();
+            expireOldFIntervals(FLI);
+            if (FactiveList.size() == FREG_MAX) {
+                spillAtFInterval(FLI);
+
+            } else {
+                String physReg = Fregpool.poll();
+                FLI.setReg(physReg);
+                allocmap.put(FLI.getVname(), physReg);
+                FactiveList.add(FLI);
             }
         }
 
@@ -383,6 +383,40 @@ public class RegisterOld {
         }
     }
 
+
+    /***** F寄存器分配照抄一份Reg的分配 *****/
+    private void expireOldFIntervals(LiveInterval FLI) {
+        while (!FactiveList.isEmpty()) {
+            LiveInterval j = FactiveList.poll();
+            if (j.getEnd() >= FLI.getStart()) {
+                FactiveList.add(j);
+                return;
+            }
+
+            String physReg = j.getReg();
+            Fregpool.add(physReg);
+        }
+    }
+
+    // Reg Alloc专用：溢出
+    private void spillAtFInterval(LiveInterval FLI) {
+        LiveInterval fspill = FactiveList.peek();
+        if (fspill.getEnd() > FLI.getEnd()) {
+            String physReg = fspill.getReg();
+            allocmap.remove(fspill.getVname());
+            allocmap.put(FLI.getVname(), physReg);
+            fspill.setReg(null);
+            FLI.setReg(physReg);
+            spillSet.add(fspill.getVname());
+            FactiveList.poll();
+            FactiveList.add(FLI);
+
+        } else {
+            spillSet.add((FLI.getVname()));
+        }
+    }
+
+
     // 外部查询
     public boolean hasPhysReg(String name) {
         return allocmap.containsKey(name);
@@ -399,6 +433,7 @@ public class RegisterOld {
     }
 
 
+    // 输出调试
     private void printtest() {
         // 按start升序输出
 //        OutputControl.printMessage("【Print RegAlloc】");
@@ -413,6 +448,21 @@ public class RegisterOld {
 //        }
 //        while(!activeList.isEmpty()){
 //            OutputControl.printMessage(activeList.poll().toString());
+//        }
+
+//                 按start升序输出
+//        OutputControl.printMessage("【Print RegAlloc】");
+//        while(!FunhandledList.isEmpty()){
+//            OutputControl.printMessage(FunhandledList.poll().toString());
+//        }
+//
+//
+////         按end降序输出
+//        while(!FunhandledList.isEmpty()){
+//            FactiveList.add(FunhandledList.poll());
+//        }
+//        while(!FactiveList.isEmpty()){
+//            OutputControl.printMessage(FactiveList.poll().toString());
 //        }
 
         OutputControl.printMessage("【寄存器分配映射】");

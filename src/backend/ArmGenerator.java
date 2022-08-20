@@ -223,6 +223,7 @@ public class ArmGenerator {
     }
 
     // e.g. %9 = fcmp olt float %8, 0x358637bd
+    // todo 考虑寄存器+优化
     private void addFcmp(Instr instr, Ident dest) {
         String fpred = ((FCmpInst) instr).getFpred();   // e.g. olt
         Type t = ((FCmpInst) instr).getT();     // must float
@@ -231,7 +232,7 @@ public class ArmGenerator {
 
         String reg_d = reg.T0;  // 0 or 1
 
-        String reg1 = reg.applyFTmp();
+        String reg1 = reg.F1;
         if (v1.isIdent()) {
             loadValue(reg1, v1.getIdent());
 
@@ -239,7 +240,7 @@ public class ArmGenerator {
             vmoveFloat(reg1, v1);
         }
 
-        String reg2 = reg.applyFTmp();
+        String reg2 = reg.F2;
         if (v2.isIdent()) {
             loadValue(reg2, v2.getIdent());
 
@@ -263,8 +264,8 @@ public class ArmGenerator {
         add(new TwoArm("mov" + movestr, reg_d, "#1"));
         add(new TwoArm("mov" + oppomovestr, reg_d, "#0"));
 
-        reg.freeFTmp(reg1);
-        reg.freeFTmp(reg2);
+//        reg.freeFT  mp(reg1);
+//        reg.freeFT  mp(reg2);
 
         storeValue(reg_d, dest);
 //        reg.freeTmp(re g_d);
@@ -278,23 +279,23 @@ public class ArmGenerator {
         Value v = ((FPToSIInst) instr).getV();
 
         String reg_d = reg.T0;     // 整数+目的寄存器
-        String regtf = reg.applyFTmp();
+        String f_regt = reg.F0;  //TODO 存疑
 
         if (v.isIdent()) {
-            loadValue(regtf, v.getIdent());
+            loadValue(f_regt, v.getIdent());
 
         } else {
             // todo 不确定对不对
-            vmoveFloat(regtf, v);
+            vmoveFloat(f_regt, v);
         }
 
-        // add("vcvt.s32.f32 " + regtf + ", " + regtf);    // Converts {$reg} signed integer value to a single-precision value and stores it in {$reg}(前)
-        add(new TwoArm("vcvt.s32.f32", regtf, regtf));  // 注意：vcvt的两个参数都必须是float reg
+        // add("vcvt.s32.f32 " + f_regt + ", " + f_regt);    // Converts {$reg} signed integer value to a single-precision value and stores it in {$reg}(前)
+        add(new TwoArm("vcvt.s32.f32", f_regt, f_regt));  // 注意：vcvt的两个参数都必须是float reg
 
-        // add("vmov " + dreg + ", " + regtf);
-        add(new TwoArm("vmov.f32", reg_d, regtf));
+        // add("vmov " + reg_d + ", " + f_regt);
+        add(new TwoArm("vmov.f32", reg_d, f_regt));
 
-        reg.freeFTmp(regtf);
+//        reg.freeFT  mp(f_regt);
 
         storeValue(reg_d, dest);
 //        reg.freeTmp(r eg_d);
@@ -306,7 +307,7 @@ public class ArmGenerator {
         Type t2 = ((SIToFPInst) instr).getT2();  // must float
         Value v = ((SIToFPInst) instr).getV();
 
-        String dregf = reg.applyFTmp();     // 浮点+目的寄存器
+        String f_reg_d = reg.F0;     // 浮点+目的寄存器  //TODO 存疑
         String regt = reg.T1;
 
         if (v.isIdent()) {
@@ -316,14 +317,14 @@ public class ArmGenerator {
             moveImm(regt, v.getVal());
         }
 
-        //add("vmov " + dregf + ", " + regt);
-        add(new TwoArm("vmov.f32", dregf, regt));
+        //add("vmov " + f_reg_d + ", " + regt);
+        add(new TwoArm("vmov.f32", f_reg_d, regt));
 
-        //add("vcvt.f32.s32 " + dregf + ", " + dregf);    // Converts {$reg} signed integer value to a single-precision value and stores it in {$reg}(前)
-        add(new TwoArm("vcvt.f32.s32", dregf, dregf));
+        //add("vcvt.f32.s32 " + f_reg_d + ", " + f_reg_d);    // Converts {$reg} signed integer value to a single-precision value and stores it in {$reg}(前)
+        add(new TwoArm("vcvt.f32.s32", f_reg_d, f_reg_d));
 
-        storeValue(dregf, dest);   //todo 这个可优化，不从dregf存
-        reg.freeFTmp(dregf);
+        storeValue(f_reg_d, dest);   //todo 这个可优化，不从f_reg_d存
+
     }
 
     // %2 = getelementptr inbounds [x x [y x i32]], [x x [y x i32]]* %1, i32 a, i32 b
@@ -428,40 +429,40 @@ public class ArmGenerator {
         Type t = ((BinaryInst) instr).getT();       // 一般为float
         Value v1 = ((BinaryInst) instr).getV1();    // 0xAAAA 或者 %x
         Value v2 = ((BinaryInst) instr).getV2();
-        String reg1, reg2;
+        String f_reg1, f_reg2;
 
-        reg1 = reg.applyFTmp();
+        f_reg1 = reg.F1;
         if (v1.isIdent()) {
-            loadValue(reg1, v1.getIdent());
+            loadValue(f_reg1, v1.getIdent());
 
         } else {
             // 操作浮点时指令变为 vmov
 //            moveImm(reg1, v1.getVal());
 //            add("v  m   ov  " + reg1 + ", #" + v1.hexToFloat());
-            vmoveFloat(reg1, v1);
+            vmoveFloat(f_reg1, v1);
 
         }
 
-        reg2 = reg.applyFTmp();
+        f_reg2 = reg.F2;
         if (v2.isIdent()) {
-            loadValue(reg2, v2.getIdent());
+            loadValue(f_reg2, v2.getIdent());
 
         } else {
             // 操作浮点时指令变为 vmov
-            vmoveFloat(reg2, v2);
+            vmoveFloat(f_reg2, v2);
         }
 
-        String reg_d = reg.applyFTmp();
+        String f_reg_d = reg.F0;
 
         // e.g. vadd.f32 s1, s2, s3
         op = 'v' + op.substring(1, op.length());
 //        add(op + ".f32 " + reg_d + ", " + reg1 + ", " + reg2);
-        add(new ThreeArm(op + ".f32 ", reg_d, reg1, reg2));
-        storeValue(reg_d, dest);
+        add(new ThreeArm(op + ".f32 ", f_reg_d, f_reg1, f_reg2));
+        storeValue(f_reg_d, dest);
 
-        reg.freeFTmp(reg1);
-        reg.freeFTmp(reg2);
-        reg.freeFTmp(reg_d);
+//        reg.freeFTm p(f_reg1);
+//        reg.freeFT mp(f_reg2);
+//        reg.free FTm  p(f_reg_d);
     }
 
     // 取模函数
@@ -584,7 +585,7 @@ public class ArmGenerator {
 
         // 更新：增加支持float
         String regx;
-        if (f) regx = reg.applyFTmp();
+        if (f) regx = reg.F0;     //TODO 存疑
         else regx = reg.T2;
 
         // v1存到v2里
@@ -602,7 +603,6 @@ public class ArmGenerator {
         if (f) add(new TmpArm("vstr.f32 " + regx + ", [" + regt + "]"));
         else add(new TmpArm("str " + regx + ", [" + regt + "]"));
 
-        if (f) reg.free(regx);
     }
 
     private void addGlobalDef(Instr i) {
@@ -693,7 +693,7 @@ public class ArmGenerator {
 
         // 更新：增加支持float
         String regx;
-        if (f) regx = reg.applyFTmp();
+        if (f) regx = reg.F0;  //TODO 存疑
         else regx = reg.T2;
 
         // 值存到dest reg里
@@ -706,15 +706,13 @@ public class ArmGenerator {
             else add(new TmpArm("ldr " + regx + ", [" + regt + "]"));
 
         } else {
-//            if (f) add("vm  ov " + dreg + ", #" + v.hexToFloat());
+//            if (f) add("vm  ov " + reg_d + ", #" + v.hexToFloat());
             if (f) vmoveFloat(regx, v);
             else moveImm(regx, v.getVal());
         }
 
         storeValue(regx, dest);
 
-        // 通用freeFTmp及freeTmp
-        if (f) reg.free(regx);
     }
 
     // br i1 %7, label %8, label %27
@@ -1129,8 +1127,8 @@ public class ArmGenerator {
             // if (destIdent.isGlobal()) {}
 
             if (isfreg) {
-//                addInstrRegSpOffset("vldr.f32", physReg, "r7", off);
-                error();    // todo 直接手动报错
+                // 与int无区别？
+                add("mov " + regname + ", " + physReg);
 
             } else {
                 // 应该必保证reg里有值
@@ -1194,13 +1192,13 @@ public class ArmGenerator {
             // if (destIdent.isGlobal()) {}
 
             if (isfreg) {
-//                int off = curFunc.getOffsetByName(destIdent.toString());
-//                addInstrRegSpOffset("vstr.f32", regname, "r7", off);
-                error();    // todo 直接手动报错
+                // 与int无区别？
+                add("mov " + physReg + ", " + regname);
 
             } else {
+                // 原版进内存
                 // int off = curFunc.getOffsetByName(destIdent.toString());
-                // 封装 add("str " + regName + ", [sp, #" + off + "]");
+                // add("str " + regName + ", [sp, #" + off + "]");
 //                addInstrRegSpOffset("str", regname, "r7", off);
 
                 // physReg里可为空
@@ -1610,7 +1608,7 @@ public class ArmGenerator {
 
             } else {
 
-                //todo 完全展开！addSdivOperation(regsb, reg1, num, reverse);    // 不能用"v1"当dreg！
+                //todo 完全展开！addSdivOperation(regsb, reg1, num, reverse);    // 不能用"v1"当reg_d！
                 {
 
                     DivMShL msl = ChooseMultiplier(Math.abs(num), 31);

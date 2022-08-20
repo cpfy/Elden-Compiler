@@ -7,6 +7,7 @@ import tool.OutputControl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class LiveIntervals {
 
@@ -42,25 +43,45 @@ public class LiveIntervals {
 //                    OutputControl.printMessage("Define:" + i.getDef());
 
                 int no = i.getInstrNo();
-                for (String s : i.getUses()) {
-                    // 目前paras均不分配
+
+//                for (String s : i.getUses()) {
+//                    // 目前paras均不分配
+//                    if (!paras.contains(s)) {
+//                        insertLIMap(s, no);
+//                    }
+//                }
+
+
+//                if (i.getDef() != null) {
+//                    // 目前paras均不分配
+//                    if (!paras.contains(i.getDef())) {
+//                        insertLIMap(i.getDef(), no);
+//                    }
+//                }
+
+                // 第一个=变量名；第二个true=float
+                for (Map.Entry<String, Boolean> e : i.getUsesAndTypes().entrySet()) {
+                    String s = e.getKey();
                     if (!paras.contains(s)) {
-                        insertLIMap(s, no);
+                        if (!e.getValue()) insertLIMap(s, no);
+                        else insertFLIMap(s, no);
                     }
                 }
-                if (i.getDef() != null) {
-                    // 目前paras均不分配
-                    if (!paras.contains(i.getDef())) {
-                        insertLIMap(i.getDef(), no);
+
+                // 只一个，但也遍历一下
+                if (i.getDefAndType() != null) {
+                    for (Map.Entry<String, Boolean> e : i.getDefAndType().entrySet()) {
+                        String s = e.getKey();
+                        if (!paras.contains(s)) {
+                            if (!e.getValue()) insertLIMap(s, no);
+                            else insertFLIMap(s, no);
+                        }
                     }
                 }
             }
         }
 
-        for (LiveInterval LI : LImap.values()) {
-            OutputControl.printMessage(LI.toString());
-        }
-
+        printtest();
     }
 
     public HashMap<String, LiveInterval> getLImap() {
@@ -86,6 +107,23 @@ public class LiveIntervals {
             LImap.put(s, new LiveInterval(s));
         }
         LImap.get(s).addUsePos(pos);
+    }
+
+    // 向LImap加入一个Float变量+位置
+    private void insertFLIMap(String s, int pos) {
+        if (!LImap.containsKey(s)) {
+            LiveInterval newli = new LiveInterval(s);
+            newli.setVarf(true);
+            LImap.put(s, newli);
+        }
+        LImap.get(s).addUsePos(pos);
+    }
+
+    private void printtest() {
+        OutputControl.printMessage("【开始输出：LImap】");
+        for (LiveInterval LI : LImap.values()) {
+            OutputControl.printMessage(LI.toString());
+        }
     }
 
 }
