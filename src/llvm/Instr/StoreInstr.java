@@ -4,6 +4,7 @@ import llvm.Type.Type;
 import llvm.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class StoreInstr extends Instr {
     private Type t1;
@@ -80,6 +81,23 @@ public class StoreInstr extends Instr {
     }
 
     @Override
+    public HashMap<String, Boolean> getUsesAndTypes() {
+        HashMap<String, Boolean> ans = new HashMap<>();
+        if (v1.isIdent()) {
+            ans.put(v1.getIdent().toString(), t1.isFloat());
+        }
+        if (v2.isIdent()) {
+            ans.put(v2.getIdent().toString(), t2.isFloat());
+        }
+        return ans;
+    }
+
+    @Override
+    public HashMap<String, Boolean> getDefAndType() {
+        return new HashMap<>();
+    }
+
+    @Override
     public ArrayList<String> getRoots() {
         ArrayList<String> ans = new ArrayList<>();
         if (v1.isIdent()) {
@@ -89,5 +107,11 @@ public class StoreInstr extends Instr {
             ans.add(v2.getIdent().toString());
         }
         return ans;
+    }
+
+    @Override
+    public boolean setAssignType() {
+        System.err.println("ERROR!!");
+        return false;
     }
 }

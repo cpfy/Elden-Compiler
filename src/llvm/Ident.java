@@ -19,6 +19,10 @@ public class Ident {
     // 是否已经加载到寄存器，第一次后变为true
     private boolean load = false;
 
+    public boolean isFloat() {
+        return type.isFloat();
+    }
+
     public Ident(int id) {
         this.isIdent = false;
         this.id = id;

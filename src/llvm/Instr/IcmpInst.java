@@ -4,6 +4,7 @@ import llvm.Type.Type;
 import llvm.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class IcmpInst extends Instr {
     private String ipred;
@@ -173,8 +174,30 @@ public class IcmpInst extends Instr {
     }
 
     @Override
+    public HashMap<String, Boolean> getUsesAndTypes() {
+        HashMap<String, Boolean> ans = new HashMap<>();
+        if (v1.isIdent()) {
+            ans.put(v1.getIdent().toString(), false);
+        }
+        if (v2.isIdent()) {
+            ans.put(v2.getIdent().toString(), false);
+        }
+        return ans;
+    }
+
+    @Override
+    public HashMap<String, Boolean> getDefAndType() {
+        return new HashMap<>();
+    }
+
+    @Override
     public ArrayList<String> getRoots() {
         ArrayList<String> ans = new ArrayList<>();
         return ans;
+    }
+
+    @Override
+    public boolean setAssignType() {
+        return true;
     }
 }

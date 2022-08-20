@@ -4,6 +4,7 @@ import llvm.Type.Type;
 import llvm.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class RetTerm extends Instr {
     private Type retype;
@@ -71,11 +72,31 @@ public class RetTerm extends Instr {
     }
 
     @Override
+    public HashMap<String, Boolean> getUsesAndTypes() {
+        HashMap<String, Boolean> ans = new HashMap<>();
+        if (v != null && v.isIdent()) {
+            ans.put(v.getIdent().toString(), retype.isFloat());
+        }
+        return ans;
+    }
+
+    @Override
+    public HashMap<String, Boolean> getDefAndType() {
+        return new HashMap<>();
+    }
+
+    @Override
     public ArrayList<String> getRoots() {
         ArrayList<String> ans = new ArrayList<>();
         if (v != null && v.isIdent()) {
             ans.add(v.getIdent().toString());
         }
         return ans;
+    }
+
+    @Override
+    public boolean setAssignType() {
+        System.err.println("ERROR!!");
+        return false;
     }
 }

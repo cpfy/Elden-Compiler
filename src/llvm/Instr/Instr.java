@@ -5,6 +5,8 @@ import llvm.Ident;
 import llvm.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public abstract class Instr {
 
@@ -62,6 +64,10 @@ public abstract class Instr {
 
     public abstract String getDef();                            //死代码删除使用
 
+    public abstract HashMap<String, Boolean> getUsesAndTypes();
+
+    public abstract HashMap<String, Boolean> getDefAndType();
+
     public abstract ArrayList<String> getRoots();               //死代码删除使用
 
     /**
@@ -90,4 +96,6 @@ public abstract class Instr {
     public boolean isGlobal() {
         return global;
     }
+
+    public abstract boolean setAssignType();
 }

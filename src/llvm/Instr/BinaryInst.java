@@ -1,10 +1,13 @@
 package llvm.Instr;
 
+import llvm.Block;
 import llvm.Type.Type;
 import llvm.TypeValue;
 import llvm.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class BinaryInst extends Instr {
     private String op;      //运算符
@@ -265,8 +268,30 @@ public class BinaryInst extends Instr {
     }
 
     @Override
+    public HashMap<String, Boolean> getUsesAndTypes() {
+        HashMap<String, Boolean> ans = new HashMap<>();
+        if (v1.isIdent()) {
+            ans.put(v1.getIdent().toString(), t.isFloat());
+        }
+        if (v2.isIdent()) {
+            ans.put(v2.getIdent().toString(), t.isFloat());
+        }
+        return ans;
+    }
+
+    @Override
+    public HashMap<String, Boolean> getDefAndType() {
+        return new HashMap<>();
+    }
+
+    @Override
     public ArrayList<String> getRoots() {
         ArrayList<String> ans = new ArrayList<>();
         return ans;
+    }
+
+    @Override
+    public boolean setAssignType() {
+        return t.isFloat();
     }
 }

@@ -24,6 +24,10 @@ public abstract class Type {
         this.inpointer = ip;
     }
 
+    public boolean isFloat() {
+        return typec == TypeC.F;
+    }
+
     // 占用空间，初始化用
     public abstract int getSpace();
 

@@ -5,6 +5,7 @@ import llvm.TypeValue;
 import llvm.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 //    GetElementPtrInst
@@ -123,9 +124,36 @@ public class GetElementPtrInst extends Instr {
     }
 
     @Override
+    public HashMap<String, Boolean> getUsesAndTypes() {
+        HashMap<String, Boolean> ans = new HashMap<>();
+        if (v.isIdent()) {
+            ans.put(v.getIdent().toString(), false);
+        }
+        if (commas.get(0).getValue().isIdent()) {
+            ans.put(commas.get(0).getValue().getIdent().toString(), false);
+        }
+        if (hasFourth) {
+            if (commas.get(1).getValue().isIdent()) {
+                ans.put(commas.get(1).getValue().getIdent().toString(), false);
+            }
+        }
+        return ans;
+    }
+
+    @Override
+    public HashMap<String, Boolean> getDefAndType() {
+        return new HashMap<>();
+    }
+
+    @Override
     public ArrayList<String> getRoots() {
         //todo
         ArrayList<String> ans = new ArrayList<>();
         return ans;
+    }
+
+    @Override
+    public boolean setAssignType() {
+        return t1.isFloat();
     }
 }

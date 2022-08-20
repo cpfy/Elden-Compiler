@@ -5,6 +5,7 @@ import llvm.TypeValue;
 import llvm.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class BrTerm extends Instr {
     private Ident li;
@@ -57,8 +58,25 @@ public class BrTerm extends Instr {
     }
 
     @Override
+    public HashMap<String, Boolean> getUsesAndTypes() {
+        HashMap<String, Boolean> ans = new HashMap<>();
+        return ans;
+    }
+
+    @Override
+    public HashMap<String, Boolean> getDefAndType() {
+        return new HashMap<>();
+    }
+
+    @Override
     public ArrayList<String> getRoots() {
         ArrayList<String> ans = new ArrayList<>();
         return ans;
+    }
+
+    @Override
+    public boolean setAssignType() {
+        System.err.println("ERROR!!");
+        return false;
     }
 }

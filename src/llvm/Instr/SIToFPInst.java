@@ -4,6 +4,7 @@ import llvm.Type.Type;
 import llvm.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class SIToFPInst extends Instr {
     private Type t1;
@@ -77,7 +78,26 @@ public class SIToFPInst extends Instr {
     }
 
     @Override
+    public HashMap<String, Boolean> getUsesAndTypes() {
+        HashMap<String, Boolean> ans = new HashMap<>();
+        if (v.isIdent()) {
+            ans.put(v.getIdent().toString(), t1.isFloat());
+        }
+        return ans;
+    }
+
+    @Override
+    public HashMap<String, Boolean> getDefAndType() {
+        return new HashMap<>();
+    }
+
+    @Override
     public ArrayList<String> getRoots() {
         return new ArrayList<>();
+    }
+
+    @Override
+    public boolean setAssignType() {
+        return t2.isFloat();
     }
 }

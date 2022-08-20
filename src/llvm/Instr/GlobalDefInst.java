@@ -5,6 +5,7 @@ import llvm.Type.Type;
 import llvm.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class GlobalDefInst extends Instr {
     private Ident gi;
@@ -59,9 +60,23 @@ public class GlobalDefInst extends Instr {
     }
 
     @Override
+    public HashMap<String, Boolean> getUsesAndTypes() {
+        return null;
+    }
+
+    @Override
+    public HashMap<String, Boolean> getDefAndType() {
+        return null;
+    }
+
+    @Override
     public ArrayList<String> getRoots() {
         return null;
     }
 
-
+    @Override
+    public boolean setAssignType() {
+        System.err.println("ERROR!!");
+        return false;
+    }
 }

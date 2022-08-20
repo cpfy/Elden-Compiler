@@ -4,6 +4,7 @@ import llvm.Type.Type;
 import llvm.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class AllocaInst extends Instr {
     private Type t;
@@ -49,8 +50,23 @@ public class AllocaInst extends Instr {
     }
 
     @Override
+    public HashMap<String, Boolean> getUsesAndTypes() {
+        return new HashMap<>();
+    }
+
+    @Override
+    public HashMap<String, Boolean> getDefAndType() {
+        return new HashMap<>();
+    }
+
+    @Override
     public ArrayList<String> getRoots() {
         ArrayList<String> ans = new ArrayList<>();
         return ans;
+    }
+
+    @Override
+    public boolean setAssignType() {
+        return false;
     }
 }

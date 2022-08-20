@@ -5,6 +5,7 @@ import llvm.Type.IntType;
 import llvm.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class CondBrTerm extends Instr {
     private IntType it;
@@ -96,11 +97,31 @@ public class CondBrTerm extends Instr {
     }
 
     @Override
+    public HashMap<String, Boolean> getUsesAndTypes() {
+        HashMap<String, Boolean> ans = new HashMap<>();
+        if (v.isIdent()) {
+            ans.put(v.getIdent().toString(), false);
+        }
+
+        return ans;
+    }
+
+    @Override
+    public HashMap<String, Boolean> getDefAndType() {
+        return new HashMap<>();
+    }
+
+    @Override
     public ArrayList<String> getRoots() {
         ArrayList<String> ans = new ArrayList<>();
         if (v.isIdent()) {
             ans.add(v.getIdent().toString());
         }
         return ans;
+    }
+    @Override
+    public boolean setAssignType() {
+        System.err.println("ERROR!!");
+        return false;
     }
 }

@@ -4,8 +4,11 @@ import llvm.Ident;
 import llvm.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class AssignInstr extends Instr {
+    private boolean isFloat;
     private Ident localident;
     private Instr valueinstr;
     private boolean isPointer = false;
@@ -14,6 +17,7 @@ public class AssignInstr extends Instr {
         super(instrname);
         this.localident = localident;
         this.valueinstr = valueinstr;
+        isFloat = valueinstr.setAssignType();
     }
 
     @Override
@@ -55,6 +59,18 @@ public class AssignInstr extends Instr {
     }
 
     @Override
+    public HashMap<String, Boolean> getUsesAndTypes() {
+        return valueinstr.getUsesAndTypes();
+    }
+
+    @Override
+    public HashMap<String, Boolean> getDefAndType() {
+        HashMap<String, Boolean> ans = new HashMap<>();
+        ans.put(localident.getName(), isFloat);
+        return null;
+    }
+
+    @Override
     public ArrayList<String> getRoots() {
         ArrayList<String> ans = new ArrayList<>();
         if (valueinstr instanceof CallInst) {
@@ -62,5 +78,11 @@ public class AssignInstr extends Instr {
         }
         ans.addAll(valueinstr.getRoots());
         return ans;
+    }
+
+    @Override
+    public boolean setAssignType() {
+        System.out.println("ERROR!!!");
+        return false;
     }
 }

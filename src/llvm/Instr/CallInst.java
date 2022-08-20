@@ -6,6 +6,7 @@ import llvm.TypeValue;
 import llvm.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class CallInst extends Instr {
     private Type returntype;
@@ -102,6 +103,22 @@ public class CallInst extends Instr {
     }
 
     @Override
+    public HashMap<String, Boolean> getUsesAndTypes() {
+        HashMap<String, Boolean> ans = new HashMap<>();
+        for (TypeValue typeValue : args) {
+            if (typeValue.getValue().isIdent()) {
+                ans.put(typeValue.getValue().getIdent().toString(), typeValue.getType().isFloat());
+            }
+        }
+        return ans;
+    }
+
+    @Override
+    public HashMap<String, Boolean> getDefAndType() {
+        return new HashMap<>();
+    }
+
+    @Override
     public ArrayList<String> getRoots() {
         ArrayList<String> ans = new ArrayList<>();
         for (TypeValue typeValue : args) {
@@ -110,5 +127,10 @@ public class CallInst extends Instr {
             }
         }
         return ans;
+    }
+
+    @Override
+    public boolean setAssignType() {
+        return returntype.isFloat();
     }
 }
