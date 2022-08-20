@@ -404,8 +404,7 @@ public class ArmGenerator {
                 addMultOptimize(instr, dest);
                 break;
             case "sdiv":
-                addSdivOptimize(instr, dest);   // 有bug，暂时关闭
-                //addOp(instr, dest);
+                addSdivOptimize(instr, dest);   // 有bug，暂时关闭（已修好）
                 break;
             case "srem":    // 取模
                 addSremOptimize(instr, dest);
@@ -530,6 +529,36 @@ public class ArmGenerator {
         Value v2 = ((BinaryInst) instr).getV2();
 
         String reg1, reg2;
+
+        // 两个均为常数，消Phi后出现
+        if (!v1.isIdent() && !v2.isIdent()) {
+            int res;
+            reg1 = reg.T1;
+
+            switch (op) {
+                case "add":
+                    res = v1.getVal() + v2.getVal();
+                    break;
+                case "sub":
+                    res = v1.getVal() - v2.getVal();
+                    break;
+                case "mul":
+                    res = v1.getVal() * v2.getVal();
+                    break;
+                case "sdiv":
+                    res = v1.getVal() / v2.getVal();
+                    break;
+                default:
+                    error();
+                    res = -142857;
+                    break;
+            }
+
+            moveImm(reg1, res);
+            storeValue(reg1, dest);
+            return;
+
+        }
 
         // 操作数中一个是0
         if (v1.isIdent() && !v2.isIdent() && v2.getVal() == 0 && (op.equals("add") || op.equals("sub"))) {
@@ -1373,8 +1402,6 @@ public class ArmGenerator {
 
         if (v1.isIdent() && v2.isIdent()) {
             addOp(instr, dest);     // todo: 最好不这么用
-//            reg.freeTmp(reg1);
-//            reg.freeTmp(re  g_d);
             return;
 
         } else if (v1.isIdent() && !v2.isIdent()) {
@@ -1541,8 +1568,6 @@ public class ArmGenerator {
 
         if (v1.isIdent() && v2.isIdent()) {
             addOp(instr, dest);     // todo 最好不用；另外记得store
-//            reg.freeTmp(reg1);
-//            reg.freeTmp(re  g_d);
             return;
 
         } else if (v1.isIdent() && !v2.isIdent()) {
