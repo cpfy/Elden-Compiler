@@ -53,26 +53,6 @@ public class LiveInterval implements Comparable<LiveInterval> {
         this.varf = varf;
     }
 
-    // 增加使用位置
-    public void addUsePos(int pos) {
-        if (!active) {
-            active = true;
-            start = end = pos;
-
-        } else {
-            // 无语子，得开-ea设置，默认不生效的
-//            assert (start < pos) : "[LiveInterval] new pos must > start interval!";
-
-            // 有可能先扫编号大的
-            if (pos < start) {
-                start = pos;
-
-            } else if (pos > end) {
-                end = pos;
-            }
-        }
-    }
-
     // overlaps - Return true if the live range overlaps an interval specified
     // by [Start, End).
     public boolean overlaps(int Start, int End) {
@@ -99,8 +79,46 @@ public class LiveInterval implements Comparable<LiveInterval> {
         this.reg = reg;
     }
 
-    // 区间长度，可作为排序参考权重
+    // 区间长度，可作为排序参考权重（未用到）
     public int getLength() {
         return end - start;
+    }
+
+    // 正确的计算interval函数[1]，加入一段Range
+    public void addRange(int left, int right) {
+        if (left < start) {
+            start = left;
+        }
+        if (right > end) {
+            end = right;
+        }
+    }
+
+    // 正确的计算interval函数[2]，加入一个Pos
+    public void addUsePos(int pos) {
+        if (!active) {
+            active = true;
+            start = end = pos;
+
+        } else {
+            // 绝绝子..咱就是说..家人们..真是大无语了，得开-ea设置，默认不生效的
+            // assert (start < pos) : "[LiveInterval] new pos must > start interval!";
+
+            // 有可能先扫编号大的
+            if (pos < start) {
+                start = pos;
+
+            } else if (pos > end) {
+                end = pos;
+            }
+        }
+    }
+
+    // Def变量在Range处截断
+    public void truncate(int pos) {
+        assert (active);
+        assert (pos <= end);
+        assert (start <= pos);
+        start = pos;
     }
 }
