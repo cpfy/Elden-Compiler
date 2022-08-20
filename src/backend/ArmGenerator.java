@@ -714,7 +714,7 @@ public class ArmGenerator {
         storeValue(regx, dest);
 
         // 通用freeFTmp及freeTmp
-        if(f) reg.free(regx);
+        if (f) reg.free(regx);
     }
 
     // br i1 %7, label %8, label %27
@@ -1089,8 +1089,8 @@ public class ArmGenerator {
     private void loadValue(String regname, Ident destIdent) {
         boolean isfreg = (regname.charAt(0) == 's') && (!regname.equals("sp"));
 
-        // 溢出用传统的ldr
-        if (reg.isSpill(destIdent.toString())) {
+        // spill，para，global等无寄存器情况用传统的ldr
+        if (!reg.hasPhysReg(destIdent.toString())) {
             // global则加载进来
             if (destIdent.isGlobal()) {
                 if (isfreg) {
@@ -1144,8 +1144,8 @@ public class ArmGenerator {
     private void storeValue(String regname, Ident destIdent) {
         boolean isfreg = (regname.charAt(0) == 's') && (!regname.equals("sp"));
 
-        // 溢出用传统的ldr
-        if (reg.isSpill(destIdent.toString())) {
+        // spill，para，global等无寄存器情况用传统的ldr
+        if (!reg.hasPhysReg(destIdent.toString())) {
 
             // global则存储回去
             if (destIdent.isGlobal()) {

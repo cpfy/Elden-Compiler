@@ -326,7 +326,7 @@ public class RegisterOld {
         // 应为已经scan后的状态
         for (LiveInterval LI : LIS.getLImap().values()) {
             if (LI.isGlobal()) {
-                spillSet.add(LI.getVname());
+                spillSet.add(LI.getVname());    // 可以不加，不用这个判断了
                 continue;
             }
             unhandledList.add(LI);
@@ -384,9 +384,14 @@ public class RegisterOld {
     }
 
     // 外部查询
-    public boolean isSpill(String name) {
-        return spillSet.contains(name);
+    public boolean hasPhysReg(String name) {
+        return allocmap.containsKey(name);
     }
+
+    // 会导致global，para等情况报错
+//    public boolean isSpill(String name) {
+//        return spillSet.contains(name);
+//    }
 
     public String searchPhysReg(String name) {
         assert (allocmap.containsKey(name));
