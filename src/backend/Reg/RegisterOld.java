@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+import static java.lang.System.exit;
+
 public class RegisterOld {
     private HashMap<Integer, String> regMap;
     private HashMap<String, Integer> regNameMap;
@@ -32,11 +34,11 @@ public class RegisterOld {
     private PriorityQueue<String> regpool;              // 可用寄存器池
 
 
-    private final int REG_MAX = 9;     // 预留r0-r2；r7不使用；分r3-r12共9个
+    private final int REG_MAX = 8;     // 预留r0-r2,r3；r7不使用；分r4-r12共8个
     public final static String T0 = "r0";  // 标准临时寄存器用
     public final static String T1 = "r1";
     public final static String T2 = "r2";
-
+    public final static String SB = "r3";   // 迫不得已加一个临时寄存器
 
     public RegisterOld() {
         this.regMap = new HashMap<>();
@@ -60,11 +62,8 @@ public class RegisterOld {
         this.allocmap = new HashMap<>();
         this.spillSet = new HashSet<>();
         this.regpool = new PriorityQueue<>();
-        for (int i = 3; i <= 12; ++i) {
-            if (i != 7) {
-                regpool.add("r" + i);
-            }
-        }
+        initRegPool();
+
 //        while (!regpool.isEmpty()) {
 //            OutputControl.printMessage(regpool.poll());
 //        }
@@ -166,35 +165,35 @@ public class RegisterOld {
         return regMap.get(no);
     }
 
-    // apply tmp reg.
-    public String applyTmp() {
-        int regno;
-        if (!freeRegList.isEmpty()) {
-            regno = freeRegList.get(0);
-            freeRegList.remove(0);
-//            addActiveListNoRep(regno);     //无重复加入activeregList 活跃变量表
-
-        } else {    //todo 无空寄存器
-            System.err.println("No free Reg! Alloc $r0.");
-            regno = 0;
-        }
-
-//        OutputControl.printMessage("Alloc Reg $" + regMap.get(regno) + " to Tmp");
-        return this.regMap.get(regno);
-    }
-
-    // free tmp reg.
-    public void freeTmp(String reg) {
-        int no = this.regNameMap.get(reg);
-        if (no > 12) {
-            System.err.println("Register freeTmpRegister() : Error free tmp Reg No!! regno = " + no);
-        } else if (!freeRegList.contains(no)) {
-//            removeActiveRegList(no);     //删除变量in activeregList 活跃变量表
-            freeRegList.add(no);
-//            OutputControl.printMessage("Free Reg $" + regMap.get(no) + " from Tmp");
-        }
-        //todo 其它的free寄存器都得检查是否重复！
-    }
+    // apply tmp reg.（禁用此写法！）
+//    public String applyTmp() {
+//        int regno;
+//        if (!freeRegList.isEmpty()) {
+//            regno = freeRegList.get(0);
+//            freeRegList.remove(0);
+////            addActiveListNoRep(regno);     //无重复加入activeregList 活跃变量表
+//
+//        } else {    //todo 无空寄存器
+//            System.err.println("No free Reg! Alloc $r0.");
+//            regno = 0;
+//        }
+//
+////        OutputControl.printMessage("Alloc Reg $" + regMap.get(regno) + " to Tmp");
+//        return this.regMap.get(regno);
+//    }
+//
+//    // free tmp reg.（禁用此写法！）
+//    public void freeTmp(String reg) {
+//        int no = this.regNameMap.get(reg);
+//        if (no > 12) {
+//            System.err.println("Register freeTmpRegister() : Error free tmp Reg No!! regno = " + no);
+//        } else if (!freeRegList.contains(no)) {
+////            removeActiveRegList(no);     //删除变量in activeregList 活跃变量表
+//            freeRegList.add(no);
+////            OutputControl.printMessage("Free Reg $" + regMap.get(no) + " from Tmp");
+//        }
+//        //todo 其它的free寄存器都得检查是否重复！
+//    }
 
     // apply tmp float reg.
     public String applyFTmp() {
@@ -233,7 +232,9 @@ public class RegisterOld {
         if (reg.charAt(0) == 's') {    // 必不可能是sp
             freeFTmp(reg);
         } else {
-            freeTmp(reg);
+//            freeTmp(reg);
+            System.err.println("禁止释放Int寄存器！");
+            exit(1);
         }
     }
 
@@ -306,9 +307,14 @@ public class RegisterOld {
         this.spillSet.clear();
 
         this.regpool.clear();
-        for (int i = 3; i <= 12; ++i) {
+        initRegPool();
+    }
+
+    // 初始化寄存器池
+    private void initRegPool() {
+        for (int i = 4; i <= 12; ++i) {
             if (i != 7) {
-                this.regpool.add("r" + i);
+                regpool.add("r" + i);
             }
         }
     }
