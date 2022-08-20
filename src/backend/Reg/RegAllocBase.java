@@ -48,15 +48,15 @@ public class RegAllocBase {
         seedLiveRegs();
 
         while (!pQueue.isEmpty()) {
-            LiveInterval VirtReg = dequeue();
-            assert (!VRM.hasPhys(VirtReg.getReg())) : "Register already assigned";
-
-            // 溢出合并片段时？未使用寄存器可出现
-            if (MRI.reg_nodbg_empty(VirtReg.getReg())) {
-                aboutToRemoveInterval(VirtReg);
-                LIS.removeInterval(VirtReg.getReg());
-                continue;
-            }
+//            LiveInterval VirtReg = dequeue();
+//            assert (!VRM.hasPhys(VirtReg.getReg())) : "Register already assigned";
+//
+//            // 溢出合并片段时？未使用寄存器可出现
+//            if (MRI.reg_nodbg_empty(VirtReg.getReg())) {
+//                aboutToRemoveInterval(VirtReg);
+//                LIS.removeInterval(VirtReg.getReg());
+//                continue;
+//            }
 
             Matrix.invalidateVirtRegs();
 
@@ -67,12 +67,12 @@ public class RegAllocBase {
 
     // 入队
     public void enqueue(LiveInterval LI) {
-        Register Reg = LI.getReg();
-        assert (Reg.isVirtual()) : "Can only enqueue virtual registers";
-
-        if (VRM.hasPhys(Reg)) {
-            return;
-        }
+//        Register Reg = LI.getReg();
+//        assert (Reg.isVirtual()) : "Can only enqueue virtual registers";
+//
+//        if (VRM.hasPhys(Reg)) {
+//            return;
+//        }
 
         pQueue.add(LI);
     }
@@ -85,6 +85,16 @@ public class RegAllocBase {
         LiveInterval LI = pQueue.peek();
         pQueue.poll();
         return LI;
+    }
+
+    public MCRegister selectOrSplit(LiveInterval VirtReg, Vector<Register> SplitVRegs) {
+        // Populate a list of physical register spill candidates.
+//        Vector(MCRegister, 8) PhysRegSpillCands;
+        return null;//todo
+    }
+
+    public void aboutToRemoveInterval(LiveInterval LI) {
+
     }
 
     public boolean LRE_CanEraseVirtReg(Register VirtReg) {
@@ -102,24 +112,14 @@ public class RegAllocBase {
         return false;
     }
 
-    public void LRE_WillShrinkVirtReg(Register VirtReg) {
-        if (!VRM.hasPhys(VirtReg))
-            return;
-
-        // Register is assigned, put it back on the queue for reassignment.
-        LiveInterval LI = LIS.getInterval(VirtReg);
-        Matrix.unassign(LI);
-        enqueue(LI);
-    }
-
-    public MCRegister selectOrSplit(LiveInterval VirtReg, Vector<Register> SplitVRegs) {
-        // Populate a list of physical register spill candidates.
-//        Vector(MCRegister, 8) PhysRegSpillCands;
-        return null;//todo
-    }
-
-    public void aboutToRemoveInterval(LiveInterval LI) {
-
-    }
+//    public void LRE_WillShrinkVirtReg(Register VirtReg) {
+//        if (!VRM.hasPhys(VirtReg))
+//            return;
+//
+//        // Register is assigned, put it back on the queue for reassignment.
+//        LiveInterval LI = LIS.getInterval(VirtReg);
+//        Matrix.unassign(LI);
+//        enqueue(LI);
+//    }
 
 }

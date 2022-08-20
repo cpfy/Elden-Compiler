@@ -25,8 +25,8 @@ public class LiveRegMatrix {
 
     // 分配寄存器映射
     public void assign(LiveInterval VirtReg, Register PhysReg) {
-        assert (!VRM.hasPhys(VirtReg.getReg())) : "Duplicate VirtReg assignment";
-        VRM.assignVirt2Phys(VirtReg.getReg(), PhysReg);
+//        assert (!VRM.hasPhys(VirtReg.getReg())) : "Duplicate VirtReg assignment";
+//        VRM.assignVirt2Phys(VirtReg.getReg(), PhysReg);
 
 //        foreachUnit(
 //                TRI, VirtReg, PhysReg, [&](unsigned Unit, const LiveRange &Range) {
@@ -40,9 +40,9 @@ public class LiveRegMatrix {
 
     // 取消分配寄存器
     public void unassign(LiveInterval VirtReg) {
-        Register PhysReg = VRM.getPhys(VirtReg.getReg());
-
-        VRM.clearVirt(VirtReg.getReg());
+//        Register PhysReg = VRM.getPhys(VirtReg.getReg());
+//
+//        VRM.clearVirt(VirtReg.getReg());
 
 //        foreachUnit(TRI, VirtReg, PhysReg,
 //                [&](unsigned Unit, const LiveRange &Range) {

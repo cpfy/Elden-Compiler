@@ -4,7 +4,7 @@ import java.util.Map;
 
 public class MachineRegisterInfo {
 
-    private int numVirtRegs;
+    private int numVirtRegs = 10;   // 不分r7，预留2个
 
     // 管理machine寄存器信息 contains information about virtual registers
     public MachineRegisterInfo() {
@@ -18,7 +18,7 @@ public class MachineRegisterInfo {
 
     //
     public boolean reg_nodbg_empty(Register reg) {
-        return true;//todo
+        return false;//todo
     }
 
     public Register getSimpleHint(Register v) {

@@ -42,10 +42,10 @@ public class ArmGenerator {
     private Function curFunc;       // 当前函数，读取offset时用
 
     /*** !!! ***/
-    private RegAllocBase RA;    // 寄存器分配
+//    private RegAllocBase RA;    // 寄存器分配
+//    private VirtRegMap VRM;
+//    private LiveRegMatrix Matrix;
     private LiveIntervals LIS;
-    private VirtRegMap VRM;
-    private LiveRegMatrix Matrix;
 
     // LPIC计数器
     private int lpiccount = 1;
@@ -71,9 +71,10 @@ public class ArmGenerator {
 
         // 寄存器等初始化
         this.LIS = new LiveIntervals();
-        this.VRM = new VirtRegMap();
-        this.Matrix = new LiveRegMatrix();
-        this.RA = new RegAllocBase(this.VRM, this.LIS, this.Matrix);
+        this.reg.setLIS(this.LIS);  // 固定一个instance，每个function更新其内容
+//        this.VRM = new VirtRegMap();
+//        this.Matrix = new LiveRegMatrix();
+//        this.RA = new RegAllocBase(this.VRM, this.LIS, this.Matrix);
 
     }
 
@@ -92,6 +93,7 @@ public class ArmGenerator {
             curFunc = f;
 
             LIS.scanIntervals(f);
+            reg.RegAllocScan();
 
             // GlobalDef特判
             if (f.getFuncheader().getFname().equals("GlobalContainer")) {

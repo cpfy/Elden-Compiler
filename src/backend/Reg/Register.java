@@ -21,7 +21,7 @@ public class Register {
         return virtual;
     }
 
-    public boolean isValid(){
+    public boolean isValid() {
         return valid;
     }
 }

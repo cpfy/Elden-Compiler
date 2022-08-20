@@ -64,6 +64,10 @@ public class LiveIntervals {
 
     }
 
+    public HashMap<String, LiveInterval> getLImap() {
+        return LImap;
+    }
+
     public LiveInterval getInterval(Register Reg) {
         return LImap.get(Reg);
     }
