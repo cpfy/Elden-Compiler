@@ -42,14 +42,14 @@ public class RegisterOld {
 //    private HashSet<String> FspillSet;                   // 溢出的set集合（这两个共用了）
 
 
-    private final int REG_MAX = 8;     // 预留r0-r2,r3；r7不使用；分r4-r12共8个
-    public final static String T0 = "r0";  // 标准临时寄存器用
+    private final int REG_MAX = 12 - 4;     // 预留r0-r2,r3；r7不使用；分r4-r12共8个
+    public final static String T0 = "r0";   // 标准临时寄存器用
     public final static String T1 = "r1";
     public final static String T2 = "r2";
     public final static String SB = "r3";   // 迫不得已加一个临时寄存器
 
-    private final int FREG_MAX = 29;     // 预留s0-s2；分s3-s31共29个
-    public final static String F0 = "s0";  // 标准临时寄存器用
+    private final int FREG_MAX = 32 - 3;    // 预留s0-s2；分s3-s31共29个
+    public final static String F0 = "s0";   // 标准临时寄存器用
     public final static String F1 = "s1";
     public final static String F2 = "s2";
 
@@ -293,7 +293,7 @@ public class RegisterOld {
 
     // 初始化F寄存器池
     private void initFRegPool() {
-        for (int i = 4; i < 32; ++i) {
+        for (int i = 3; i < 32; ++i) {
             Fregpool.add("s" + i);
         }
     }
@@ -341,6 +341,7 @@ public class RegisterOld {
             } else {
                 String physReg = Fregpool.poll();
                 FLI.setReg(physReg);
+                System.out.println("Assign (" + FLI.toString() + ", " + physReg + ")");
                 allocmap.put(FLI.getVname(), physReg);
                 FactiveList.add(FLI);
             }
