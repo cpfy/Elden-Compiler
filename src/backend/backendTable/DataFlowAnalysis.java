@@ -51,6 +51,7 @@ public class DataFlowAnalysis {
                     block.getLiveOut().putAll(suc.getLiveIn());
                 }
 
+                block.getLiveIn().putAll(block.getLiveOut());
                 for (String key: block.getLiveKill().keySet()) {
                     block.getLiveIn().remove(key);
                 }
