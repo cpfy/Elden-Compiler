@@ -1182,7 +1182,7 @@ public class ArmGenerator {
                 else {
                     // Float. <--- Int.
                     add("vmov " + regname + ", " + physReg);
-                    add("vcvt " + regname + ", " + regname);
+                    add("vcvt.f32.s32 " + regname + ", " + regname);
                 }
 
             } else {
@@ -1190,8 +1190,9 @@ public class ArmGenerator {
                 if (!isFloatReg(physReg)) add("mov " + regname + ", " + physReg);   // Int. <--- Int.
                 else {
                     // Int. <--- Float.
-                    //todo 优化 不能改原值？？？
-                    add("vmov.f32 " + regname + ", " + physReg);
+                    add("vcvt.s32.f32 " + physReg + ", " + physReg);
+                    add("vmov " + regname + ", " + physReg);
+                    add("vcvt.f32.s32 " + physReg + ", " + physReg);    // 还要转换回去，不可破坏
                 }
             }
         }
