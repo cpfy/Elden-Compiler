@@ -41,21 +41,36 @@ public class ThreeArm extends Arm {
 
     @Override
     public ArrayList<String> getSrcRegs() {
-        return null;
+        // add, sub, mul, sdiv, srem
+        // vadd.f32, vsub.f32, vmul.f32, vdiv.f32
+        ArrayList<String> list = new ArrayList<>();
+        list.add(op2);
+        list.add(op3);
+        return list;
     }
 
     @Override
     public ArrayList<String> getDstRegs() {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+        list.add(op1);
+        return list;
     }
 
     @Override
     public ArrayList<String> renameSrcRegs(String newReg, String oldReg) {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+        if (op2.equals(oldReg)) op2 = newReg;
+        if (op3.equals(oldReg)) op3 = newReg;
+        list.add(op2);
+        list.add(op3);
+        return list;
     }
 
     @Override
     public ArrayList<String> renameDstRegs(String newReg, String oldReg) {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+        if (op1.equals(oldReg)) op1 = newReg;
+        list.add(op1);
+        return list;
     }
 }

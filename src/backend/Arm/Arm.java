@@ -52,9 +52,9 @@ public abstract class Arm {
     }
 
     //todo 以下四个方法待实现
-    public abstract ArrayList<String> getSrcRegs();         //获取源寄存器名列表
+    public abstract ArrayList<String> getSrcRegs();         // 获取源寄存器名列表
 
-    public abstract ArrayList<String> getDstRegs();         //获取目的寄存器名列表
+    public abstract ArrayList<String> getDstRegs();         // 获取目的寄存器名列表
 
     public abstract ArrayList<String> renameSrcRegs(String newReg, String oldReg);      //把old换成new
 

@@ -46,21 +46,37 @@ public class FourArm extends Arm {
 
     @Override
     public ArrayList<String> getSrcRegs() {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+        list.add(op3);
+        list.add(op4);
+        return list;
     }
 
     @Override
     public ArrayList<String> getDstRegs() {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+        list.add(op1);
+        list.add(op2);
+        return list;
     }
 
     @Override
     public ArrayList<String> renameSrcRegs(String newReg, String oldReg) {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+        if (op3.equals(oldReg)) op3 = newReg;
+        if (op4.equals(oldReg)) op4 = newReg;
+        list.add(op3);
+        list.add(op4);
+        return list;
     }
 
     @Override
     public ArrayList<String> renameDstRegs(String newReg, String oldReg) {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+        if (op1.equals(oldReg)) op1 = newReg;
+        if (op2.equals(oldReg)) op2 = newReg;
+        list.add(op1);
+        list.add(op2);
+        return list;
     }
 }

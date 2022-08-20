@@ -40,21 +40,116 @@ public class TwoArm extends Arm {
 
     @Override
     public ArrayList<String> getSrcRegs() {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+        switch (super.getInstrname()) {
+            case "cmp":
+            case "vcmp.f32":
+                list.add(op1);
+                list.add(op2);
+                break;
+
+            case "mov":
+            case "movw":
+            case "movt":
+            case "vmov":
+            case "vmov.f32":
+            case "vcvt.s32.f32":
+            case "vcvt.f32.s32":
+//                if (op2.charAt(0) != '#') list.add(op2);
+                list.add(op2);
+                break;
+
+            case "vmrs":
+                break;
+            default:
+                break;
+        }
+
+        return list;
     }
 
     @Override
     public ArrayList<String> getDstRegs() {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+        switch (super.getInstrname()) {
+            case "mov":
+            case "movw":
+            case "movt":
+            case "vmov":
+            case "vmov.f32":
+            case "vcvt.s32.f32":
+            case "vcvt.f32.s32":
+                list.add(op1);
+                break;
+
+            case "cmp":
+            case "vcmp.f32":
+            case "vmrs":
+                break;
+            default:
+                break;
+        }
+
+        return list;
     }
 
     @Override
     public ArrayList<String> renameSrcRegs(String newReg, String oldReg) {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+        switch (super.getInstrname()) {
+            case "cmp":
+            case "vcmp.f32":
+                if (op1.equals(oldReg)) op1 = newReg;
+                if (op2.equals(oldReg)) op2 = newReg;
+                list.add(op1);
+                list.add(op2);
+                break;
+
+            case "mov":
+            case "movw":
+            case "movt":
+            case "vmov":
+            case "vmov.f32":
+            case "vcvt.s32.f32":
+            case "vcvt.f32.s32":
+//                if (op2.charAt(0) != '#') list.add(op2);
+                if (op2.equals(oldReg)) op2 = newReg;
+                list.add(op2);
+                break;
+
+            case "vmrs":
+                break;
+            default:
+                break;
+        }
+
+        return list;
+
     }
 
     @Override
     public ArrayList<String> renameDstRegs(String newReg, String oldReg) {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+        switch (super.getInstrname()) {
+            case "mov":
+            case "movw":
+            case "movt":
+            case "vmov":
+            case "vmov.f32":
+            case "vcvt.s32.f32":
+            case "vcvt.f32.s32":
+                if (op1.equals(oldReg)) op1 = newReg;
+                list.add(op1);
+                break;
+
+            case "cmp":
+            case "vcmp.f32":
+            case "vmrs":
+                break;
+            default:
+                break;
+        }
+
+        return list;
     }
 }
