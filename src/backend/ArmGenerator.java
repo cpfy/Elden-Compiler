@@ -533,8 +533,6 @@ public class ArmGenerator {
         // 两个均为常数，消Phi后出现
         if (!v1.isIdent() && !v2.isIdent()) {
             int res;
-            reg1 = reg.T1;
-
             switch (op) {
                 case "add":
                     res = v1.getVal() + v2.getVal();
@@ -554,21 +552,51 @@ public class ArmGenerator {
                     break;
             }
 
-            moveImm(reg1, res);
+            // 考虑add float / add i32 两种情况
+            if (t.getTypec() == TypeC.I) {
+                reg1 = reg.T1;
+                moveImm(reg1, res);
+
+            } else if (t.getTypec() == TypeC.F) {
+                // todo 繁琐 有待优化 可优化
+                reg1 = reg.F0;
+                String regt = reg.T1;
+
+                add(new TwoArm("mov", regt, "#0"));
+                add(new TwoArm("vmov.f32", reg1, regt));
+                add(new TwoArm("vcvt.f32.s32", reg1, reg1));
+
+            } else {
+                reg1 = "nnwhqkwjfkfqf...";
+                exit(1);
+            }
+
             storeValue(reg1, dest);
             return;
 
         }
 
-        // 操作数中一个是0
+        // 操作数中一个是0（还要再区分Float、int32情况）
         if (v1.isIdent() && !v2.isIdent() && v2.getVal() == 0 && (op.equals("add") || op.equals("sub"))) {
-            reg1 = reg.T1;
+            if (t.getTypec() == TypeC.F) {
+                reg1 = reg.F1;
+            }
+            //todo 不确定是否必为int
+            else {
+                reg1 = reg.T1;
+            }
             loadValue(reg1, v1.getIdent());
             storeValue(reg1, dest);
             return;
 
         } else if (v2.isIdent() && !v1.isIdent() && v1.getVal() == 0 && op.equals("add")) {
-            reg1 = reg.T1;
+            if (t.getTypec() == TypeC.F) {
+                reg1 = reg.F1;
+            }
+            //todo 不确定是否必为int
+            else {
+                reg1 = reg.T1;
+            }
             loadValue(reg1, v2.getIdent());
             storeValue(reg1, dest);
             return;
@@ -1099,28 +1127,22 @@ public class ArmGenerator {
         return "0x" + Integer.toHexString(intaddr);
     }
 
-    /**********Reg 处理**********/
+    // 小函数：是否浮点寄存器
+    private boolean isFloatReg(String regname) {
+        return (regname.charAt(0) == 's') && (!regname.equals("sp"));
+    }
 
-//    private boolean checkReg(Ident i) {
-//        String name;
-//        if (i.isGlobal()) {
-//            name = i.getName();
-//        } else {
-//            name = String.valueOf(i.getId());
-//        }
-//        return reg.allocated(name);
-//
-//    }
+    /**********Reg 处理**********/
 
     // 当vop=true时操作浮点，指令变为vldr, vstr
     private void loadValue(String regname, Ident destIdent) {
-        boolean isfreg = (regname.charAt(0) == 's') && (!regname.equals("sp"));
+        boolean destIsF = isFloatReg(regname);
 
         // spill，para，global等无寄存器情况用传统的ldr
         if (!reg.hasPhysReg(destIdent.toString())) {
             // global则加载进来
             if (destIdent.isGlobal()) {
-                if (isfreg) {
+                if (destIsF) {
                     interpolating = true;
                     add(new TmpArm("vldr.f32 " + regname + ", .L" + lcount + "+" + lpicusecount * 4));
                     addLpic(regname, destIdent.getName());
@@ -1138,7 +1160,7 @@ public class ArmGenerator {
             } else {
                 int off = curFunc.getOffsetByName(destIdent.toString());
 
-                if (isfreg) {
+                if (destIsF) {
                     addInstrRegSpOffset("vldr.f32", regname, "r7", off);
 
                 } else {
@@ -1155,20 +1177,30 @@ public class ArmGenerator {
             // 全局一律不分
             // if (destIdent.isGlobal()) {}
 
-            if (isfreg) {
-                add("vmov " + regname + ", " + physReg);
+            if (destIsF) {
+                if (isFloatReg(physReg)) add("vmov.f32 " + regname + ", " + physReg);    // Float. <--- Float.
+                else {
+                    // Float. <--- Int.
+                    add("vmov " + regname + ", " + physReg);
+                    add("vcvt.f32.s32 " + regname + ", " + regname);
+                }
 
             } else {
                 // 应该必保证reg里有值
-                add("mov " + regname + ", " + physReg);
-
+                if (!isFloatReg(physReg)) add("mov " + regname + ", " + physReg);   // Int. <--- Int.
+                else {
+                    // Int. <--- Float.
+                    add("vcvt.s32.f32 " + physReg + ", " + physReg);
+                    add("vmov " + regname + ", " + physReg);
+                    add("vcvt.f32.s32 " + physReg + ", " + physReg);    // 还要转换回去，不可破坏
+                }
             }
         }
     }
 
     // 当regName的首位为s时操作浮点，指令变为vldr, vstr
     private void storeValue(String regname, Ident destIdent) {
-        boolean isfreg = (regname.charAt(0) == 's') && (!regname.equals("sp"));
+        boolean originIsF = isFloatReg(regname);
 
         // spill，para，global等无寄存器情况用传统的ldr
         if (!reg.hasPhysReg(destIdent.toString())) {
@@ -1179,7 +1211,7 @@ public class ArmGenerator {
                 String regsb = reg.SB;   // todo 可能与regname冲突，只能用TX，看看咋优化一下
 
                 // 测试新写法
-                if (isfreg) {
+                if (originIsF) {
                     interpolating = true;
 //                add("ldr " + regt + ", =" + destIdent.getName());
                     add(new TmpArm("ldr " + regsb + ", .L" + lcount + "+" + lpicusecount * 4));
@@ -1202,7 +1234,7 @@ public class ArmGenerator {
             } else {
                 int off = curFunc.getOffsetByName(destIdent.toString());
 
-                if (isfreg) {
+                if (originIsF) {
                     addInstrRegSpOffset("vstr.f32", regname, "r7", off);
 
                 } else {
@@ -1219,17 +1251,25 @@ public class ArmGenerator {
             // 全局一律不分（也应当保证不会出现此情况）
             // if (destIdent.isGlobal()) {}
 
-            if (isfreg) {
-                add("vmov " + physReg + ", " + regname);
+            if (originIsF) {
+                // 考虑physReg与regname种类是否一致
+                if (isFloatReg(physReg)) add("vmov.f32 " + physReg + ", " + regname);   // Float. <--- Float.
+                else {
+                    // Int. <--- Float.
+                    add("vcvt.s32.f32 " + regname + ", " + regname);
+                    add("vmov " + physReg + ", " + regname);
+                }
 
             } else {
-                // 原版进内存
-                // int off = curFunc.getOffsetByName(destIdent.toString());
-                // add("str " + regName + ", [sp, #" + off + "]");
-//                addInstrRegSpOffset("str", regname, "r7", off);
-
                 // physReg里可为空
-                add("mov " + physReg + ", " + regname);
+                if (!isFloatReg(physReg)) add("mov " + physReg + ", " + regname);   // Int. <--- Int.
+                else {
+                    // 参见：https://stackoverflow.com/questions/22510201/how-to-use-vmov-to-set-value-from-s0-to-r0
+                    // Float. <--- Int.
+                    add("vmov " + physReg + ", " + regname);
+                    add("vcvt.f32.s32 " + physReg + ", " + physReg);
+
+                }
 
             }
         }
