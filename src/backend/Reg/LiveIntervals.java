@@ -23,6 +23,9 @@ public class LiveIntervals {
     // 初始扫描一遍intervals
     public void scanIntervals(Function function) {
 
+        // 清理重置！！！
+        clear();
+
         if (function.getFuncheader().getFname().equals("GlobalContainer")) {
             return;
         }
@@ -58,18 +61,17 @@ public class LiveIntervals {
 //                }
 
                 // 第一个=变量名；第二个true=float
-//                System.out.println();
-//                System.out.println(i.toString());
+//                System.err.println();
+//                System.err.println(i.toString());
 
                 for (Map.Entry<String, Boolean> e : i.getUsesAndTypes().entrySet()) {
                     String s = e.getKey();
                     if (!paras.contains(s)) {
                         if (!e.getValue()) {
-//                            System.out.println("i32 " + s);
+//                            System.err.println("i32 " + s);
                             insertLIMap(s, no);
-                        }
-                        else {
-//                            System.out.println("float " + s);
+                        } else {
+//                            System.err.println("float " + s);
                             insertFLIMap(s, no);
                         }
                     }
@@ -81,11 +83,10 @@ public class LiveIntervals {
                         String s = e.getKey();
                         if (!paras.contains(s)) {
                             if (!e.getValue()) {
-//                                System.out.println("i32 " + s);
+//                                System.err.println("i32 " + s);
                                 insertLIMap(s, no);
-                            }
-                            else {
-//                                System.out.println("float " + s);
+                            } else {
+//                                System.err.println("float " + s);
                                 insertFLIMap(s, no);
                             }
                         }
