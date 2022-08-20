@@ -198,6 +198,6 @@ public class IcmpInst extends Instr {
 
     @Override
     public boolean setAssignType() {
-        return true;
+        return false;
     }
 }

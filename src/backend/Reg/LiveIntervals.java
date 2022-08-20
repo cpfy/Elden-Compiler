@@ -50,8 +50,6 @@ public class LiveIntervals {
 //                        insertLIMap(s, no);
 //                    }
 //                }
-
-
 //                if (i.getDef() != null) {
 //                    // 目前paras均不分配
 //                    if (!paras.contains(i.getDef())) {
@@ -63,8 +61,13 @@ public class LiveIntervals {
                 for (Map.Entry<String, Boolean> e : i.getUsesAndTypes().entrySet()) {
                     String s = e.getKey();
                     if (!paras.contains(s)) {
-                        if (!e.getValue()) insertLIMap(s, no);
-                        else insertFLIMap(s, no);
+                        if (!e.getValue()) {
+                            insertLIMap(s, no);
+                        }
+                        else {
+                            System.err.println(s);
+                            insertFLIMap(s, no);
+                        }
                     }
                 }
 
@@ -73,8 +76,13 @@ public class LiveIntervals {
                     for (Map.Entry<String, Boolean> e : i.getDefAndType().entrySet()) {
                         String s = e.getKey();
                         if (!paras.contains(s)) {
-                            if (!e.getValue()) insertLIMap(s, no);
-                            else insertFLIMap(s, no);
+                            if (!e.getValue()) {
+                                insertLIMap(s, no);
+                            }
+                            else {
+                                System.err.println(s);
+                                insertFLIMap(s, no);
+                            }
                         }
                     }
                 }

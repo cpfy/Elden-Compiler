@@ -66,8 +66,8 @@ public class AssignInstr extends Instr {
     @Override
     public HashMap<String, Boolean> getDefAndType() {
         HashMap<String, Boolean> ans = new HashMap<>();
-        ans.put(localident.getName(), isFloat);
-        return null;
+        ans.put(localident.toString(), isFloat);
+        return ans;
     }
 
     @Override
