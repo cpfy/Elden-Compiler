@@ -1,5 +1,7 @@
 package backend.Arm;
 
+import java.util.ArrayList;
+
 public class LabelArm extends Arm {
 
     private String label;
@@ -8,6 +10,26 @@ public class LabelArm extends Arm {
     public LabelArm(String label) {
         super("label");
         this.label = label;
+    }
+
+    @Override
+    public ArrayList<String> getSrcRegs() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<String> getDstRegs() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<String> renameSrcRegs(String newReg, String oldReg) {
+        return null;
+    }
+
+    @Override
+    public ArrayList<String> renameDstRegs(String newReg, String oldReg) {
+        return null;
     }
 
     @Override

@@ -3,6 +3,7 @@ package backend;
 import backend.Arm.*;
 import backend.Reg.LiveIntervals;
 import backend.Reg.RegisterOld;
+import backend.optimize.Optimizer;
 import llvm.Block;
 import llvm.Function;
 import llvm.Ident;
@@ -21,6 +22,7 @@ import static java.lang.Math.max;
 import static java.lang.System.*;
 
 public class ArmGenerator {
+    private boolean enableOptimize = false;
     private ArrayList<Function> aflist;
     private ArrayList<Arm> armlist;
     private ArrayList<Instr> gbdeflist;
@@ -73,6 +75,12 @@ public class ArmGenerator {
 //        this.Matrix = new LiveRegMatrix();
 //        this.RA = new RegAllocBase(this.VRM, this.LIS, this.Matrix);
 
+    }
+
+    public void optimize() {
+        if (enableOptimize) {
+            armlist = new Optimizer(armlist).getNewArmInstrs();
+        }
     }
 
     public void convertarm() {
@@ -1052,6 +1060,9 @@ public class ArmGenerator {
     public void writefile(String dir) throws IOException {
         File file = new File(dir);
         FileWriter writer = new FileWriter(file);
+
+        optimize();
+
         for (Arm a : armlist) {
             writer.write(a.toString() + "\n");
 //            OutputControl.printMessage(a);
@@ -1084,9 +1095,9 @@ public class ArmGenerator {
     }
 
     // 也支持str类型。转成TmpArm再调用add
-    private void add(String str) {
-        add(new TmpArm(str));
-    }
+//    private void add(String str) {
+//        add(new TmpArm(str));
+//    }
 
     // 插入.L
     private void addinterpoL() {
@@ -1178,7 +1189,7 @@ public class ArmGenerator {
             // if (destIdent.isGlobal()) {}
 
             if (destIsF) {
-                if (isFloatReg(physReg)) add("vmov.f32 " + regname + ", " + physReg);    // Float. <--- Float.
+                if (isFloatReg(physReg)) add(new TwoArm("vmov.f32", regname, physReg));    // Float. <--- Float.
                 else {
                     // Float. <--- Int.
                     add(new TwoArm("vmov", regname, physReg));
@@ -1187,12 +1198,12 @@ public class ArmGenerator {
 
             } else {
                 // 应该必保证reg里有值
-                if (!isFloatReg(physReg)) add("mov " + regname + ", " + physReg);   // Int. <--- Int.
+                if (!isFloatReg(physReg)) add(new TwoArm("mov", regname, physReg));   // Int. <--- Int.
                 else {
                     // Int. <--- Float.
-                    add("vcvt.s32.f32 " + physReg + ", " + physReg);
-                    add("vmov " + regname + ", " + physReg);
-                    add("vcvt.f32.s32 " + physReg + ", " + physReg);    // 还要转换回去，不可破坏
+                    add(new TwoArm("vcvt.s32.f32", physReg, physReg));
+                    add(new TwoArm("vmov", regname, physReg));
+                    add(new TwoArm("vcvt.f32.s32", physReg, physReg));    // 还要转换回去，不可破坏
                 }
             }
         }
@@ -1253,21 +1264,21 @@ public class ArmGenerator {
 
             if (originIsF) {
                 // 考虑physReg与regname种类是否一致
-                if (isFloatReg(physReg)) add("vmov.f32 " + physReg + ", " + regname);   // Float. <--- Float.
+                if (isFloatReg(physReg)) add(new TwoArm("vmov.f32", physReg, regname));   // Float. <--- Float.
                 else {
                     // Int. <--- Float.
-                    add("vcvt.s32.f32 " + regname + ", " + regname);
-                    add("vmov " + physReg + ", " + regname);
+                    add(new TwoArm("vcvt.s32.f32", regname, regname));
+                    add(new TwoArm("vmov", physReg, regname));
                 }
 
             } else {
                 // physReg里可为空
-                if (!isFloatReg(physReg)) add("mov " + physReg + ", " + regname);   // Int. <--- Int.
+                if (!isFloatReg(physReg)) add(new TwoArm("mov", physReg, regname));   // Int. <--- Int.
                 else {
                     // 参见：https://stackoverflow.com/questions/22510201/how-to-use-vmov-to-set-value-from-s0-to-r0
                     // Float. <--- Int.
-                    add("vmov " + physReg + ", " + regname);
-                    add("vcvt.f32.s32 " + physReg + ", " + physReg);
+                    add(new TwoArm("vmov", physReg, regname));
+                    add(new TwoArm("vcvt.f32.s32", physReg, physReg));
 
                 }
 
@@ -1467,54 +1478,54 @@ public class ArmGenerator {
         String regsb = reg.SB;
 
         if (num == 0) {
-            add("mov " + reg_d + ", #0");
+            add(new TwoArm("mov", reg_d, "#0"));
 
         } else if (num == 1) {
-            add("mov " + reg_d + ", " + reg1);
+            add(new TwoArm("mov", reg_d, reg1));
 
         } else if (isPowerOfTwo(num)) {
             int mi = (int) (Math.log(num) / Math.log(2));
-            add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
+            add(new ThreeArm("lsl", reg_d, reg1, "#" + mi));
 
         } else if (isPowerOfTwo(num - 1)) {
             int mi = (int) (Math.log(num - 1) / Math.log(2));
-            add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
-            add("add " + reg_d + ", " + reg_d + ", " + reg1);
+            add(new ThreeArm("lsl", reg_d, reg1, "#" + mi));
+            add(new ThreeArm("add", reg_d, reg_d, reg1));
 
         } else if (isPowerOfTwo(num + 1)) {
             int mi = (int) (Math.log(num + 1) / Math.log(2));
-            add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
-            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
+            add(new ThreeArm("lsl", reg_d, reg1, "#" + mi));
+            add(new ThreeArm("sub", reg_d, reg_d, reg1));
 
         } else if (isPowerOfTwo(num - 2)) {
             int mi = (int) (Math.log(num - 2) / Math.log(2));
-            add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
-            add("add " + reg_d + ", " + reg_d + ", " + reg1);
-            add("add " + reg_d + ", " + reg_d + ", " + reg1);
+            add(new ThreeArm("lsl", reg_d, reg1, "#" + mi));
+            add(new ThreeArm("add", reg_d, reg_d, reg1));
+            add(new ThreeArm("add", reg_d, reg_d, reg1));
 
         } else if (isPowerOfTwo(num + 2)) {
             int mi = (int) (Math.log(num + 2) / Math.log(2));
-            add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
-            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
-            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
+            add(new ThreeArm("lsl", reg_d, reg1, "#" + mi));
+            add(new ThreeArm("sub", reg_d, reg_d, reg1));
+            add(new ThreeArm("sub", reg_d, reg_d, reg1));
 
         } else if (isPowerOfTwo(num - 3)) {
             int mi = (int) (Math.log(num - 3) / Math.log(2));
-            add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
-            add("add " + reg_d + ", " + reg_d + ", " + reg1);
-            add("add " + reg_d + ", " + reg_d + ", " + reg1);
-            add("add " + reg_d + ", " + reg_d + ", " + reg1);
+            add(new ThreeArm("lsl", reg_d, reg1, "#" + mi));
+            add(new ThreeArm("add", reg_d, reg_d, reg1));
+            add(new ThreeArm("add", reg_d, reg_d, reg1));
+            add(new ThreeArm("add", reg_d, reg_d, reg1));
 
         } else if (isPowerOfTwo(num + 3)) {
             int mi = (int) (Math.log(num + 3) / Math.log(2));
-            add("lsl " + reg_d + ", " + reg1 + ", #" + mi);
-            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
-            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
-            add("sub " + reg_d + ", " + reg_d + ", " + reg1);
+            add(new ThreeArm("lsl", reg_d, reg1, "#" + mi));
+            add(new ThreeArm("sub", reg_d, reg_d, reg1));
+            add(new ThreeArm("sub", reg_d, reg_d, reg1));
+            add(new ThreeArm("sub", reg_d, reg_d, reg1));
 
         } else {
             moveImm(regsb, num);
-            add("mul " + reg_d + ", " + reg1 + ", " + regsb);
+            add(new ThreeArm("mul", reg_d, reg1, regsb));
         }
 
     }
@@ -1532,11 +1543,11 @@ public class ArmGenerator {
         //除法？狗都不用？
         if (reverse) {  // d÷x
             if (num == 0) {
-                add("mov " + reg_d + ", #0");
+                add(new TwoArm("mov", reg_d, "#0"));
 
             } else {
                 moveImm(regsb, num);
-                add("sdiv " + reg_d + ", " + regsb + ", " + reg1);
+                add(new ThreeArm("sdiv", reg_d, regsb, reg1));
             }
 
         } else {    //x÷d
@@ -1545,50 +1556,50 @@ public class ArmGenerator {
             int sh_post = msl.sh_post;
 
             if (Math.abs(num) == 1) {
-                add("mov " + reg_d + ", " + reg1);
+                add(new TwoArm("mov", reg_d, reg1));
 
             } else if (isPowerOfTwo(Math.abs(num))) {
                 int mi = (int) (Math.log(num) / Math.log(2));
-                add("asr " + reg_d + ", " + reg1 + ", #" + (mi - 1));
-                add("lsr " + reg_d + ", " + reg_d + ", #" + (32 - mi));
-                add("add " + reg_d + ", " + reg_d + ", " + reg1);
-                add("asr " + reg_d + ", " + reg_d + ", #" + mi);
+                add(new ThreeArm("asr", reg_d, reg1, "#" + (mi - 1)));
+                add(new ThreeArm("lsr", reg_d, reg_d, "#" + (32 - mi)));
+                add(new ThreeArm("add", reg_d, reg_d, reg1));
+                add(new ThreeArm("asr", reg_d, reg_d, "#" + mi));
 
             } else if (m < Math.pow(2, 31)) {  // q = SRA(MULSH(m, n), shpost) − XSIGN(n)
 
                 moveImm(regsb, (int) m);
                 add(new FourArm("smull", regsb, reg_d, reg1, regsb));    // !!这里应为mfhi
-                add("asr " + reg_d + ", " + reg_d + ", #" + sh_post);
+                add(new ThreeArm("asr", reg_d, reg_d, "#" + sh_post));
 
                 // add("slti $v1, $" + reg1 + ", 0");    //若x<0, v1 = 1
-                add("mov " + regsb + ", #0");
-                add("cmp " + reg1 + ", " + regsb);
-                add("movlt " + regsb + ", #1");
-                add("add " + reg_d + ", " + reg_d + ", " + regsb);
+                add(new TwoArm("mov", regsb, "#0"));
+                add(new TwoArm("cmp", reg1, regsb));
+                add(new TwoArm("movlt", regsb, "#1"));
+                add(new ThreeArm("add", reg_d, reg_d, regsb));
 
 
             } else {    //q = SRA(n + MULSH(m − 2^N, n), shpost) − XSIGN(n)
 
-//                add("mov " + regt + ", " + (int) (m - Math.pow(2, 32)));
+//                add("mov " + regt, (int) (m - Math.pow(2, 32)));
 //                add("mult $" + reg1 + ", $v1");
 //                add("mfhi $" + reg_d);
 
                 moveImm(regsb, (int) (m - Math.pow(2, 32)));
-                add("smull " + regsb + ", " + reg_d + ", " + reg1 + ", " + regsb);
-                add("add " + reg_d + ", " + reg_d + ", " + reg1);
-                add("asr " + reg_d + ", " + reg_d + ", #" + sh_post);
+                add(new FourArm("smull", regsb, reg_d, reg1, regsb));
+                add(new ThreeArm("add", reg_d, reg_d, reg1));
+                add(new ThreeArm("asr", reg_d, reg_d, "#" + sh_post));
 
-                add("mov " + regsb + ", #0");
-                add("cmp " + reg1 + ", " + regsb);
-                add("movlt " + regsb + ", #1");
+                add(new TwoArm("mov", regsb, "#0"));
+                add(new TwoArm("cmp", reg1, regsb));
+                add(new TwoArm("movlt", regsb, "#1"));
 //                add("slti $v1, $" + reg1 + ", 0");    //若x<0, v1 = 1
-                add("add " + reg_d + ", " + reg_d + ", " + regsb);
+                add(new ThreeArm("add", reg_d, reg_d, regsb));
 
             }
 
             if (num < 0) {
-                add("mov " + regsb + ", #0");
-                add("sub " + reg_d + ", " + regsb + ", " + reg_d);
+                add(new TwoArm("mov", regsb, "#0"));
+                add(new ThreeArm("sub", reg_d, regsb, reg_d));
             }
         }
 
@@ -1652,7 +1663,7 @@ public class ArmGenerator {
 
         if (reverse) {
             if (num == 0) {
-                add("mov " + reg_d + ", #0");
+                add(new TwoArm("mov", reg_d, "#0"));
 
             } else {
 //                add("mov v1, " + num);
@@ -1667,7 +1678,7 @@ public class ArmGenerator {
         // 此后！必不为reverse
         else {
             if (num == 1) {
-                add("mov " + reg_d + ", #0");
+                add(new TwoArm("mov", reg_d, "#0"));
 
             } else {
 
@@ -1679,45 +1690,45 @@ public class ArmGenerator {
                     int sh_post = msl.sh_post;
 
                     if (Math.abs(num) == 1) {
-                        add("mov " + reg_d + ", " + reg1);
+                        add(new TwoArm("mov", reg_d, reg1));
 
                     } else if (isPowerOfTwo(Math.abs(num))) {
                         int mi = (int) (Math.log(num) / Math.log(2));
-                        add("asr " + reg_d + ", " + reg1 + ", #" + (mi - 1));
-                        add("lsr " + reg_d + ", " + reg_d + ", #" + (32 - mi));
-                        add("add " + reg_d + ", " + reg_d + ", " + reg1);
-                        add("asr " + reg_d + ", " + reg_d + ", #" + mi);
+                        add(new ThreeArm("asr", reg_d, reg1, "#" + (mi - 1)));
+                        add(new ThreeArm("lsr", reg_d, reg_d, "#" + (32 - mi)));
+                        add(new ThreeArm("add", reg_d, reg_d, reg1));
+                        add(new ThreeArm("asr", reg_d, reg_d, "#" + mi));
 
                     } else if (m < Math.pow(2, 31)) {  // q = SRA(MULSH(m, n), shpost) − XSIGN(n)
 
                         moveImm(reg2, (int) m);
                         add(new FourArm("smull", reg2, reg_d, reg1, reg2));    // !!这里应为mfhi
-                        add("asr " + reg_d + ", " + reg_d + ", #" + sh_post);
+                        add(new ThreeArm("asr", reg_d, reg_d, "#" + sh_post));
 
                         // add("slti $v1, $" + reg1 + ", 0");    //若x<0, v1 = 1
-                        add("mov " + reg2 + ", #0");
-                        add("cmp " + reg1 + ", " + reg2);
-                        add("movlt " + reg2 + ", #1");
-                        add("add " + reg_d + ", " + reg_d + ", " + reg2);
+                        add(new TwoArm("mov", reg2, "#0"));
+                        add(new TwoArm("cmp", reg1, reg2));
+                        add(new TwoArm("movlt", reg2, "#1"));
+                        add(new ThreeArm("add", reg_d, reg_d, reg2));
 
 
                     } else {    //q = SRA(n + MULSH(m − 2^N, n), shpost) − XSIGN(n)
 
                         moveImm(reg2, (int) (m - Math.pow(2, 32)));
-                        add("smull " + reg2 + ", " + reg_d + ", " + reg1 + ", " + reg2);
-                        add("add " + reg_d + ", " + reg_d + ", " + reg1);
-                        add("asr " + reg_d + ", " + reg_d + ", #" + sh_post);
+                        add(new FourArm("smull", reg2, reg_d, reg1, reg2));
+                        add(new ThreeArm("add", reg_d, reg_d, reg1));
+                        add(new ThreeArm("asr", reg_d, reg_d, "#" + sh_post));
 
-                        add("mov " + reg2 + ", #0");
-                        add("cmp " + reg1 + ", " + reg2);
-                        add("movlt " + reg2 + ", #1");
-                        add("add " + reg_d + ", " + reg_d + ", " + reg2);
+                        add(new TwoArm("mov", reg2, "#0"));
+                        add(new TwoArm("cmp", reg1, reg2));
+                        add(new TwoArm("movlt", reg2, "#1"));
+                        add(new ThreeArm("add", reg_d, reg_d, reg2));
 
                     }
 
                     if (num < 0) {
-                        add("mov " + reg2 + ", #0");
-                        add("sub " + reg_d + ", " + reg2 + ", " + reg_d);
+                        add(new TwoArm("mov", reg2 ,"#0"));
+                        add(new ThreeArm("sub", reg_d , reg2, reg_d));
                     }
                 }
 //

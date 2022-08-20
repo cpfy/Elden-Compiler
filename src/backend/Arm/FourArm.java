@@ -1,5 +1,7 @@
 package backend.Arm;
 
+import java.util.ArrayList;
+
 public class FourArm extends Arm {
 
     private String op1;
@@ -39,5 +41,26 @@ public class FourArm extends Arm {
 
     public String getOp4() {
         return op4;
+    }
+
+
+    @Override
+    public ArrayList<String> getSrcRegs() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<String> getDstRegs() {
+        return null;
+    }
+
+    @Override
+    public ArrayList<String> renameSrcRegs(String newReg, String oldReg) {
+        return null;
+    }
+
+    @Override
+    public ArrayList<String> renameDstRegs(String newReg, String oldReg) {
+        return null;
     }
 }
