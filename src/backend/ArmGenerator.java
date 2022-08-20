@@ -1400,10 +1400,10 @@ public class ArmGenerator {
 
     }
 
-    // 注意!须保证regd与reg1不可为同一个
+    // 注意!须保证regd与reg1不同
     private void addMulOperation(String reg_d, String reg1, int num) {
-        // 统一申请公用
-        String reg2 = reg.T2;
+        // 统一申请公用，不保证所以SB
+        String regsb = reg.SB;
 
         if (num == 0) {
             add("mov " + reg_d + ", #0");
@@ -1452,8 +1452,8 @@ public class ArmGenerator {
             add("sub " + reg_d + ", " + reg_d + ", " + reg1);
 
         } else {
-            moveImm(reg2, num);
-            add("mul " + reg_d + ", " + reg1 + ", " + reg2);
+            moveImm(regsb, num);
+            add("mul " + reg_d + ", " + reg1 + ", " + regsb);
         }
 
     }
@@ -1584,9 +1584,12 @@ public class ArmGenerator {
     }
 
     //取余数优化: a % b 翻译为 a - a / b * b
+    // 调用时均为reg_d=T0, reg1=T1！因此可自由使用reg2
     private void addSremOperation(String reg_d, String reg1, int num, boolean reverse) {
+
         // 统一申请公用
         String reg2 = reg.T2;
+//        String regsb = reg.SB;貌似用不到
 
         if (reverse) {
             if (num == 0) {
@@ -1601,23 +1604,71 @@ public class ArmGenerator {
                 add(new ThreeArm("sdiv", reg_d, reg2, reg1));
             }
 
-        } else {
+        }
+        // 此后！必不为reverse
+        else {
             if (num == 1) {
                 add("mov " + reg_d + ", #0");
 
             } else {
 
-                addSdivOperation(reg2, reg1, num, reverse);    // 不能用"v1"当dreg！
+                //todo 完全展开！addSdivOperation(regsb, reg1, num, reverse);    // 不能用"v1"当dreg！
+                {
+
+                    DivMShL msl = ChooseMultiplier(Math.abs(num), 31);
+                    long m = msl.m_high;
+                    int sh_post = msl.sh_post;
+
+                    if (Math.abs(num) == 1) {
+                        add("mov " + reg_d + ", " + reg1);
+
+                    } else if (isPowerOfTwo(Math.abs(num))) {
+                        int mi = (int) (Math.log(num) / Math.log(2));
+                        add("asr " + reg_d + ", " + reg1 + ", #" + (mi - 1));
+                        add("lsr " + reg_d + ", " + reg_d + ", #" + (32 - mi));
+                        add("add " + reg_d + ", " + reg_d + ", " + reg1);
+                        add("asr " + reg_d + ", " + reg_d + ", #" + mi);
+
+                    } else if (m < Math.pow(2, 31)) {  // q = SRA(MULSH(m, n), shpost) − XSIGN(n)
+
+                        moveImm(reg2, (int) m);
+                        add(new FourArm("smull", reg2, reg_d, reg1, reg2));    // !!这里应为mfhi
+                        add("asr " + reg_d + ", " + reg_d + ", #" + sh_post);
+
+                        // add("slti $v1, $" + reg1 + ", 0");    //若x<0, v1 = 1
+                        add("mov " + reg2 + ", #0");
+                        add("cmp " + reg1 + ", " + reg2);
+                        add("movlt " + reg2 + ", #1");
+                        add("add " + reg_d + ", " + reg_d + ", " + reg2);
 
 
+                    } else {    //q = SRA(n + MULSH(m − 2^N, n), shpost) − XSIGN(n)
 
+                        moveImm(reg2, (int) (m - Math.pow(2, 32)));
+                        add("smull " + reg2 + ", " + reg_d + ", " + reg1 + ", " + reg2);
+                        add("add " + reg_d + ", " + reg_d + ", " + reg1);
+                        add("asr " + reg_d + ", " + reg_d + ", #" + sh_post);
+
+                        add("mov " + reg2 + ", #0");
+                        add("cmp " + reg1 + ", " + reg2);
+                        add("movlt " + reg2 + ", #1");
+                        add("add " + reg_d + ", " + reg_d + ", " + reg2);
+
+                    }
+
+                    if (num < 0) {
+                        add("mov " + reg2 + ", #0");
+                        add("sub " + reg_d + ", " + reg2 + ", " + reg_d);
+                    }
+                }
+//
 //                add("mov v1, " + num);
 //                add("mult $" + reg_d + ", $v1");
 //                add("mflo $v1");
 //                add("sub $" + reg_d + ", " + reg1 + ", $v1");
 
-                addMulOperation(reg_d, reg2, num);     // 注意!须保证regd与reg1不可为同一个
-                add(new ThreeArm("sub", reg_d, reg1, reg_d));
+                addMulOperation(reg2, reg_d, num);     // 注意!须保证regd与reg1不同
+                add(new ThreeArm("sub", reg_d, reg1, reg2));
             }
         }
 
