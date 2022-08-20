@@ -154,6 +154,6 @@ public class GetElementPtrInst extends Instr {
 
     @Override
     public boolean setAssignType() {
-        return t1.isFloat();
+        return false;
     }
 }
