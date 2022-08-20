@@ -533,8 +533,6 @@ public class ArmGenerator {
         // 两个均为常数，消Phi后出现
         if (!v1.isIdent() && !v2.isIdent()) {
             int res;
-            reg1 = reg.T1;
-
             switch (op) {
                 case "add":
                     res = v1.getVal() + v2.getVal();
@@ -554,21 +552,51 @@ public class ArmGenerator {
                     break;
             }
 
-            moveImm(reg1, res);
+            // 考虑add float / add i32 两种情况
+            if (t.getTypec() == TypeC.I) {
+                reg1 = reg.T1;
+                moveImm(reg1, res);
+
+            } else if (t.getTypec() == TypeC.F) {
+                // todo 繁琐 有待优化 可优化
+                reg1 = reg.F0;
+                String regt = reg.T1;
+
+                add(new TwoArm("mov", regt, "#0"));
+                add(new TwoArm("vmov.f32", reg1, regt));
+                add(new TwoArm("vcvt.f32.s32", reg1, reg1));
+
+            } else {
+                reg1 = "nnwhqkwjfkfqf...";
+                exit(1);
+            }
+
             storeValue(reg1, dest);
             return;
 
         }
 
-        // 操作数中一个是0
+        // 操作数中一个是0（还要再区分Float、int32情况）
         if (v1.isIdent() && !v2.isIdent() && v2.getVal() == 0 && (op.equals("add") || op.equals("sub"))) {
-            reg1 = reg.T1;
+            if (t.getTypec() == TypeC.F) {
+                reg1 = reg.F1;
+            }
+            //todo 不确定是否必为int
+            else {
+                reg1 = reg.T1;
+            }
             loadValue(reg1, v1.getIdent());
             storeValue(reg1, dest);
             return;
 
         } else if (v2.isIdent() && !v1.isIdent() && v1.getVal() == 0 && op.equals("add")) {
-            reg1 = reg.T1;
+            if (t.getTypec() == TypeC.F) {
+                reg1 = reg.F1;
+            }
+            //todo 不确定是否必为int
+            else {
+                reg1 = reg.T1;
+            }
             loadValue(reg1, v2.getIdent());
             storeValue(reg1, dest);
             return;
