@@ -1,7 +1,7 @@
 package tool;
 
 public class OutputControl {
-    private static boolean output = false;
+    private static boolean output = true;
     public static void printMessage(String s) {
         if (output) {
             System.out.println(s);

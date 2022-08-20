@@ -763,7 +763,8 @@ public class ArmGenerator {
         selfAddImm(regt, (off + 4));
 
 //        add("str " + regt + ", [sp,  #" + off + "]");
-        addInstrRegSpOffset("str", regt, "r7", off);    // dest存内存了，通过查找offset的方式
+//        addInstrRegSpOffset("str", regt, "r7", off);    // dest存内存了，通过查找offset的方式
+        storeValue(regt, dest);
 
     }
 
