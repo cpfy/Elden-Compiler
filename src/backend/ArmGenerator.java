@@ -714,7 +714,7 @@ public class ArmGenerator {
         storeValue(regx, dest);
 
         // 通用freeFTmp及freeTmp
-        reg.free(regx);
+        if(f) reg.free(regx);
     }
 
     // br i1 %7, label %8, label %27
