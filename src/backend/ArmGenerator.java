@@ -1156,8 +1156,7 @@ public class ArmGenerator {
             // if (destIdent.isGlobal()) {}
 
             if (isfreg) {
-                // 与int无区别？
-                add("mov " + regname + ", " + physReg);
+                add("vmov " + regname + ", " + physReg);
 
             } else {
                 // 应该必保证reg里有值
@@ -1221,8 +1220,7 @@ public class ArmGenerator {
             // if (destIdent.isGlobal()) {}
 
             if (isfreg) {
-                // 与int无区别？
-                add("mov " + physReg + ", " + regname);
+                add("vmov " + physReg + ", " + regname);
 
             } else {
                 // 原版进内存
