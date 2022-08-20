@@ -98,22 +98,22 @@ public class LiveIntervals {
         function.initLiveInAndOut();    // 初始化计算In/Out信息
 
         for (Block block: function.getBlocklist()) {
-            System.out.println();
-            System.out.println("l" + block.getLabel() + ":");
-            System.out.println();
+            OutputControl.printMessage("");
+            OutputControl.printMessage("l" + block.getLabel() + ":");
+            OutputControl.printMessage("");
 
             for (String s: block.getLiveIn().keySet()) {
-                System.out.println("livein: " + s);
+                OutputControl.printMessage("livein: " + s);
             }
 
             for (String s: block.getLiveOut().keySet()) {
-                System.out.println("liveout: " + s);
+                OutputControl.printMessage("liveout: " + s);
             }
 
 
-            System.out.println();
+            OutputControl.printMessage("");
             for (Instr instr: block.getInblocklist()) {
-                System.out.println(instr.getInstrNo() + ": " + instr);
+                OutputControl.printMessage(instr.getInstrNo() + ": " + instr);
             }
         }
 
