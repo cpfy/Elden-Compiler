@@ -6,6 +6,7 @@ import llvm.Instr.CondBrTerm;
 import llvm.Instr.Instr;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 public class Block {
@@ -19,6 +20,31 @@ public class Block {
 //    private int instrnum;   // b内指令条数
 
     /*** add start by sujunzhe ***/
+    private HashMap<String, Boolean> liveGen = new HashMap<>();
+    private HashMap<String, Boolean> liveKill = new HashMap<>();
+    private HashMap<String, Boolean> liveIn = new HashMap<>();
+    private HashMap<String, Boolean> liveOut = new HashMap<>();
+
+    public HashMap<String, Boolean> getLiveGen() {
+        return liveGen;
+    }
+
+    public HashMap<String, Boolean> getLiveKill() {
+        return liveKill;
+    }
+
+    public HashMap<String, Boolean> getLiveIn() {
+        return liveIn;
+    }
+
+    public HashMap<String, Boolean> getLiveOut() {
+        return liveOut;
+    }
+
+    public void initLiveOut() {
+        liveOut = new HashMap<>();
+    }
+
     private boolean isDead;
 
     public boolean isDead() {

@@ -40,6 +40,8 @@ public class LiveIntervals {
 
 
         for (Block b : function.getBlocklist()) {
+            OutputControl.printMessage("");
+            OutputControl.printMessage(b.getLabel() + ":");
             for (Instr i : b.getInblocklist()) {
                 OutputControl.printMessage(i.getInstrNo() + ": " + i.toString());
 //                    OutputControl.printMessage("Uses:" + i.getUses());

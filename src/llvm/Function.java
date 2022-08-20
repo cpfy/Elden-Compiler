@@ -1,5 +1,6 @@
 package llvm;
 
+import backend.backendTable.DataFlowAnalysis;
 import backend.backendTable.GenerateTable;
 import backend.backendTable.NumberInstr;
 
@@ -24,9 +25,25 @@ public class Function {
 
     /*** add start by sujunzhe ***/
 
+    private ArrayList<Block> sortedBlocks = new ArrayList<>();
+
     public void initInstrNo() {        //初始化指令编号
         new NumberInstr(this);
     }
+
+    public void initLiveInAndOut() {
+        new DataFlowAnalysis(this);
+    }
+
+    public ArrayList<Block> getSortedBlocks() {         //使用此方法前，需要先调用initInstrNo
+        return sortedBlocks;
+    }
+
+    public void setSortedBlocks(ArrayList<Block> sortedBlocks) {
+        this.sortedBlocks = sortedBlocks;
+    }
+
+
 
 
     private int funcSize = 0;       //函数需要分配的大小

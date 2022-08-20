@@ -16,6 +16,7 @@ public class NumberInstr {
     private Function function;
     private HashSet<Block> walked = new HashSet<>();
     private int num = 0;
+    private ArrayList<Block> sortedBlocks = new ArrayList<>();
 
 
     public NumberInstr(Function function) {
@@ -25,9 +26,11 @@ public class NumberInstr {
 
     private void execute() {
         postOrderWalk(function.getBlocklist().get(0));
+        function.setSortedBlocks(sortedBlocks);
     }
 
     private void postOrderWalk(Block block) {
+        sortedBlocks.add(block);
         walked.add(block);
         for (Instr instr: block.getInblocklist()) {
             instr.setInstrNo(num);
