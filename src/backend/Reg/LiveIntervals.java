@@ -58,18 +58,18 @@ public class LiveIntervals {
 //                }
 
                 // 第一个=变量名；第二个true=float
-//                System.err.println();
-//                System.err.println(i.toString());
+//                System.out.println();
+//                System.out.println(i.toString());
 
                 for (Map.Entry<String, Boolean> e : i.getUsesAndTypes().entrySet()) {
                     String s = e.getKey();
                     if (!paras.contains(s)) {
                         if (!e.getValue()) {
-//                            System.err.println("i32 " + s);
+//                            System.out.println("i32 " + s);
                             insertLIMap(s, no);
                         }
                         else {
-//                            System.err.println("float " + s);
+//                            System.out.println("float " + s);
                             insertFLIMap(s, no);
                         }
                     }
@@ -81,11 +81,11 @@ public class LiveIntervals {
                         String s = e.getKey();
                         if (!paras.contains(s)) {
                             if (!e.getValue()) {
-//                                System.err.println("i32 " + s);
+//                                System.out.println("i32 " + s);
                                 insertLIMap(s, no);
                             }
                             else {
-//                                System.err.println("float " + s);
+//                                System.out.println("float " + s);
                                 insertFLIMap(s, no);
                             }
                         }
