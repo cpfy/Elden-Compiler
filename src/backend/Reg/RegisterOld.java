@@ -338,11 +338,14 @@ public class RegisterOld {
     // 参考算法：https://www.zhihu.com/question/29355187/answer/99413526
     // Reg Alloc专用：释放old区间
     private void expireOldIntervals(LiveInterval LI) {
-        for (LiveInterval j : activeList) {
+//        PriorityQueue<LiveInterval> tmp = new PriorityQueue<>();
+        while (!activeList.isEmpty()) {
+            LiveInterval j = activeList.poll();
             if (j.getEnd() >= LI.getStart()) {
+                activeList.add(j);
                 return;
             }
-            activeList.remove(j);
+//            activeList.remove(j);   // 此处边遍历边修改了，不可
             String physReg = j.getReg();
             regpool.add(physReg);
         }
@@ -356,6 +359,8 @@ public class RegisterOld {
             String physReg = spill.getReg();
             allocmap.remove(spill.getVname());
             allocmap.put(LI.getVname(), physReg);
+            spill.setReg(null);
+            LI.setReg(physReg);
             spillSet.add(spill.getVname());
             activeList.poll();
             activeList.add(LI);
