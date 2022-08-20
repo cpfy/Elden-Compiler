@@ -6,6 +6,9 @@ public class ThreeArm extends Arm {
     private String op2;
     private String op3;
 
+    // 包含9种：
+//    add, sub, mul, sdiv, srem
+//    vadd.f32, vsub.f32, vmul.f32, vdiv.f32
     public ThreeArm(String instrname, String op1, String op2, String op3) {
         super(instrname);
         this.op1 = op1;

@@ -1181,8 +1181,8 @@ public class ArmGenerator {
                 if (isFloatReg(physReg)) add("vmov.f32 " + regname + ", " + physReg);    // Float. <--- Float.
                 else {
                     // Float. <--- Int.
-                    add("vmov " + regname + ", " + physReg);
-                    add("vcvt.f32.s32 " + regname + ", " + regname);
+                    add(new TwoArm("vmov", regname, physReg));
+                    add(new TwoArm("vcvt.f32.s32", regname, regname));
                 }
 
             } else {

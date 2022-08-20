@@ -1,5 +1,7 @@
 package backend.Reg;
 
+import static java.lang.System.exit;
+
 // 在开始执行线性扫描算法前，要先获得 live interval，算法分配寄存器都是给 live interval 分配的
 public class LiveInterval implements Comparable<LiveInterval> {
 
@@ -86,6 +88,12 @@ public class LiveInterval implements Comparable<LiveInterval> {
 
     // 正确的计算interval函数[1]，加入一段Range
     public void addRange(int left, int right) {
+        if (!active) {
+            active = true;
+            start = left;
+            end = right;
+            return;
+        }
         if (left < start) {
             start = left;
         }
@@ -99,19 +107,21 @@ public class LiveInterval implements Comparable<LiveInterval> {
         if (!active) {
             active = true;
             start = end = pos;
+            return;
 
-        } else {
-            // 绝绝子..咱就是说..家人们..真是大无语了，得开-ea设置，默认不生效的
-            // assert (start < pos) : "[LiveInterval] new pos must > start interval!";
-
-            // 有可能先扫编号大的
-            if (pos < start) {
-                start = pos;
-
-            } else if (pos > end) {
-                end = pos;
-            }
         }
+        // 绝绝子..咱就是说..家人们..真是一整个..纯纯..大无语了，得开-ea设置，默认不生效的
+        // assert (start < pos) : "[LiveInterval] new pos must > start interval!";
+
+        // 有可能先扫编号大的
+        if (pos < start) {
+            start = pos;
+
+        }
+        if (pos > end) {
+            end = pos;
+        }
+
     }
 
     // Def变量在Range处截断
@@ -119,6 +129,15 @@ public class LiveInterval implements Comparable<LiveInterval> {
         assert (active);
         assert (pos <= end);
         assert (start <= pos);
+//        if (!active) {
+//            exit(1);
+//        }
+//        if (pos > end) {
+//            exit(2);
+//        }
+//        if (start > pos) {
+//            exit(3);
+//        }
         start = pos;
     }
 }
