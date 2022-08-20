@@ -767,9 +767,6 @@ public class ArmGenerator {
 
     }
 
-    private void addPrints(Instr instr) {
-    }
-
     // icmp xx
     private void addIcmp(Instr instr, Ident dest) {
         // neq, ne等类型

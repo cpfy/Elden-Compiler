@@ -11,7 +11,7 @@ public class LiveInterval implements Comparable<LiveInterval> {
     private String vname;   // 该LI对应的变量名
 
 
-    private String reg;   // 被分配的寄存器？
+    private String reg;   // 被分配的phys寄存器
 
     public LiveInterval(String vname) {
         this.vname = vname;
@@ -39,6 +39,11 @@ public class LiveInterval implements Comparable<LiveInterval> {
     public String getReg() {
         return reg;
     }
+
+    public boolean isGlobal() {
+        return vname.charAt(0) == '@';
+    }
+
 //
 //    public Register getReg() {
 //        return new Register(reg);

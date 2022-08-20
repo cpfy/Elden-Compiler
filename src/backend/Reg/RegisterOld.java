@@ -325,6 +325,10 @@ public class RegisterOld {
 
         // 应为已经scan后的状态
         for (LiveInterval LI : LIS.getLImap().values()) {
+            if (LI.isGlobal()) {
+                spillSet.add(LI.getVname());
+                continue;
+            }
             unhandledList.add(LI);
         }
 
