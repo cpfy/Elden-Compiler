@@ -18,6 +18,7 @@ public class Compiler {
     private static ArrayList<Function> allb = new ArrayList<>();
 
     public static void main(String[] args) throws FileNotFoundException {
+        OutputControl.setOutput(false);
         String testFile = args[3];
         String outputFile = args[2];
         boolean optimize = false;
