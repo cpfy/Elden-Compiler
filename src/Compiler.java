@@ -1,4 +1,5 @@
 import backend.ArmGenerator;
+import backend.Reg.RegisterOld;
 import llvm.Block;
 import llvm.Function;
 import llvm.IRParser;
@@ -27,9 +28,16 @@ public class Compiler {
             return;
         }
         optimize = true;
+        setOptimize(optimize);
         frontend(testFile);
         midend(optimize);
         backend(outputFile);
+    }
+
+    private static void setOptimize(boolean optimize) {
+        PassManager.optimize = optimize;
+        ArmGenerator.enableOptimize = optimize;
+        RegisterOld.optimize = optimize;
     }
 
     private static void frontend(String inputName) throws FileNotFoundException {
@@ -45,9 +53,7 @@ public class Compiler {
             ArrayList<Token> i = irs.scanfile("llvmir.ll");
             IRParser ip = new IRParser(i);
             allb = ip.parseFunc(0);
-            if (optimize) {
-                new PassManager(ip.getAllfunctionlist());
-            }
+            new PassManager(ip.getAllfunctionlist());
             //增print函数，代替原来输入方法
             ip.printllvmOutputs();
 
