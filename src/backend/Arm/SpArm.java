@@ -10,7 +10,7 @@ public class SpArm extends Arm {
     private int off;
 
     // 共4类：
-    // ldr, str, vldr, vstr
+    // ldr, str, vldr.f32, vstr.f32
     public SpArm(String instrname, String op1, String op2) {
         super(instrname);
         this.op1 = op1;
@@ -36,21 +36,77 @@ public class SpArm extends Arm {
 
     @Override
     public ArrayList<String> getDstRegs() {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+        switch (super.getInstrname()) {
+            case "ldr":
+            case "vldr.f32":
+                list.add(op1);
+                break;
+            case "str":
+            case "vstr.f32":
+                break;
+            default:
+                break;
+        }
+        return list;
     }
 
     @Override
     public ArrayList<String> getSrcRegs() {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+        switch (super.getInstrname()) {
+            case "ldr":
+            case "vldr.f32":
+                list.add(op2);
+                break;
+            case "str":
+            case "vstr.f32":    // str两个均为src，无dst
+                list.add(op1);
+                list.add(op2);
+                break;
+            default:
+                break;
+        }
+        return list;
     }
 
     @Override
     public ArrayList<String> renameDstRegs(String newReg, String oldReg) {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+        switch (super.getInstrname()) {
+            case "ldr":
+            case "vldr.f32":
+                if (op1.equals(oldReg)) op1 = newReg;
+                list.add(op1);
+                break;
+            case "str":
+            case "vstr.f32":
+                break;
+            default:
+                break;
+        }
+        return list;
     }
 
     @Override
     public ArrayList<String> renameSrcRegs(String newReg, String oldReg) {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+        switch (super.getInstrname()) {
+            case "ldr":
+            case "vldr.f32":
+                if (op2.equals(oldReg)) op2 = newReg;
+                list.add(op2);
+                break;
+            case "str":
+            case "vstr.f32":    // str两个均为src，无dst
+                if (op1.equals(oldReg)) op1 = newReg;
+                if (op2.equals(oldReg)) op2 = newReg;
+                list.add(op1);
+                list.add(op2);
+                break;
+            default:
+                break;
+        }
+        return list;
     }
 }
