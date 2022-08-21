@@ -1491,10 +1491,12 @@ public class ArmGenerator {
 
         } else if (v1.isIdent() && !v2.isIdent()) {
             loadValue(reg1, v1.getIdent());
+            loadValue(reg1, v1.getIdent()); // 冗余优化会删，load两次
             addMulOperation(reg_d, reg1, v2.getVal());
 
         } else if (!v1.isIdent() && v2.isIdent()) {
             loadValue(reg1, v2.getIdent());
+            loadValue(reg1, v2.getIdent()); // 冗余优化会删，load两次
             addMulOperation(reg_d, reg1, v1.getVal());
 
         } else {
@@ -1773,12 +1775,8 @@ public class ArmGenerator {
                         add(new ThreeArm("sub", reg_d, reg2, reg_d));
                     }
                 }
-//
-//                add("mov v1, " + num);
-//                add("mult $" + reg_d + ", $v1");
-//                add("mflo $v1");
-//                add("sub $" + reg_d + ", " + reg1 + ", $v1");
 
+                //todo(未修改) 冗余优化会删，load两次
                 addMulOperation(reg2, reg_d, num);     // 注意!须保证regd与reg1不同
                 add(new ThreeArm("sub", reg_d, reg1, reg2));
             }
