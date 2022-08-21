@@ -972,13 +972,30 @@ public class ArmGenerator {
 
     }
 
-    private void popRegs1(String callfuncname) {
 
-    }
+
 
     private void pushRegs1(String callfuncname) {
-
+        add(new OneArm("push", reg.getRegUsage(callfuncname)));
+        if (reg.getFRegUsage1(callfuncname) != null) {
+            add(new OneArm("vpush", reg.getFRegUsage1(callfuncname)));
+        }
+        if (reg.getFRegUsage2(callfuncname) != null) {
+            add(new OneArm("vpush", reg.getFRegUsage2(callfuncname)));
+        }
     }
+
+    private void popRegs1(String callfuncname) {
+        if (reg.getFRegUsage2(callfuncname) != null) {
+            add(new OneArm("vpop", reg.getFRegUsage2(callfuncname)));
+        }
+        if (reg.getFRegUsage1(callfuncname) != null) {
+            add(new OneArm("vpop", reg.getFRegUsage1(callfuncname)));
+        }
+        add(new OneArm("pop", reg.getRegUsage(callfuncname)));
+    }
+
+
 
     // 标准printf, scanf等函数
     private void addStandardCall(Instr instr, Ident... dest) {
