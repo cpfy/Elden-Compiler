@@ -38,8 +38,6 @@ public class RegisterOld {
     private PriorityQueue<LiveInterval> FunhandledList;  // 未被分配寄存器的活跃区间，按照开始位置递增的方式进行排序
     private PriorityQueue<LiveInterval> FactiveList;     // 已经分配寄存器的活跃区间，按照结束位置递增的方式进行排序
     private PriorityQueue<String> Fregpool;              // 可用寄存器池
-    //    private HashMap<String, String> Fallocmap;           // 从ident_name到寄存器名的映射map
-//    private HashSet<String> FspillSet;                   // 溢出的set集合（这两个共用了）
 
 
     private final int REG_MAX = 12 - 4;     // 预留r0-r2,r3；r7不使用；分r4-r12共8个
@@ -52,6 +50,9 @@ public class RegisterOld {
     public final static String F0 = "s0";   // 标准临时寄存器用
     public final static String F1 = "s1";
     public final static String F2 = "s2";
+
+    private boolean optimize = false;
+
 
     public RegisterOld() {
         this.regMap = new HashMap<>();
@@ -420,7 +421,10 @@ public class RegisterOld {
 
     // 外部查询
     public boolean hasPhysReg(String name) {
-        return allocmap.containsKey(name);
+        if (optimize) {
+            return allocmap.containsKey(name);
+        }
+        return false;
     }
 
     // 会导致global，para等情况报错
@@ -431,6 +435,11 @@ public class RegisterOld {
     public String searchPhysReg(String name) {
         assert (allocmap.containsKey(name));
         return allocmap.get(name);
+    }
+
+    // 某个函数全部使用的寄存器
+    public ArrayList<String> getFuncRegUsage(String funcname) {
+        return null;
     }
 
 
