@@ -508,6 +508,7 @@ public class ArmGenerator {
         //v1
         //todo: can more optimize
         if (v1.isIdent()) {
+            loadValue(reg1, v1.getIdent()); //冗余消除会删掉一次
             loadValue(reg1, v1.getIdent());
 
         } else {
@@ -516,6 +517,8 @@ public class ArmGenerator {
 
         //v2
         if (v2.isIdent()) {
+
+            loadValue(reg2, v2.getIdent());//冗余消除会删掉一次
             loadValue(reg2, v2.getIdent());
 
         } else {
