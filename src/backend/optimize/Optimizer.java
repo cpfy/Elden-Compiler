@@ -25,6 +25,9 @@ public class Optimizer {
 
                 if (arm1.getInstrname().equals("mov")) {
                     TwoArm movInstr = (TwoArm) arm1;
+                    if (movInstr.getOp2().charAt(0) == '#' && arm2.getInstrname().equals("vmov")) {
+                        continue;
+                    }
                     String dst = movInstr.getOp1();
                     String src = movInstr.getOp2();
                     if (isTempReg(dst) && arm2.getSrcRegs().contains(dst)) {
