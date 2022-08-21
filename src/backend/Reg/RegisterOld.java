@@ -27,12 +27,12 @@ public class RegisterOld {
 
     private PriorityQueue<LiveInterval> unhandledList;  // 未被分配寄存器的活跃区间，按照开始位置递增的方式进行排序
     private PriorityQueue<LiveInterval> activeList;     // 已经分配寄存器的活跃区间，按照结束位置递增的方式进行排序
-    private PriorityQueue<String> regpool;              // 可用寄存器池
+    private PriorityQueue<Register> regpool;              // 可用寄存器池
 
     // 浮点Reg Alloc
     private PriorityQueue<LiveInterval> FunhandledList;  // 未被分配寄存器的活跃区间，按照开始位置递增的方式进行排序
     private PriorityQueue<LiveInterval> FactiveList;     // 已经分配寄存器的活跃区间，按照结束位置递增的方式进行排序
-    private PriorityQueue<String> Fregpool;              // 可用寄存器池
+    private PriorityQueue<Register> Fregpool;              // 可用寄存器池
 
     // Usage
     private HashSet<String> usageReg;
@@ -193,7 +193,8 @@ public class RegisterOld {
     private void initRegPool() {
         for (int i = 4; i <= 12; ++i) {
             if (i != 7) {
-                regpool.add("r" + i);
+                Register r = new Register(i, "r" + i);
+                regpool.add(r);
             }
         }
     }
@@ -201,7 +202,8 @@ public class RegisterOld {
     // 初始化F寄存器池
     private void initFRegPool() {
         for (int i = 3; i < 32; ++i) {
-            Fregpool.add("s" + i);
+            Register r = new Register(i + 16, "s" + i);
+            Fregpool.add(r);
         }
     }
 
@@ -219,7 +221,7 @@ public class RegisterOld {
 
     private void processUsageRegs(String fname) {
         // empty直接不管，最后返回null（不可！需要手动置{r7, lr}）
-        // 因为push/pop个数需要偶数？所以奇数则补充r1、s1
+        // 因为push/pop个数需要偶数？所以奇数则补充r2、s2
         int size = usageReg.size();
         if (size == 0) {
             funcRegUsage.put(fname, "{r7, lr}");
@@ -228,7 +230,7 @@ public class RegisterOld {
             String pushpopstr = usageReg.toString();
             pushpopstr = pushpopstr.substring(1, pushpopstr.length() - 1) + ", r7, lr";
             if (size % 2 == 1) {
-                pushpopstr += ", r1";
+                pushpopstr += ", r2";
             }
             pushpopstr = "{" + pushpopstr + "}";
             OutputControl.printMessage("PUSH+" + pushpopstr);
@@ -244,7 +246,7 @@ public class RegisterOld {
             String pushpopstr = usageFReg.toString();
             pushpopstr = pushpopstr.substring(1, pushpopstr.length() - 1);
             if (fsize % 2 == 1) {
-                pushpopstr += ", s1";
+                pushpopstr += ", s2";
             }
             pushpopstr = reorderS(pushpopstr);
             OutputControl.printMessage("PUSH+" + pushpopstr);
@@ -274,7 +276,7 @@ public class RegisterOld {
             String pushpopstr2 = newset2.toString();
             pushpopstr2 = pushpopstr2.substring(1, pushpopstr2.length() - 1);
             if (fsize % 2 == 1) {
-                pushpopstr2 += ", s1";
+                pushpopstr2 += ", s2";
             }
             pushpopstr2 = reorderS(pushpopstr2);
 //            pushpopstr2 = "{" + pushpopstr2 + "}";
@@ -329,8 +331,9 @@ public class RegisterOld {
                 spillAtInterval(LI);
 
             } else {
-                String physReg = regpool.poll();
-                LI.setReg(physReg);
+                Register physRegster = regpool.poll();
+                String physReg = physRegster.getName();
+                LI.setReg(physRegster);
                 allocmap.put(LI.getVname(), physReg);
                 activeList.add(LI);
 
@@ -346,8 +349,9 @@ public class RegisterOld {
                 spillAtFInterval(FLI);
 
             } else {
-                String physReg = Fregpool.poll();
-                FLI.setReg(physReg);
+                Register physRegster = Fregpool.poll();
+                String physReg = physRegster.getName();
+                FLI.setReg(physRegster);
 //                System.out.println("Assign (" + FLI.toString() + ", " + physReg + ")");
                 allocmap.put(FLI.getVname(), physReg);
                 FactiveList.add(FLI);
@@ -369,7 +373,7 @@ public class RegisterOld {
                 return;
             }
 //            activeList.remove(j);   // 此处边遍历边修改了，不可
-            String physReg = j.getReg();
+            Register physReg = j.getReg();
             regpool.add(physReg);
         }
     }
@@ -379,11 +383,12 @@ public class RegisterOld {
 //        spillSet.add(LI.getVname());
         LiveInterval spill = activeList.peek();
         if (spill.getEnd() > LI.getEnd()) {
-            String physReg = spill.getReg();
+            Register physRegster = spill.getReg();
+            String physReg = physRegster.getName();
             allocmap.remove(spill.getVname());
             allocmap.put(LI.getVname(), physReg);
             spill.setReg(null);
-            LI.setReg(physReg);
+            LI.setReg(physRegster);
             spillSet.add(spill.getVname());
             activeList.poll();
             activeList.add(LI);
@@ -403,7 +408,7 @@ public class RegisterOld {
                 return;
             }
 
-            String physReg = j.getReg();
+            Register physReg = j.getReg();
             Fregpool.add(physReg);
         }
     }
@@ -412,11 +417,12 @@ public class RegisterOld {
     private void spillAtFInterval(LiveInterval FLI) {
         LiveInterval fspill = FactiveList.peek();
         if (fspill.getEnd() > FLI.getEnd()) {
-            String physReg = fspill.getReg();
+            Register physRegster = fspill.getReg();
+            String physReg = physRegster.getName();
             allocmap.remove(fspill.getVname());
             allocmap.put(FLI.getVname(), physReg);
             fspill.setReg(null);
-            FLI.setReg(physReg);
+            FLI.setReg(physRegster);
             spillSet.add(fspill.getVname());
             FactiveList.poll();
             FactiveList.add(FLI);

@@ -12,7 +12,7 @@ public class LiveInterval implements Comparable<LiveInterval> {
     //    private LiveRange LR;   // 表明活跃区间为[start, end)（废弃）
 
     private String vname;   // 该LI对应的变量名
-    private String reg;   // 被分配的phys寄存器
+    private Register reg;   // 被分配的phys寄存器
 
     private boolean varf = false;    // 是否是一个float变量
 
@@ -39,7 +39,7 @@ public class LiveInterval implements Comparable<LiveInterval> {
         return end;
     }
 
-    public String getReg() {
+    public Register getReg() {
         return reg;
     }
 
@@ -76,8 +76,7 @@ public class LiveInterval implements Comparable<LiveInterval> {
         return vname;
     }
 
-    // 暂时没用
-    public void setReg(String reg) {
+    public void setReg(Register reg) {
         this.reg = reg;
     }
 
