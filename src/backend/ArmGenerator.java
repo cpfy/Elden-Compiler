@@ -490,6 +490,7 @@ public class ArmGenerator {
 
         if (v1.isIdent() && !v2.isIdent()) {
             loadValue(reg1, v1.getIdent());
+            loadValue(reg1, v1.getIdent());     // 冗余消除会删掉一个
             addSremOperation(reg_d, reg1, v2.getVal(), false);
             storeValue(reg_d, dest);
 //            reg.freeTmp(reg1);
@@ -498,6 +499,7 @@ public class ArmGenerator {
 
         } else if (!v1.isIdent() && v2.isIdent()) {
             loadValue(reg1, v2.getIdent());
+            loadValue(reg1, v2.getIdent());     // 冗余消除会删掉一个
             addSremOperation(reg_d, reg1, v1.getVal(), true);
             storeValue(reg_d, dest);
 //            reg.freeTmp(reg1);
@@ -1657,10 +1659,12 @@ public class ArmGenerator {
 
         } else if (v1.isIdent() && !v2.isIdent()) {
             loadValue(reg1, v1.getIdent());
+            loadValue(reg1, v1.getIdent()); // 冗余消除可能清掉一个
             addSdivOperation(reg_d, reg1, v2.getVal(), false);
 
         } else if (!v1.isIdent() && v2.isIdent()) {
             loadValue(reg1, v2.getIdent());
+            loadValue(reg1, v2.getIdent());// 冗余消除可能清掉一个
             addSdivOperation(reg_d, reg1, v1.getVal(), true);
 
         } else {
