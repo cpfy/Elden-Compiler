@@ -7,7 +7,7 @@ public class SpArm extends Arm {
     private String op1;
     private String op2;
     private boolean hasOff = false;
-    private int off;
+    private int off = 0;
 
     // 共4类：
     // ldr, str, vldr.f32, vstr.f32
@@ -23,6 +23,18 @@ public class SpArm extends Arm {
         this.op2 = op2;
         this.off = off;
         this.hasOff = true;
+    }
+
+    public String getOp1() {
+        return op1;
+    }
+
+    public String getOp2() {
+        return op2;
+    }
+
+    public int getOff() {
+        return off;
     }
 
     @Override
