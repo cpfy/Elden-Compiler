@@ -266,7 +266,8 @@ public class RegisterOld {
             }
 
             String pushpopstr1 = newset1.toString();
-            pushpopstr1 = "{" + pushpopstr1.substring(1, pushpopstr1.length() - 1) + "}";
+            pushpopstr1 = pushpopstr1.substring(1, pushpopstr1.length() - 1);
+            pushpopstr1 = reorderS(pushpopstr1);
             OutputControl.printMessage("PUSH+" + pushpopstr1);
             funcFRegUsage1.put(fname, pushpopstr1);
 
@@ -275,7 +276,8 @@ public class RegisterOld {
             if (fsize % 2 == 1) {
                 pushpopstr2 += ", s1";
             }
-            pushpopstr2 = "{" + pushpopstr2 + "}";
+            pushpopstr2 = reorderS(pushpopstr2);
+//            pushpopstr2 = "{" + pushpopstr2 + "}";
             OutputControl.printMessage("PUSH+" + pushpopstr2);
             funcFRegUsage2.put(fname, pushpopstr2);
         }
