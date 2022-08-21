@@ -235,6 +235,7 @@ public class RegisterOld {
             funcRegUsage.put(fname, pushpopstr);
         }
 
+        // ？？居然要寄存器升序
         int fsize = usageFReg.size();
         if (fsize == 0) {
             return;
@@ -245,7 +246,7 @@ public class RegisterOld {
             if (fsize % 2 == 1) {
                 pushpopstr += ", s1";
             }
-            pushpopstr = "{" + pushpopstr + "}";
+            pushpopstr = reorderS(pushpopstr);
             OutputControl.printMessage("PUSH+" + pushpopstr);
             funcFRegUsage1.put(fname, pushpopstr);
 
@@ -278,6 +279,22 @@ public class RegisterOld {
             OutputControl.printMessage("PUSH+" + pushpopstr2);
             funcFRegUsage2.put(fname, pushpopstr2);
         }
+    }
+
+    private String reorderS(String unorderS) {
+        String[] order = unorderS.split(",");
+        ArrayList<Integer> list = new ArrayList<>();
+        for (String s : order) {
+            list.add(Integer.parseInt(s.trim().substring(1)));
+        }
+        list.sort(Comparator.naturalOrder());
+        String ppstr = "";
+        for (int i : list) {
+            ppstr += "s" + i + ", ";
+        }
+        ppstr = "{" + ppstr.substring(0, ppstr.length() - 2) + "}";
+//        ppstr = "{" + ppstr.substring(1, ppstr.length() - 1) + "}";
+        return ppstr;
     }
 
 //    private String getPushPopStr(HashSet<String> hset){
