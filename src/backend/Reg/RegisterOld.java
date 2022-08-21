@@ -221,9 +221,14 @@ public class RegisterOld {
         // empty直接不管，最后返回null
         // 因为push/pop个数需要偶数？所以奇数则补充r1、s1
         if (!usageReg.isEmpty()) {
+            int size = usageReg.size();
             String pushpopstr = usageReg.toString();
-            pushpopstr = "{" + pushpopstr.substring(1, pushpopstr.length() - 1) + "}";
-//            System.out.println("PUSH+" + pushpopstr);
+            pushpopstr = pushpopstr.substring(1, pushpopstr.length() - 1) + ", r7, lr";
+            if (size % 2 == 1) {
+                pushpopstr += ", r1";
+            }
+            pushpopstr = "{" + pushpopstr + "}";
+            OutputControl.printMessage("PUSH+" + pushpopstr);
             funcRegUsage.put(fname, pushpopstr);
         }
 
@@ -233,16 +238,48 @@ public class RegisterOld {
         }
         if (fsize <= 16) {
             String pushpopstr = usageFReg.toString();
-            pushpopstr = "{" + pushpopstr.substring(1, pushpopstr.length() - 1) + "}";
-//            System.out.println("PUSH+" + pushpopstr);
+            pushpopstr = pushpopstr.substring(1, pushpopstr.length() - 1);
+            if (fsize % 2 == 1) {
+                pushpopstr += ", s1";
+            }
+            pushpopstr = "{" + pushpopstr + "}";
+            OutputControl.printMessage("PUSH+" + pushpopstr);
             funcFRegUsage1.put(fname, pushpopstr);
 
         }
         // 拆分为两部分
         else {
+            HashSet<String> newset1 = new HashSet<>();
+            HashSet<String> newset2 = new HashSet<>();
+            int cnt = 0;
+            for (String s : usageFReg) {
+                if (cnt < 16) {
+                    newset1.add(s);
+                } else {
+                    newset2.add(s);
+                }
+                cnt += 1;
+            }
 
+            String pushpopstr1 = newset1.toString();
+            pushpopstr1 = "{" + pushpopstr1.substring(1, pushpopstr1.length() - 1) + "}";
+            OutputControl.printMessage("PUSH+" + pushpopstr1);
+            funcFRegUsage1.put(fname, pushpopstr1);
+
+            String pushpopstr2 = newset2.toString();
+            pushpopstr2 = pushpopstr2.substring(1, pushpopstr2.length() - 1);
+            if (fsize % 2 == 1) {
+                pushpopstr2 += ", s1";
+            }
+            pushpopstr2 = "{" + pushpopstr2 + "}";
+            OutputControl.printMessage("PUSH+" + pushpopstr2);
+            funcFRegUsage2.put(fname, pushpopstr2);
         }
     }
+
+//    private String getPushPopStr(HashSet<String> hset){
+//        int size = hset.size();
+//    }
 
     // 启动线性扫描
     public void RegAllocScan(HashMap<String, LiveInterval> curLI) {
