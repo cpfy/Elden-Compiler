@@ -1167,7 +1167,7 @@ public class ArmGenerator {
                     interpolating = true;
 //                    add(new TmpA rm("vldr.f32 " + regname + ", .L" + lcount + "+" + lpicusecount * 4));
 //                    add(new SpArm("vldr.f32", regname, ".L " + lcount + " + " + lpicusecount * 4));
-                    add(new TwoArm("vldr.f32", regname, ".L " + lcount + " + " + lpicusecount * 4));
+                    add(new TwoArm("vldr.f32", regname, ".L" + lcount + "+" + lpicusecount * 4));
                     addLpic(regname, destIdent.getName());
                     interpolating = false;
 
@@ -1177,7 +1177,7 @@ public class ArmGenerator {
 //              add("ldr " + regName + ", =" + destIdent.getName());
 //                    add(new TmpAr m("ldr " + regname + ", .L" + lcount + "+" + lpicusecount * 4));
 //                    add(new SpArm("ldr", regname, ".L " + lcount + " + " + lpicusecount * 4));
-                    add(new TwoArm("ldr", regname, ".L " + lcount + " + " + lpicusecount * 4));
+                    add(new TwoArm("ldr", regname, ".L" + lcount + "+" + lpicusecount * 4));
 
                     addLpic(regname, destIdent.getName());
                     interpolating = false;
@@ -1243,7 +1243,7 @@ public class ArmGenerator {
 //                add("ldr " + regt + ", =" + destIdent.getName());
 //                    add(new TmpA rm("ldr " + regsb + ", .L" + lcount + "+" + lpicusecount * 4));
 //                    add(new SpArm("ldr", regsb, ".L " + lcount + " + " + lpicusecount * 4));
-                    add(new TwoArm("ldr", regsb, ".L " + lcount + " + " + lpicusecount * 4));
+                    add(new TwoArm("ldr", regsb, ".L" + lcount + "+" + lpicusecount * 4));
                     addLpic(regsb, destIdent.getName());
                     interpolating = false;
 
@@ -1255,7 +1255,7 @@ public class ArmGenerator {
                     // add("ldr " + regt + ", =" + destIdent.getName());
 //                    add(new TmpA rm("ldr " + regsb + ", .L" + lcount + "+" + lpicusecount * 4));
 //                    add(new SpArm("ldr", regsb, ".L " + lcount + " + " + lpicusecount * 4));
-                    add(new TwoArm("ldr", regsb, ".L " + lcount + " + " + lpicusecount * 4));
+                    add(new TwoArm("ldr", regsb, ".L" + lcount + "+" + lpicusecount * 4));
                     addLpic(regsb, destIdent.getName());
                     interpolating = false;
 
