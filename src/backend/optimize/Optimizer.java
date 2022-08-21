@@ -82,6 +82,9 @@ public class Optimizer {
 //            Arm arm1 = oldArmInstrs.get(i);
 //            Arm arm2 = oldArmInstrs.get(i + 1);
 //            if (arm1.getInstrname().equals("ldr") && arm2.getInstrname().equals("ldr")) {
+//                if (!(arm1 instanceof SpArm) || !(arm2 instanceof SpArm)) {
+//                    continue;
+//                }
 //                SpArm spArm1 = (SpArm) arm1;
 //                SpArm spArm2 = (SpArm) arm2;
 //                if (spArm1.getOp1().equals(spArm2.getOp1()) && spArm1.getOp2().equals(spArm2.getOp2()) && spArm1.getOff() == spArm2.getOff()) {
