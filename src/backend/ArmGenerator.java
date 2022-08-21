@@ -1193,7 +1193,7 @@ public class ArmGenerator {
                 else {
                     // Float. <--- Int.
                     add(new TwoArm("vmov", regname, physReg));
-                    add(new TwoArm("vcvt.f32.s32", regname, regname));
+//                    add(new TwoArm("vcvt.f32.s32", regname, regname));
                 }
 
             } else {
@@ -1201,9 +1201,9 @@ public class ArmGenerator {
                 if (!isFloatReg(physReg)) add(new TwoArm("mov", regname, physReg));   // Int. <--- Int.
                 else {
                     // Int. <--- Float.
-                    add(new TwoArm("vcvt.s32.f32", physReg, physReg));
+//                    add(new TwoArm("vcvt.s32.f32", physReg, physReg));
                     add(new TwoArm("vmov", regname, physReg));
-                    add(new TwoArm("vcvt.f32.s32", physReg, physReg));    // 还要转换回去，不可破坏
+//                    add(new TwoArm("vcvt.f32.s32", physReg, physReg));    // 还要转换回去，不可破坏
                 }
             }
         }
@@ -1267,7 +1267,7 @@ public class ArmGenerator {
                 if (isFloatReg(physReg)) add(new TwoArm("vmov", physReg, regname));   // Float. <--- Float.
                 else {
                     // Int. <--- Float.
-                    add(new TwoArm("vcvt.s32.f32", regname, regname));
+//                    add(new TwoArm("vcvt.s32.f32", regname, regname));
                     add(new TwoArm("vmov", physReg, regname));
                 }
 
@@ -1278,7 +1278,7 @@ public class ArmGenerator {
                     // 参见：https://stackoverflow.com/questions/22510201/how-to-use-vmov-to-set-value-from-s0-to-r0
                     // Float. <--- Int.
                     add(new TwoArm("vmov", physReg, regname));
-                    add(new TwoArm("vcvt.f32.s32", physReg, physReg));
+//                    add(new TwoArm("vcvt.f32.s32", physReg, physReg));
 
                 }
 
@@ -1422,7 +1422,7 @@ public class ArmGenerator {
             add(new TwoArm("movw", regsb, "#" + vfloat.hexToIntLow()));
             add(new TwoArm("movt", regsb, "#" + vfloat.hexToIntHigh()));
             add(new TwoArm("vmov", regname, regsb));
-            add(new TwoArm("vcvt.f32.s32", regname, regname));
+//            add(new TwoArm("vcvt.f32.s32", regname, regname));
         }
     }
 
