@@ -493,8 +493,6 @@ public class ArmGenerator {
             loadValue(reg1, v1.getIdent());     // 冗余消除会删掉一个
             addSremOperation(reg_d, reg1, v2.getVal(), false);
             storeValue(reg_d, dest);
-//            reg.freeTmp(reg1);
-//            reg.freeTmp(re  g_d);
             return;
 
         } else if (!v1.isIdent() && v2.isIdent()) {
@@ -502,8 +500,6 @@ public class ArmGenerator {
             loadValue(reg1, v2.getIdent());     // 冗余消除会删掉一个
             addSremOperation(reg_d, reg1, v1.getVal(), true);
             storeValue(reg_d, dest);
-//            reg.freeTmp(reg1);
-//            reg.freeTmp(re  g_d);
             return;
         }
 
@@ -975,8 +971,6 @@ public class ArmGenerator {
     }
 
 
-
-
     private void pushRegs1(String callfuncname) {
         add(new OneArm("push", reg.getRegUsage(callfuncname)));
         if (reg.getFRegUsage1(callfuncname) != null) {
@@ -996,7 +990,6 @@ public class ArmGenerator {
         }
         add(new OneArm("pop", reg.getRegUsage(callfuncname)));
     }
-
 
 
     // 标准printf, scanf等函数
@@ -1611,6 +1604,7 @@ public class ArmGenerator {
                 add(new TwoArm("mov", reg_d, "#0"));
 
             } else {
+                moveImm(regsb, num);//冗余消除会删掉一次
                 moveImm(regsb, num);
                 add(new ThreeArm("sdiv", reg_d, regsb, reg1));
             }
@@ -1632,6 +1626,7 @@ public class ArmGenerator {
 
             } else if (m < Math.pow(2, 31)) {  // q = SRA(MULSH(m, n), shpost) − XSIGN(n)
 
+                moveImm(regsb, (int) m);//冗余消除会删掉一次
                 moveImm(regsb, (int) m);
                 add(new FourArm("smull", regsb, reg_d, reg1, regsb));    // !!这里应为mfhi
                 add(new ThreeArm("asr", reg_d, reg_d, "#" + sh_post));
@@ -1650,6 +1645,7 @@ public class ArmGenerator {
 //                add("mult $" + reg1 + ", $v1");
 //                add("mfhi $" + reg_d);
 
+                moveImm(regsb, (int) (m - Math.pow(2, 32)));    //冗余消除会删掉一次
                 moveImm(regsb, (int) (m - Math.pow(2, 32)));
                 add(new FourArm("smull", regsb, reg_d, reg1, regsb));
                 add(new ThreeArm("add", reg_d, reg_d, reg1));
@@ -1735,10 +1731,7 @@ public class ArmGenerator {
                 add(new TwoArm("mov", reg_d, "#0"));
 
             } else {
-//                add("mov v1, " + num);
-//                add("div $v1, $" + reg1);
-//                add("mfhi $" + reg_d);
-
+                moveImm(reg2, num); // 冗余消除会删掉一个
                 moveImm(reg2, num);
                 add(new ThreeArm("sdiv", reg_d, reg2, reg1));
             }
@@ -1770,6 +1763,7 @@ public class ArmGenerator {
 
                     } else if (m < Math.pow(2, 31)) {  // q = SRA(MULSH(m, n), shpost) − XSIGN(n)
 
+                        moveImm(reg2, (int) m);  //冗余消除会删掉一次
                         moveImm(reg2, (int) m);
                         add(new FourArm("smull", reg2, reg_d, reg1, reg2));    // !!这里应为mfhi
                         add(new ThreeArm("asr", reg_d, reg_d, "#" + sh_post));
@@ -1784,6 +1778,7 @@ public class ArmGenerator {
 
                     } else {    //q = SRA(n + MULSH(m − 2^N, n), shpost) − XSIGN(n)
 
+                        moveImm(reg2, (int) (m - Math.pow(2, 32))); //冗余消除会删掉一次
                         moveImm(reg2, (int) (m - Math.pow(2, 32)));
                         add(new FourArm("smull", reg2, reg_d, reg1, reg2));
                         add(new ThreeArm("add", reg_d, reg_d, reg1));
