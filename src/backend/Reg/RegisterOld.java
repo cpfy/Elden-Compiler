@@ -218,10 +218,13 @@ public class RegisterOld {
     }
 
     private void processUsageRegs(String fname) {
-        // empty直接不管，最后返回null
+        // empty直接不管，最后返回null（不可！需要手动置{r7, lr}）
         // 因为push/pop个数需要偶数？所以奇数则补充r1、s1
-        if (!usageReg.isEmpty()) {
-            int size = usageReg.size();
+        int size = usageReg.size();
+        if (size == 0) {
+            funcRegUsage.put(fname, "{r7, lr}");
+
+        } else {
             String pushpopstr = usageReg.toString();
             pushpopstr = pushpopstr.substring(1, pushpopstr.length() - 1) + ", r7, lr";
             if (size % 2 == 1) {
