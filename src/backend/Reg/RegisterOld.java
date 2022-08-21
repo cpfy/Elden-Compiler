@@ -242,7 +242,9 @@ public class RegisterOld {
         int size = usageReg.size();
         usageReg.add(new Register(7, "r7"));
         usageReg.add(new Register(15, "lr"));
-        if (size % 2 == 1) usageReg.add(new Register(2, "r2"));
+        if (size % 2 == 1) {
+            usageReg.add(new Register(2, "r2"));
+        }
         usageReg.sort(Comparator.naturalOrder());
         String ppstr = usageReg.toString();
         ppstr = "{" + ppstr.substring(1, ppstr.length() - 1) + "}";
@@ -255,46 +257,54 @@ public class RegisterOld {
             return;
         }
         if (fsize <= 16) {
-            String pushpopstr = usageFReg.toString();
-            pushpopstr = pushpopstr.substring(1, pushpopstr.length() - 1);
+//            String pushpopstr = usageFReg.toString();
+//            pushpopstr = pushpopstr.substring(1, pushpopstr.length() - 1);
+//            if (fsize % 2 == 1) {
+//                pushpopstr += ", s2";
+//            }
+//            pushpopstr = reorderS(pushpopstr);
             if (fsize % 2 == 1) {
-                pushpopstr += ", s2";
+                usageFReg.add(new Register(18, "s2"));
             }
-            pushpopstr = reorderS(pushpopstr);
-            OutputControl.printMessage("PUSH(Float)+" + pushpopstr);
-            funcFRegUsage1.put(fname, pushpopstr);
+            usageFReg.sort(Comparator.naturalOrder());
+
+            String fppstr = usageFReg.toString();
+            fppstr = "{" + fppstr.substring(1, fppstr.length() - 1) + "}";
+            OutputControl.printMessage("PUSH(Float)+" + fppstr);
+            funcFRegUsage1.put(fname, fppstr);
 
         }
         // 拆分为两部分
         else {
-            HashSet<String> newset1 = new HashSet<>();
-            HashSet<String> newset2 = new HashSet<>();
-            int cnt = 0;
-            for (Register r : usageFReg) {
-                String s = r.getName();
-                if (cnt < 16) {
-                    newset1.add(s);
-                } else {
-                    newset2.add(s);
-                }
-                cnt += 1;
-            }
-
-            String pushpopstr1 = newset1.toString();
-            pushpopstr1 = pushpopstr1.substring(1, pushpopstr1.length() - 1);
-            pushpopstr1 = reorderS(pushpopstr1);
-            OutputControl.printMessage("PUSH(Float)+" + pushpopstr1);
-            funcFRegUsage1.put(fname, pushpopstr1);
-
-            String pushpopstr2 = newset2.toString();
-            pushpopstr2 = pushpopstr2.substring(1, pushpopstr2.length() - 1);
             if (fsize % 2 == 1) {
-                pushpopstr2 += ", s2";
+                usageFReg.add(new Register(18, "s2"));
             }
-            pushpopstr2 = reorderS(pushpopstr2);
+            usageFReg.sort(Comparator.naturalOrder());
+
+            ArrayList<Register> list1 = new ArrayList<>();
+            ArrayList<Register> list2 = new ArrayList<>();
+            for (int i = 0; i < usageFReg.size(); i++) {
+                if (i < 16) {
+                    list1.add(usageFReg.get(i));
+
+                } else {
+                    list2.add(usageFReg.get(i));
+                }
+            }
+
+            String ppstr1 = list1.toString();
+            ppstr1 = "{" + ppstr1.substring(1, ppstr1.length() - 1) + "}";
+//            ppstr1 = reorderS(ppstr1);
+            OutputControl.printMessage("PUSH(Float)+" + ppstr1);
+            funcFRegUsage1.put(fname, ppstr1);
+
+            String ppstr2 = list2.toString();
+            ppstr2 = "{" + ppstr2.substring(1, ppstr2.length() - 1) + "}";
+//            if (fsize % 2 ==
+//            ppstr2 = reorderS(ppstr2);
 //            pushpopstr2 = "{" + pushpopstr2 + "}";
-            OutputControl.printMessage("PUSH(Float)+" + pushpopstr2);
-            funcFRegUsage2.put(fname, pushpopstr2);
+            OutputControl.printMessage("PUSH(Float)+" + ppstr2);
+            funcFRegUsage2.put(fname, ppstr2);
         }
     }
 
