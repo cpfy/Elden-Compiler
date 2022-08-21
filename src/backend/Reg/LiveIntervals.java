@@ -11,84 +11,34 @@ import java.util.Map;
 
 public class LiveIntervals {
 
-    private HashMap<String, LiveInterval> LImap;
+    private HashMap<String, HashMap<String, LiveInterval>> Fullmap;
+    private HashMap<String, LiveInterval> LImap;   // 当前函数map，每次必须new
 
     // 每个变量活跃区间的类
     // LIS corresponds to the Liveness Analysis pass
     // 很棒的教程：https://github.com/nael8r/How-To-Write-An-LLVM-Register-Allocator/blob/master/HowToWriteAnLLVMRegisterAllocator.rst
     public LiveIntervals() {
+        this.Fullmap = new HashMap<>();
         this.LImap = new HashMap<>();
     }
 
-    // 初始扫描一遍intervals
-    public void scanIntervalsAbort(Function function) {
 
-        // 新的func，清理重置！！！
-        clear();
-
-        if (function.getFuncheader().getFname().equals("GlobalContainer")) {
-            return;
+    // 最开始分配所有寄存器
+    public void scanAll(ArrayList<Function> aflist) {
+        for (Function function : aflist) {
+            String fname = function.getFuncheader().getFname();
+            scanIntervals(function);
+            Fullmap.put(fname, LImap);
         }
-
-        // 初始化编号，这里的No.每个函数重置
-        function.initInstrNo();
-
-        //todo 不确定para是否要处理
-        ArrayList<String> paras = function.getParas();
-
-        for (Block b : function.getBlocklist()) {
-            for (Instr i : b.getInblocklist()) {
-                OutputControl.printMessage(i.getInstrNo() + ": " + i.toString());
-//                    OutputControl.printMessage("Uses:" + i.getUses());
-//                    OutputControl.printMessage("Define:" + i.getDef());
-
-                int no = i.getInstrNo();
-
-//                for (String s : i.getUses()) {
-//                    // 目前paras均不分配
-//                    if (!paras.contains(s)) {
-//                        insertLIMap(s, no);
-//                    }
-//                }
-//                if (i.getDef() != null) {
-//                    // 目前paras均不分配
-//                    if (!paras.contains(i.getDef())) {
-//                        insertLIMap(i.getDef(), no);
-//                    }
-//                }
-
-                // 第一个=变量名；第二个true=float
-//                System.err.println();
-//                System.err.println(i.toString());
-
-                for (Map.Entry<String, Boolean> e : i.getUsesAndTypes().entrySet()) {
-                    String s = e.getKey();
-                    if (!paras.contains(s)) {
-                        insertLIMapPos(s, no, e.getValue());    // e.getValue()标明是否是float
-                    }
-                }
-
-                // 只一个，但也遍历一下
-                if (i.getDefAndType() != null) {
-                    for (Map.Entry<String, Boolean> e : i.getDefAndType().entrySet()) {
-                        String s = e.getKey();
-                        if (!paras.contains(s)) {
-                            insertLIMapPos(s, no, e.getValue());    // e.getValue()标明是否是float
-                        }
-                    }
-                }
-            }
-        }
-
-        printtest();
     }
 
     // 初始扫描一遍intervals
     // 算法见：https://www.zhihu.com/question/29355187/answer/99413526
     public void scanIntervals(Function function) {
 
-        // 新的func，清理重置！！！
-        clear();
+//        // 新的func，清理重置！！！
+//        clear();
+        LImap = new HashMap<>();
 
         if (function.getFuncheader().getFname().equals("GlobalContainer")) {
             return;
@@ -97,22 +47,22 @@ public class LiveIntervals {
         function.initInstrNo();     // 初始化编号，这里的No.每个函数重置
         function.initLiveInAndOut();    // 初始化计算In/Out信息
 
-        for (Block block: function.getBlocklist()) {
+        for (Block block : function.getBlocklist()) {
             OutputControl.printMessage("");
             OutputControl.printMessage("l" + block.getLabel() + ":");
             OutputControl.printMessage("");
 
-            for (String s: block.getLiveIn().keySet()) {
+            for (String s : block.getLiveIn().keySet()) {
                 OutputControl.printMessage("livein: " + s);
             }
 
-            for (String s: block.getLiveOut().keySet()) {
+            for (String s : block.getLiveOut().keySet()) {
                 OutputControl.printMessage("liveout: " + s);
             }
 
 
             OutputControl.printMessage("");
-            for (Instr instr: block.getInblocklist()) {
+            for (Instr instr : block.getInblocklist()) {
                 OutputControl.printMessage(instr.getInstrNo() + ": " + instr);
             }
         }
@@ -164,6 +114,10 @@ public class LiveIntervals {
         return LImap;
     }
 
+    public HashMap<String, HashMap<String, LiveInterval>> getFullmap() {
+        return Fullmap;
+    }
+
     public LiveInterval getInterval(Register Reg) {
         return LImap.get(Reg);
     }
@@ -207,6 +161,10 @@ public class LiveIntervals {
         if (LImap.get(s) != null) { //todo 可pass优化
             LImap.get(s).truncate(pos);
         }
+        // o_o ....这厮欺骗洒家！！！
+        else {
+
+        }
     }
 
     private void printtest() {
@@ -215,5 +173,70 @@ public class LiveIntervals {
             OutputControl.printMessage(LI.toString());
         }
     }
+
+
+    ////// 废弃
+//    // 初始扫描一遍intervals
+//    public void scanIntervalsAbort(Function function) {
+//
+//        // 新的func，清理重置！！！
+//        clear();
+//
+//        if (function.getFuncheader().getFname().equals("GlobalContainer")) {
+//            return;
+//        }
+//
+//        // 初始化编号，这里的No.每个函数重置
+//        function.initInstrNo();
+//
+//        //todo 不确定para是否要处理
+//        ArrayList<String> paras = function.getParas();
+//
+//        for (Block b : function.getBlocklist()) {
+//            for (Instr i : b.getInblocklist()) {
+//                OutputControl.printMessage(i.getInstrNo() + ": " + i.toString());
+////                    OutputControl.printMessage("Uses:" + i.getUses());
+////                    OutputControl.printMessage("Define:" + i.getDef());
+//
+//                int no = i.getInstrNo();
+//
+////                for (String s : i.getUses()) {
+////                    // 目前paras均不分配
+////                    if (!paras.contains(s)) {
+////                        insertLIMap(s, no);
+////                    }
+////                }
+////                if (i.getDef() != null) {
+////                    // 目前paras均不分配
+////                    if (!paras.contains(i.getDef())) {
+////                        insertLIMap(i.getDef(), no);
+////                    }
+////                }
+//
+//                // 第一个=变量名；第二个true=float
+////                System.err.println();
+////                System.err.println(i.toString());
+//
+//                for (Map.Entry<String, Boolean> e : i.getUsesAndTypes().entrySet()) {
+//                    String s = e.getKey();
+//                    if (!paras.contains(s)) {
+//                        insertLIMapPos(s, no, e.getValue());    // e.getValue()标明是否是float
+//                    }
+//                }
+//
+//                // 只一个，但也遍历一下
+//                if (i.getDefAndType() != null) {
+//                    for (Map.Entry<String, Boolean> e : i.getDefAndType().entrySet()) {
+//                        String s = e.getKey();
+//                        if (!paras.contains(s)) {
+//                            insertLIMapPos(s, no, e.getValue());    // e.getValue()标明是否是float
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        printtest();
+//    }
 
 }
