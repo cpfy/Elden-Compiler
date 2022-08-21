@@ -53,7 +53,7 @@ public class RegisterOld {
     public final static String F1 = "s1";
     public final static String F2 = "s2";
 
-    private boolean optimize = true;
+    public static boolean optimize = true;
 
 
     public RegisterOld() {
