@@ -665,8 +665,11 @@ public class ArmGenerator {
 
         String regt = reg.T1;
         loadValue(regt, v2.getIdent());     // float v2的地址仍为int
-        if (f) add(new TmpArm("vstr.f32 " + regx + ", [" + regt + "]"));
-        else add(new TmpArm("str " + regx + ", [" + regt + "]"));
+
+//        if (f) add(new TmpA rm("vstr.f32 " + regx + ", [" + regt + "]"));
+//        else add(new TmpAr m("str " + regx + ", [" + regt + "]"));
+        if (f) add(new SpArm("vstr.f32", regx, regt));
+        else add(new SpArm("str", regx, regt));
 
     }
 
@@ -767,8 +770,11 @@ public class ArmGenerator {
             loadValue(regt, v.getIdent());
 
             // 从addr加载value
-            if (f) add(new TmpArm("vldr.f32 " + regx + ", [" + regt + "]"));
-            else add(new TmpArm("ldr " + regx + ", [" + regt + "]"));
+//            if (f) add(new Tm pArm("vldr.f32 " + regx + ", [" + regt + "]"));
+//            else add(new Tm pArm("ldr " + regx + ", [" + regt + "]"));
+
+            if (f) add(new SpArm("vldr.f32", regx, regt));
+            else add(new SpArm("ldr", regx, regt));
 
         } else {
 //            if (f) add("vm  ov " + reg_d + ", #" + v.hexToFloat());
@@ -923,7 +929,8 @@ public class ArmGenerator {
                 String regt = reg.T1;
                 loadValue(regt, v.getIdent());
 //                add("mov r" + i + ", " + regt);
-                add(new TmpArm("str " + regt + ", [sp, #" + i * 4 + "]"));
+//                add(new Tm pArm("str " + regt + ", [sp, #" + i * 4 + "]"));
+                add(new SpArm("str", regt, "sp", i * 4));
 
             } else {
                 String regt = reg.T1;
@@ -932,10 +939,13 @@ public class ArmGenerator {
                     int high = v.hexToIntHigh();
                     add(new TwoArm("movw", regt, "#" + low));
                     add(new TwoArm("movt", regt, "#" + high));
-                    add(new TmpArm("str " + regt + ", [sp, #" + i * 4 + "]"));
+//                    add(new TmpAr m("str " + regt + ", [sp, #" + i * 4 + "]"));
+                    add(new SpArm("str", regt, "sp", i * 4));
+
                 } else {
                     moveImm(regt, v.getVal());
-                    add(new TmpArm("str " + regt + ", [sp, #" + i * 4 + "]"));
+//                    add(new Tm pArm("str " + regt + ", [sp, #" + i * 4 + "]"));
+                    add(new SpArm("str", regt, "sp", i * 4));
                 }
             }
         }
@@ -1155,7 +1165,8 @@ public class ArmGenerator {
             if (destIdent.isGlobal()) {
                 if (destIsF) {
                     interpolating = true;
-                    add(new TmpArm("vldr.f32 " + regname + ", .L" + lcount + "+" + lpicusecount * 4));
+//                    add(new TmpA rm("vldr.f32 " + regname + ", .L" + lcount + "+" + lpicusecount * 4));
+                    add(new SpArm("vldr.f32", regname, ".L " + lcount + " + " + lpicusecount * 4));
                     addLpic(regname, destIdent.getName());
                     interpolating = false;
 
@@ -1163,7 +1174,8 @@ public class ArmGenerator {
                     // 测试新写法
                     interpolating = true;
 //              add("ldr " + regName + ", =" + destIdent.getName());
-                    add(new TmpArm("ldr " + regname + ", .L" + lcount + "+" + lpicusecount * 4));
+//                    add(new TmpAr m("ldr " + regname + ", .L" + lcount + "+" + lpicusecount * 4));
+                    add(new SpArm("ldr", regname, ".L " + lcount + " + " + lpicusecount * 4));
                     addLpic(regname, destIdent.getName());
                     interpolating = false;
                 }
@@ -1225,20 +1237,24 @@ public class ArmGenerator {
                 if (originIsF) {
                     interpolating = true;
 //                add("ldr " + regt + ", =" + destIdent.getName());
-                    add(new TmpArm("ldr " + regsb + ", .L" + lcount + "+" + lpicusecount * 4));
+//                    add(new TmpA rm("ldr " + regsb + ", .L" + lcount + "+" + lpicusecount * 4));
+                    add(new SpArm("ldr", regsb, ".L " + lcount + " + " + lpicusecount * 4));
                     addLpic(regsb, destIdent.getName());
                     interpolating = false;
 
-                    add(new TmpArm("vstr.f32 " + regname + ", [" + regsb + "]"));
+//                    add(new Tmp Arm("vstr.f32 " + regname + ", [" + regsb + "]"));
+                    add(new SpArm("vstr.f32", regname, regsb));
 
                 } else {
                     interpolating = true;
                     // add("ldr " + regt + ", =" + destIdent.getName());
-                    add(new TmpArm("ldr " + regsb + ", .L" + lcount + "+" + lpicusecount * 4));
+//                    add(new TmpA rm("ldr " + regsb + ", .L" + lcount + "+" + lpicusecount * 4));
+                    add(new SpArm("ldr", regsb, ".L " + lcount + " + " + lpicusecount * 4));
                     addLpic(regsb, destIdent.getName());
                     interpolating = false;
 
-                    add(new TmpArm("str " + regname + ", [" + regsb + "]"));
+//                    add(new TmpA rm("str " + regname + ", [" + regsb + "]"));
+                    add(new SpArm("str", regname, regsb));
 
                 }
 
@@ -1354,27 +1370,30 @@ public class ArmGenerator {
     private void addInstrRegSpOffset(String instrname, String regname, String sp, int num) {
         if (instrname.charAt(0) == 'v') {       //浮点数寄存器offset范围更小
             if (num < 1024) {
-                add(new TmpArm(instrname + " " + regname + ", [" + sp + ", #" + num + "]"));
+//                add(new TmpA rm(instrname + " " + regname + ", [" + sp + ", #" + num + "]"));
+                add(new SpArm(instrname, regname, sp, num));
 
             } else {
                 String regsb = reg.SB;    //todo 可能与regname冲突，勉强TX
                 moveImm(regsb, num);
 //            add("add " + regt + ", " + sp + ", " + regt);
                 add(new ThreeArm("add", regsb, sp, regsb));
-                add(new TmpArm(instrname + " " + regname + ", [" + regsb + ", #0]"));
+//                add(new TmpAr m(instrname + " " + regname + ", [" + regsb + ", #0]"));
+                add(new SpArm(instrname, regname, regsb, 0));
 
             }
         } else {
             if (num < 4096) {
-                add(new TmpArm(instrname + " " + regname + ", [" + sp + ", #" + num + "]"));
+//                add(new TmpA rm(instrname + " " + regname + ", [" + sp + ", #" + num + "]"));
+                add(new SpArm(instrname, regname, sp, num));
 
             } else {
                 String regsb = reg.SB;    //todo 可能与regname冲突，勉强TX
                 moveImm(regsb, num);
 //            add("add " + regt + ", " + sp + ", " + regt);
                 add(new ThreeArm("add", regsb, sp, regsb));
-                add(new TmpArm(instrname + " " + regname + ", [" + regsb + ", #0]"));
-
+//                add(new TmpA  rm(instrname + " " + regname + ", [" + regsb + ", #0]"));
+                add(new SpArm(instrname, regname, regsb, 0));
             }
         }
     }
