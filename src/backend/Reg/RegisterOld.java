@@ -18,14 +18,6 @@ public class RegisterOld {
     private HashMap<Integer, String> fregMap;   // 浮点寄存器值
     private HashMap<String, Integer> fregNameMap;   // 浮点寄存器值
 
-    //    private ArrayList<Integer> freeRegList;
-//    private ArrayList<Integer> freeFloatRegList;
-//    private HashMap<String, Integer> identAllocMap;
-    //    private ArrayList<Integer> activeRegList;   //当前活跃的变量占用的、已分配出的reg
-//    private ArrayList<Ident> identRegUsageList;
-
-
-    // （以上废弃）
     // 寄存器分配相关
     private LiveIntervals LIS;
     private HashMap<String, HashMap<String, String>> allAlloc;  // 全部的按func名索引的分配信息
@@ -42,8 +34,12 @@ public class RegisterOld {
     private PriorityQueue<LiveInterval> FactiveList;     // 已经分配寄存器的活跃区间，按照结束位置递增的方式进行排序
     private PriorityQueue<String> Fregpool;              // 可用寄存器池
 
-//    private ArrayList<>
-
+    // Usage
+    private HashSet<String> usageReg;
+    private HashSet<String> usageFReg;
+    private HashMap<String, String> funcRegUsage;   // 每个函数的UseReg
+    private HashMap<String, String> funcFRegUsage1;   // 每个函数的UseFReg第一部分
+    private HashMap<String, String> funcFRegUsage2;   // 每个函数的UseFReg第二部分
 
     private final int REG_MAX = 12 - 4;     // 预留r0-r2,r3；r7不使用；分r4-r12共8个
     public final static String T0 = "r0";   // 标准临时寄存器用
@@ -64,11 +60,6 @@ public class RegisterOld {
         this.regNameMap = new HashMap<>();
         this.fregMap = new HashMap<>();
         this.fregNameMap = new HashMap<>();
-
-//        this.freeRegList = new ArrayList<>();
-//        this.freeFloatRegList = new ArrayList<>();
-//        this.identAllocMap = new HashMap<>();
-//        this.activeRegList = new ArrayList<>();
 
         // About Reg Alloc
         this.allAlloc = new HashMap<>();
@@ -97,14 +88,18 @@ public class RegisterOld {
         initRegPool();
         initFRegPool();
 
+        // Usage
+        this.usageReg = new HashSet<>();
+        this.usageFReg = new HashSet<>();
+        this.funcRegUsage = new HashMap<>();
+        this.funcFRegUsage1 = new HashMap<>();
+        this.funcFRegUsage2 = new HashMap<>();
+
 
         initRegMap();
         initRegnameMap();
         initFregMap();
         initFregNameMap();
-//        initFreeRegList();
-//        initFreeFloatRegList();
-
     }
 
     // 初始化操作
@@ -144,22 +139,6 @@ public class RegisterOld {
         regNameMap.put("pc", 15);
     }
 
-//    // 空闲reg池
-//    private void initFreeRegList() {
-//        for (int i = 0; i < 13; i++) {
-//            if (i != 7 && i != 0) {
-//                freeRegList.add(i);
-//            }
-//        }
-//    }
-//
-//    // 空闲 float reg池
-//    private void initFreeFloatRegList() {
-//        for (int i = 32; i < 64; i++) {
-//            freeFloatRegList.add(i);
-//        }
-//    }
-
     //查询 no -> name
     public String getRegnameFromNo(int no) {
         return regMap.get(no);
@@ -170,79 +149,12 @@ public class RegisterOld {
         return regNameMap.get(name);
     }
 
-    // apply tmp reg.（禁用此写法！）
-//    public String applyTmp() {
-//        int regno;
-//        if (!freeRegList.isEmpty()) {
-//            regno = freeRegList.get(0);
-//            freeRegList.remove(0);
-////            addActiveListNoRep(regno);     //无重复加入activeregList 活跃变量表
-//
-//        } else {    //todo 无空寄存器
-//            System.err.println("No free Reg! Alloc $r0.");
-//            regno = 0;
-//        }
-//
-////        OutputControl.printMessage("Alloc Reg $" + regMap.get(regno) + " to Tmp");
-//        return this.regMap.get(regno);
-//    }
-//
-//    // free tmp reg.（禁用此写法！）
-//    public void freeTmp(String reg) {
-//        int no = this.regNameMap.get(reg);
-//        if (no > 12) {
-//            System.err.println("Register freeTmpRegister() : Error free tmp Reg No!! regno = " + no);
-//        } else if (!freeRegList.contains(no)) {
-////            removeActiveRegList(no);     //删除变量in activeregList 活跃变量表
-//            freeRegList.add(no);
-////            OutputControl.printMessage("Free Reg $" + regMap.get(no) + " from Tmp");
-//        }
-//        //todo 其它的free寄存器都得检查是否重复！
-//    }
-//
-//    // apply tmp float reg.
-//    public String applyFTmp() {
-//        int regno;
-//        if (!freeFloatRegList.isEmpty()) {
-//            regno = freeFloatRegList.get(0);
-//            freeFloatRegList.remove(0);
-//
-//            // 此时还没用到active
-////            addActiveListNoRep(regno);     //无重复加入activeregList 活跃变量表
-//
-//        } else {    //todo 无空寄存器
-//            System.err.println("No free float Reg! Alloc $s0.");
-//            regno = 32;
-//        }
-//
-////        OutputControl.printMessage("Alloc Float Reg $" + fregMap.get(regno) + " to Tmp");
-//        return this.fregMap.get(regno);
-//    }
-//
-//    // free float tmp reg.
-//    public void freeFTmp(String reg) {
-//        int no = this.fregNameMap.get(reg);
-//        assert no >= 32 && no < 64;
-//
-//        if (!freeFloatRegList.contains(no)) {
-////            removeActiveRegList(no);     //删除变量in activeregList 活跃变量表
-//            freeFloatRegList.add(no);
-//            OutputControl.printMessage("Free Float Reg $" + fregMap.get(no) + " from Tmp");
-//        }
-//        //todo 其它的free寄存器都得检查是否重复
-//    }
-//
-//    // free任意float或int寄存器
-//    public void free(String reg) {
-//        if (reg.charAt(0) == 's') {    // 必不可能是sp
-//            freeFTmp(reg);
-//        } else {
-////            freeTmp(reg);
-//            System.err.println("禁止释放Int寄存器！");
-//            exit(1);
-//        }
-//    }
-
+    // apply tmp reg.（禁用如下写法！）
+//    public String applyTmp()
+//    public void freeTmp(String reg)
+//    public String applyFTmp()
+//    public void freeFTmp(String reg)
+//    public void free(String reg)
 
     //
     //
@@ -271,6 +183,9 @@ public class RegisterOld {
         this.FactiveList.clear();
         this.Fregpool.clear();
         initFRegPool();
+
+        this.usageReg.clear();
+        this.usageFReg.clear();
     }
 
     // 初始化寄存器池
@@ -452,6 +367,7 @@ public class RegisterOld {
 
     public void refreshAllocMap(String fname) {
         this.allocmap = this.allAlloc.get(fname);
+        System.out.println("【切换到新函数：" + fname + "】");
     }
 
 
