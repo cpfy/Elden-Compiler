@@ -25,7 +25,9 @@ public class Compiler {
         boolean optimize = false;
         if (args.length == 5) {
             optimize = true;
+            return;
         }
+        optimize = true;
         setOptimize(optimize);
         frontend(testFile);
         midend(optimize);
