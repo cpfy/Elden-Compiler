@@ -301,7 +301,7 @@ public class ArmGenerator {
         add(new TwoArm("vcvt.s32.f32", f_regt, f_regt));  // 注意：vcvt的两个参数都必须是float reg
 
         // add("vmov " + reg_d + ", " + f_regt);
-        add(new TwoArm("vmov.f32", reg_d, f_regt));
+        add(new TwoArm("vmov", reg_d, f_regt));
 
 //        reg.freeFT  mp(f_regt);
 
@@ -326,7 +326,7 @@ public class ArmGenerator {
         }
 
         //add("vmov " + f_reg_d + ", " + regt);
-        add(new TwoArm("vmov.f32", f_reg_d, regt));
+        add(new TwoArm("vmov", f_reg_d, regt));
 
         //add("vcvt.f32.s32 " + f_reg_d + ", " + f_reg_d);    // Converts {$reg} signed integer value to a single-precision value and stores it in {$reg}(前)
         add(new TwoArm("vcvt.f32.s32", f_reg_d, f_reg_d));
@@ -571,7 +571,7 @@ public class ArmGenerator {
                 String regt = reg.T1;
 
                 add(new TwoArm("mov", regt, "#0"));
-                add(new TwoArm("vmov.f32", reg1, regt));
+                add(new TwoArm("vmov", reg1, regt));
                 add(new TwoArm("vcvt.f32.s32", reg1, reg1));
 
             } else {
@@ -1189,7 +1189,7 @@ public class ArmGenerator {
             // if (destIdent.isGlobal()) {}
 
             if (destIsF) {
-                if (isFloatReg(physReg)) add(new TwoArm("vmov.f32", regname, physReg));    // Float. <--- Float.
+                if (isFloatReg(physReg)) add(new TwoArm("vmov", regname, physReg));    // Float. <--- Float.
                 else {
                     // Float. <--- Int.
                     add(new TwoArm("vmov", regname, physReg));
@@ -1264,7 +1264,7 @@ public class ArmGenerator {
 
             if (originIsF) {
                 // 考虑physReg与regname种类是否一致
-                if (isFloatReg(physReg)) add(new TwoArm("vmov.f32", physReg, regname));   // Float. <--- Float.
+                if (isFloatReg(physReg)) add(new TwoArm("vmov", physReg, regname));   // Float. <--- Float.
                 else {
                     // Int. <--- Float.
                     add(new TwoArm("vcvt.s32.f32", regname, regname));
@@ -1413,7 +1413,7 @@ public class ArmGenerator {
 //            add("vmov " + regname + ", " + regt);
 //            add("vcvt.f32.s32 " + regname + ", " + regname);
             add(new TwoArm("mov", regsb, "#0"));
-            add(new TwoArm("vmov.f32", regname, regsb));
+            add(new TwoArm("vmov", regname, regsb));
             add(new TwoArm("vcvt.f32.s32", regname, regname));
 
         } else {
@@ -1421,8 +1421,8 @@ public class ArmGenerator {
 //            add("vmovt " + regname + ", #" + vfloat.hexToIntHigh());
             add(new TwoArm("movw", regsb, "#" + vfloat.hexToIntLow()));
             add(new TwoArm("movt", regsb, "#" + vfloat.hexToIntHigh()));
-            add(new TwoArm("vmov.f32", regname, regsb));
-
+            add(new TwoArm("vmov", regname, regsb));
+            add(new TwoArm("vcvt.f32.s32", regname, regname));
         }
     }
 
@@ -1727,8 +1727,8 @@ public class ArmGenerator {
                     }
 
                     if (num < 0) {
-                        add(new TwoArm("mov", reg2 ,"#0"));
-                        add(new ThreeArm("sub", reg_d , reg2, reg_d));
+                        add(new TwoArm("mov", reg2, "#0"));
+                        add(new ThreeArm("sub", reg_d, reg2, reg_d));
                     }
                 }
 //
