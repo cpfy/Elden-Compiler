@@ -83,6 +83,7 @@ public class ArmGenerator {
         }
     }
 
+    // 主函数
     public void convertarm() {
         add(new HeadArm("/* -- testcase.s */"));
         add(new HeadArm(".arch armv7ve"));
@@ -1608,6 +1609,7 @@ public class ArmGenerator {
                 add(new TwoArm("mov", regsb, "#0"));
                 add(new TwoArm("cmp", reg1, regsb));
                 add(new TwoArm("movlt", regsb, "#1"));
+                add(new TwoArm("movge", regsb, "#0"));
                 add(new ThreeArm("add", reg_d, reg_d, regsb));
 
 
@@ -1625,6 +1627,7 @@ public class ArmGenerator {
                 add(new TwoArm("mov", regsb, "#0"));
                 add(new TwoArm("cmp", reg1, regsb));
                 add(new TwoArm("movlt", regsb, "#1"));
+                add(new TwoArm("movge", regsb, "#0"));
 //                add("slti $v1, $" + reg1 + ", 0");    //若x<0, v1 = 1
                 add(new ThreeArm("add", reg_d, reg_d, regsb));
 
@@ -1742,6 +1745,7 @@ public class ArmGenerator {
                         add(new TwoArm("mov", reg2, "#0"));
                         add(new TwoArm("cmp", reg1, reg2));
                         add(new TwoArm("movlt", reg2, "#1"));
+                        add(new TwoArm("movge", reg2, "#0"));
                         add(new ThreeArm("add", reg_d, reg_d, reg2));
 
 
@@ -1755,6 +1759,7 @@ public class ArmGenerator {
                         add(new TwoArm("mov", reg2, "#0"));
                         add(new TwoArm("cmp", reg1, reg2));
                         add(new TwoArm("movlt", reg2, "#1"));
+                        add(new TwoArm("movge", reg2, "#0"));
                         add(new ThreeArm("add", reg_d, reg_d, reg2));
 
                     }
