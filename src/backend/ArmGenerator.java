@@ -22,7 +22,7 @@ import static java.lang.Math.max;
 import static java.lang.System.*;
 
 public class ArmGenerator {
-    private boolean enableOptimize = true;
+    private boolean enableOptimize = false;
     private ArrayList<Function> aflist;
     private ArrayList<Arm> armlist;
     private ArrayList<Instr> gbdeflist;
