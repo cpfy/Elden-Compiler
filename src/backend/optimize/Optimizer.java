@@ -33,6 +33,9 @@ public class Optimizer {
                     }
                 }
                 else if (arm2.getInstrname().equals("mov")) {
+                    if (arm1.getInstrname().equals("movt")) {
+                        continue;
+                    }
                     TwoArm movInstr = (TwoArm) arm2;
                     String dst = movInstr.getOp1();
                     String src = movInstr.getOp2();
