@@ -35,8 +35,8 @@ public class RegisterOld {
     private PriorityQueue<Register> Fregpool;              // 可用寄存器池
 
     // Usage
-    private HashSet<String> usageReg;
-    private HashSet<String> usageFReg;
+    private ArrayList<Register> usageReg;
+    private ArrayList<Register> usageFReg;
     private HashMap<String, String> funcRegUsage;   // 每个函数的UseReg
     private HashMap<String, String> funcFRegUsage1;   // 每个函数的UseFReg第一部分
     private HashMap<String, String> funcFRegUsage2;   // 每个函数的UseFReg第二部分
@@ -90,8 +90,8 @@ public class RegisterOld {
         initFRegPool();
 
         // Usage
-        this.usageReg = new HashSet<>();
-        this.usageFReg = new HashSet<>();
+        this.usageReg = new ArrayList<>();
+        this.usageFReg = new ArrayList<>();
         this.funcRegUsage = new HashMap<>();
         this.funcFRegUsage1 = new HashMap<>();
         this.funcFRegUsage2 = new HashMap<>();
@@ -116,17 +116,17 @@ public class RegisterOld {
 
     private void initFregMap() {
         // fregMap.put(0, "s0");
-        // 设定float的s系列寄存器number为32-63
+        // 设定float的s系列寄存器number为16-47
         for (int i = 0; i < 32; i++) {
-            fregMap.put(i + 32, "s" + i);
+            fregMap.put(i + 16, "s" + i);
         }
     }
 
     private void initFregNameMap() {
         // fregNameMap.put("s0", 0);
-        // 设定float的s系列寄存器number为32-63
+        // 设定float的s系列寄存器number为16-47
         for (int i = 0; i < 32; i++) {
-            fregNameMap.put("s" + i, i + 32);
+            fregNameMap.put("s" + i, i + 16);
         }
     }
 
@@ -222,22 +222,34 @@ public class RegisterOld {
     private void processUsageRegs(String fname) {
         // empty直接不管，最后返回null（不可！需要手动置{r7, lr}）
         // 因为push/pop个数需要偶数？所以奇数则补充r2、s2
+
+//        （废弃）
+//        int size = usageReg.size();
+//        if (size == 0) {
+//            funcRegUsage.put(fname, "{r7, lr}");
+//
+//        } else {
+//            String pushpopstr = usageReg.toString();
+//            pushpopstr = pushpopstr.substring(1, pushpopstr.length() - 1) + ", r7, lr";
+//            if (size % 2 == 1) {
+//                pushpopstr += ", r2";
+//            }
+//            pushpopstr = "{" + pushpopstr + "}";
+//            OutputControl.printMessage("PUSH+" + pushpopstr);
+//            funcRegUsage.put(fname, pushpopstr);
+//        }
+
         int size = usageReg.size();
-        if (size == 0) {
-            funcRegUsage.put(fname, "{r7, lr}");
+        usageReg.add(new Register(7, "r7"));
+        usageReg.add(new Register(15, "lr"));
+        if (size % 2 == 1) usageReg.add(new Register(2, "r2"));
+        usageReg.sort(Comparator.naturalOrder());
+        String ppstr = usageReg.toString();
+        ppstr = "{" + ppstr.substring(1, ppstr.length() - 1) + "}";
+        OutputControl.printMessage("PUSH+" + ppstr);
+        funcRegUsage.put(fname, ppstr);
 
-        } else {
-            String pushpopstr = usageReg.toString();
-            pushpopstr = pushpopstr.substring(1, pushpopstr.length() - 1) + ", r7, lr";
-            if (size % 2 == 1) {
-                pushpopstr += ", r2";
-            }
-            pushpopstr = "{" + pushpopstr + "}";
-            OutputControl.printMessage("PUSH+" + pushpopstr);
-            funcRegUsage.put(fname, pushpopstr);
-        }
-
-        // ？？居然要寄存器升序
+        // ？？居然要寄存器升序（只是Warning建议）
         int fsize = usageFReg.size();
         if (fsize == 0) {
             return;
@@ -249,7 +261,7 @@ public class RegisterOld {
                 pushpopstr += ", s2";
             }
             pushpopstr = reorderS(pushpopstr);
-            OutputControl.printMessage("PUSH+" + pushpopstr);
+            OutputControl.printMessage("PUSH(Float)+" + pushpopstr);
             funcFRegUsage1.put(fname, pushpopstr);
 
         }
@@ -258,7 +270,8 @@ public class RegisterOld {
             HashSet<String> newset1 = new HashSet<>();
             HashSet<String> newset2 = new HashSet<>();
             int cnt = 0;
-            for (String s : usageFReg) {
+            for (Register r : usageFReg) {
+                String s = r.getName();
                 if (cnt < 16) {
                     newset1.add(s);
                 } else {
@@ -270,7 +283,7 @@ public class RegisterOld {
             String pushpopstr1 = newset1.toString();
             pushpopstr1 = pushpopstr1.substring(1, pushpopstr1.length() - 1);
             pushpopstr1 = reorderS(pushpopstr1);
-            OutputControl.printMessage("PUSH+" + pushpopstr1);
+            OutputControl.printMessage("PUSH(Float)+" + pushpopstr1);
             funcFRegUsage1.put(fname, pushpopstr1);
 
             String pushpopstr2 = newset2.toString();
@@ -280,7 +293,7 @@ public class RegisterOld {
             }
             pushpopstr2 = reorderS(pushpopstr2);
 //            pushpopstr2 = "{" + pushpopstr2 + "}";
-            OutputControl.printMessage("PUSH+" + pushpopstr2);
+            OutputControl.printMessage("PUSH(Float)+" + pushpopstr2);
             funcFRegUsage2.put(fname, pushpopstr2);
         }
     }
@@ -337,7 +350,9 @@ public class RegisterOld {
                 allocmap.put(LI.getVname(), physReg);
                 activeList.add(LI);
 
-                usageReg.add(physReg);  // 增加到usage记录
+                if (!usageReg.contains(physRegster)) {
+                    usageReg.add(physRegster);  // 增加到usage记录
+                }
             }
         }
 
@@ -356,7 +371,9 @@ public class RegisterOld {
                 allocmap.put(FLI.getVname(), physReg);
                 FactiveList.add(FLI);
 
-                usageFReg.add(physReg);  // 增加到usage记录
+                if (!usageFReg.contains(physRegster)) {
+                    usageFReg.add(physRegster);  // 增加到usage记录
+                }
             }
         }
 
