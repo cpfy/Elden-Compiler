@@ -41,6 +41,7 @@ public class RegisterOld {
     private HashMap<String, String> funcFRegUsage1;   // 每个函数的UseFReg第一部分
     private HashMap<String, String> funcFRegUsage2;   // 每个函数的UseFReg第二部分
 
+    // 常量
     private final int REG_MAX = 12 - 4;     // 预留r0-r2,r3；r7不使用；分r4-r12共8个
     public final static String T0 = "r0";   // 标准临时寄存器用
     public final static String T1 = "r1";
@@ -204,12 +205,42 @@ public class RegisterOld {
         }
     }
 
+    //////////
+    //////////
     // 启动全部分配
     public void RegAll() {
         for (Map.Entry<String, HashMap<String, LiveInterval>> e : LIS.getFullmap().entrySet()) {
             String fname = e.getKey();
             RegAllocScan(e.getValue());
             allAlloc.put(fname, allocmap);
+            processUsageRegs(fname); // 处理usage形成的字符串
+        }
+    }
+
+    private void processUsageRegs(String fname) {
+        // empty直接不管，最后返回null
+        // 因为push/pop个数需要偶数？所以奇数则补充r1、s1
+        if (!usageReg.isEmpty()) {
+            String pushpopstr = usageReg.toString();
+            pushpopstr = "{" + pushpopstr.substring(1, pushpopstr.length() - 1) + "}";
+//            System.out.println("PUSH+" + pushpopstr);
+            funcRegUsage.put(fname, pushpopstr);
+        }
+
+        int fsize = usageFReg.size();
+        if (fsize == 0) {
+            return;
+        }
+        if (fsize <= 16) {
+            String pushpopstr = usageFReg.toString();
+            pushpopstr = "{" + pushpopstr.substring(1, pushpopstr.length() - 1) + "}";
+//            System.out.println("PUSH+" + pushpopstr);
+            funcFRegUsage1.put(fname, pushpopstr);
+
+        }
+        // 拆分为两部分
+        else {
+
         }
     }
 
@@ -243,6 +274,8 @@ public class RegisterOld {
                 LI.setReg(physReg);
                 allocmap.put(LI.getVname(), physReg);
                 activeList.add(LI);
+
+                usageReg.add(physReg);  // 增加到usage记录
             }
         }
 
@@ -256,9 +289,11 @@ public class RegisterOld {
             } else {
                 String physReg = Fregpool.poll();
                 FLI.setReg(physReg);
-                System.out.println("Assign (" + FLI.toString() + ", " + physReg + ")");
+//                System.out.println("Assign (" + FLI.toString() + ", " + physReg + ")");
                 allocmap.put(FLI.getVname(), physReg);
                 FactiveList.add(FLI);
+
+                usageFReg.add(physReg);  // 增加到usage记录
             }
         }
 
@@ -368,6 +403,19 @@ public class RegisterOld {
     public void refreshAllocMap(String fname) {
         this.allocmap = this.allAlloc.get(fname);
         System.out.println("【切换到新函数：" + fname + "】");
+    }
+
+    // 查询usage接口
+    public String getRegUsage(String fname) {
+        return funcRegUsage.get(fname);
+    }
+
+    public String getFRegUsage1(String fname) {
+        return funcFRegUsage1.get(fname);
+    }
+
+    public String getFRegUsage2(String fname) {
+        return funcFRegUsage2.get(fname);
     }
 
 
