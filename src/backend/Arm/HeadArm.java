@@ -13,22 +13,22 @@ public class HeadArm extends Arm {
 
     @Override
     public ArrayList<String> getSrcRegs() {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
     public ArrayList<String> getDstRegs() {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
     public ArrayList<String> renameSrcRegs(String newReg, String oldReg) {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override
     public ArrayList<String> renameDstRegs(String newReg, String oldReg) {
-        return null;
+        return new ArrayList<>();
     }
 
     @Override

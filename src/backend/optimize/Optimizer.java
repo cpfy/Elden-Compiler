@@ -41,6 +41,24 @@ public class Optimizer {
                         arm2.setCanDelete(true);
                     }
                 }
+                else if (arm1.getInstrname().equals("vmov")) {
+                    TwoArm movInstr = (TwoArm) arm1;
+                    String dst = movInstr.getOp1();
+                    String src = movInstr.getOp2();
+                    if (src.charAt(0) == 's' && isFTempReg(dst) && arm2.getSrcRegs().contains(dst)) {
+                        arm2.renameSrcRegs(src, dst);
+                        arm1.setCanDelete(true);
+                    }
+                }
+                else if (arm2.getInstrname().equals("vmov")) {
+                    TwoArm movInstr = (TwoArm) arm2;
+                    String dst = movInstr.getOp1();
+                    String src = movInstr.getOp2();
+                    if (dst.charAt(0) == 's' && isFTempReg(src) && arm1.getDstRegs().contains(src)) {
+                        arm1.renameDstRegs(dst, src);
+                        arm2.setCanDelete(true);
+                    }
+                }
             }
             newArmInstrs = new ArrayList<>();
             for (Arm arm: oldArmInstrs) {
@@ -53,6 +71,10 @@ public class Optimizer {
             }
             oldArmInstrs = newArmInstrs;
         }
+    }
+
+    private boolean isFTempReg(String s) {
+        return s.equals("s0") || s.equals("s1") || s.equals("s2");
     }
 
     private boolean isTempReg(String s) {

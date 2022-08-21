@@ -51,7 +51,7 @@ public class RegisterOld {
     public final static String F1 = "s1";
     public final static String F2 = "s2";
 
-    private boolean optimize = false;
+    private boolean optimize = true;
 
 
     public RegisterOld() {
