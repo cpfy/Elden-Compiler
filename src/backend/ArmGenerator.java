@@ -93,12 +93,16 @@ public class ArmGenerator {
         add(new HeadArm(""));
         add(new HeadArm(".global main"));
 
+        // 开始遍历一遍
+        LIS.scanAll(aflist);
+        reg.RegAll();
+
         for (int j = aflist.size() - 1; j >= 0; j--) {
             Function f = aflist.get(j);
             curFunc = f;
 
-            LIS.scanIntervals(f);
-            reg.RegAllocScan();
+            // 更新为正确fname对应的AllocMap
+            reg.refreshAllocMap(f.getFuncheader().getFname());
 
             // GlobalDef特判
             if (f.getFuncheader().getFname().equals("GlobalContainer")) {

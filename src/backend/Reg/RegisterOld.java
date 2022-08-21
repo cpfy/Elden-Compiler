@@ -18,15 +18,18 @@ public class RegisterOld {
     private HashMap<Integer, String> fregMap;   // 浮点寄存器值
     private HashMap<String, Integer> fregNameMap;   // 浮点寄存器值
 
-    private ArrayList<Integer> freeRegList;
-    private ArrayList<Integer> freeFloatRegList;
-    private HashMap<String, Integer> identAllocMap;
+    //    private ArrayList<Integer> freeRegList;
+//    private ArrayList<Integer> freeFloatRegList;
+//    private HashMap<String, Integer> identAllocMap;
     //    private ArrayList<Integer> activeRegList;   //当前活跃的变量占用的、已分配出的reg
-    private ArrayList<Ident> identRegUsageList;
+//    private ArrayList<Ident> identRegUsageList;
 
 
+    // （以上废弃）
     // 寄存器分配相关
     private LiveIntervals LIS;
+    private HashMap<String, HashMap<String, String>> allAlloc;  // 全部的按func名索引的分配信息
+    //    private HashMap<String, HashSet<String>> allSpill;
     private HashMap<String, String> allocmap;           // 从ident_name到寄存器名的映射map
     private HashSet<String> spillSet;                   // 溢出的set集合
 
@@ -38,6 +41,8 @@ public class RegisterOld {
     private PriorityQueue<LiveInterval> FunhandledList;  // 未被分配寄存器的活跃区间，按照开始位置递增的方式进行排序
     private PriorityQueue<LiveInterval> FactiveList;     // 已经分配寄存器的活跃区间，按照结束位置递增的方式进行排序
     private PriorityQueue<String> Fregpool;              // 可用寄存器池
+
+//    private ArrayList<>
 
 
     private final int REG_MAX = 12 - 4;     // 预留r0-r2,r3；r7不使用；分r4-r12共8个
@@ -60,12 +65,15 @@ public class RegisterOld {
         this.fregMap = new HashMap<>();
         this.fregNameMap = new HashMap<>();
 
-        this.freeRegList = new ArrayList<>();
-        this.freeFloatRegList = new ArrayList<>();
-        this.identAllocMap = new HashMap<>();
+//        this.freeRegList = new ArrayList<>();
+//        this.freeFloatRegList = new ArrayList<>();
+//        this.identAllocMap = new HashMap<>();
 //        this.activeRegList = new ArrayList<>();
 
         // About Reg Alloc
+        this.allAlloc = new HashMap<>();
+//        this.allSpill = new HashMap<>();
+
         this.allocmap = new HashMap<>();
         this.spillSet = new HashSet<>();
 
@@ -94,8 +102,8 @@ public class RegisterOld {
         initRegnameMap();
         initFregMap();
         initFregNameMap();
-        initFreeRegList();
-        initFreeFloatRegList();
+//        initFreeRegList();
+//        initFreeFloatRegList();
 
     }
 
@@ -136,21 +144,21 @@ public class RegisterOld {
         regNameMap.put("pc", 15);
     }
 
-    // 空闲reg池
-    private void initFreeRegList() {
-        for (int i = 0; i < 13; i++) {
-            if (i != 7 && i != 0) {
-                freeRegList.add(i);
-            }
-        }
-    }
-
-    // 空闲 float reg池
-    private void initFreeFloatRegList() {
-        for (int i = 32; i < 64; i++) {
-            freeFloatRegList.add(i);
-        }
-    }
+//    // 空闲reg池
+//    private void initFreeRegList() {
+//        for (int i = 0; i < 13; i++) {
+//            if (i != 7 && i != 0) {
+//                freeRegList.add(i);
+//            }
+//        }
+//    }
+//
+//    // 空闲 float reg池
+//    private void initFreeFloatRegList() {
+//        for (int i = 32; i < 64; i++) {
+//            freeFloatRegList.add(i);
+//        }
+//    }
 
     //查询 no -> name
     public String getRegnameFromNo(int no) {
@@ -236,26 +244,6 @@ public class RegisterOld {
 //    }
 
 
-    //reset全部寄存器状态
-    public void resetAllReg() {
-        freeRegList.clear();
-        identAllocMap.clear();
-//        activeRegList.clear();
-
-        initFreeRegList();
-    }
-
-
-    // 此处新加BiSh用
-    public int searchIdentRegNo(Ident i) {
-        String mapname = i.getMapname();
-        if (identAllocMap.containsKey(mapname)) {
-            return identAllocMap.get(mapname);
-        }
-        return -1;
-        // 表示error
-    }
-
     //
     //
 
@@ -269,9 +257,11 @@ public class RegisterOld {
     }
 
     private void clear() {
-        this.allocmap.clear();
-        this.spillSet.clear();
+        // 这里由于进入HashMap，必须new新的
+        this.allocmap = new HashMap<>();
+        this.spillSet = new HashSet<>();
 
+        // 这里均复用
         this.unhandledList.clear();
         this.activeList.clear();
         this.regpool.clear();
@@ -299,14 +289,23 @@ public class RegisterOld {
         }
     }
 
+    // 启动全部分配
+    public void RegAll() {
+        for (Map.Entry<String, HashMap<String, LiveInterval>> e : LIS.getFullmap().entrySet()) {
+            String fname = e.getKey();
+            RegAllocScan(e.getValue());
+            allAlloc.put(fname, allocmap);
+        }
+    }
+
     // 启动线性扫描
-    public void RegAllocScan() {
+    public void RegAllocScan(HashMap<String, LiveInterval> curLI) {
         clear();
 
         // 应为已经scan后的状态
-        for (LiveInterval LI : LIS.getLImap().values()) {
+        for (LiveInterval LI : curLI.values()) {
             if (LI.isGlobal()) {
-//                spillSet.add(LI.getVname());    // 可不加spillSet，不用这个判断了
+                spillSet.add(LI.getVname());    // 可不加spillSet，不用这个判断了
                 continue;
             }
 
@@ -439,7 +438,20 @@ public class RegisterOld {
 
     // 某个函数全部使用的寄存器
     public ArrayList<String> getFuncRegUsage(String funcname) {
-        return null;
+        ArrayList<String> list = new ArrayList<>();
+
+        return list;
+    }
+
+    // 某个函数全部使用的寄存器
+    public ArrayList<String> getFuncFRegUsage(String funcname) {
+        ArrayList<String> list = new ArrayList<>();
+
+        return list;
+    }
+
+    public void refreshAllocMap(String fname) {
+        this.allocmap = this.allAlloc.get(fname);
     }
 
 
@@ -484,5 +496,6 @@ public class RegisterOld {
         }
         OutputControl.printMessage("【本Function分配完毕】");
     }
+
 
 }

@@ -11,7 +11,7 @@ public class Optimizer {
 
     public Optimizer(ArrayList<Arm> oldArmInstrs) {
         this.oldArmInstrs = oldArmInstrs;
-        System.out.println("开始荣誉删除");
+        System.out.println("【开始冗余删除】");
         execute();
     }
 
