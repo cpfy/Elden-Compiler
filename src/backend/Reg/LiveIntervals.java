@@ -204,7 +204,7 @@ public class LiveIntervals {
     // Def变量在Range处截断
     private void truncateLIMapPos(String s, int pos/*, boolean f*/) {
         assert (LImap.containsKey(s));
-        if (LImap.get(s) != null) {
+        if (LImap.get(s) != null) { //todo 可pass优化
             LImap.get(s).truncate(pos);
         }
     }
