@@ -902,8 +902,8 @@ public class ArmGenerator {
             return;
         }
 
-        pushRegs();
-//        pushRegs1(callfuncname);
+//        pushRegs();
+        pushRegs1(callfuncname);
         // 准备传参数r0-r3为前四个参数，[sp]开始为第5个及之后参数
         int pushargsnum = max(argsnum * 4 - 16, 0);
 //        add("sub sp, sp,  #" + (pushregs + pushargsnum));
@@ -966,8 +966,8 @@ public class ArmGenerator {
         selfAddImm("sp", getFuncSize(callfuncname));
 
         // add("pop {r7}");
-//        popRegs1(callfuncname);
-        popRegs();
+        popRegs1(callfuncname);
+//        popRegs();
         if (dest.length > 0) {
             storeValue("r0", dest[0]);
         }
